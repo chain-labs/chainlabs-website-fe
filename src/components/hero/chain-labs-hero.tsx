@@ -9,6 +9,9 @@ import InputContainer from "./input-container";
 import RecordingStatus from "./recording-status";
 import { useChat } from "@/hooks/use-chat";
 import { useUI } from "@/hooks/use-ui";
+import SpeechRecognition, {
+	useSpeechRecognition,
+} from "react-speech-recognition";
 
 const ChainLabsHero = () => {
 	const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -44,6 +47,9 @@ const ChainLabsHero = () => {
 			if (e.ctrlKey && e.code === "Space") {
 				e.preventDefault();
 				toggleRecording();
+				if (!isRecording)
+					SpeechRecognition.startListening({ continuous: true });
+				else SpeechRecognition.stopListening();
 			}
 		},
 		[inputValue, toggleRecording]
@@ -69,6 +75,25 @@ const ChainLabsHero = () => {
 
 	const handleFocus = useCallback(() => setIsFocused(true), [setIsFocused]);
 	const handleBlur = useCallback(() => setIsFocused(false), [setIsFocused]);
+
+	const {
+		transcript,
+		listening,
+		resetTranscript,
+		browserSupportsSpeechRecognition,
+	} = useSpeechRecognition();
+
+	if (!browserSupportsSpeechRecognition) {
+		return <span>Browser doesn't support speech recognition.</span>;
+	}
+
+	useEffect(() => {
+		if (listening) {
+			handleInputChange({
+				target: { value: inputValue + transcript },
+			} as React.ChangeEvent<HTMLTextAreaElement>);
+		}
+	}, [listening, transcript, handleInputChange]);
 
 	// Original hero/chat UI
 	return (
@@ -260,13 +285,18 @@ const ChainLabsHero = () => {
 											onFocus={handleFocus}
 											onBlur={handleBlur}
 											onToggleRecording={toggleRecording}
+											removeVoiceInput={
+												!browserSupportsSpeechRecognition
+											}
 										/>
 
-										<div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-											<RecordingStatus
-												isRecording={isRecording}
-											/>
-										</div>
+										{browserSupportsSpeechRecognition && (
+											<div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+												<RecordingStatus
+													isRecording={isRecording}
+												/>
+											</div>
+										)}
 									</form>
 								</motion.div>
 							)}
