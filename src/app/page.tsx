@@ -11,12 +11,12 @@ import { ScrollingCarouselTestimonials } from "@/components/testimonials/scrolli
 import { ResponsiveGridCasestudies } from "@/components/casestudies/responsive-grid-casestudies";
 import { BookCallSection } from "@/components/book/book-a-call";
 import { motion } from "motion/react";
+import { useGlobalStore } from "@/global-store";
 
 export default function Home() {
 	const [showSplash, setShowSplash] = useState(true);
 	const [isScrolled, setIsScrolled] = useState(false);
 	const { showPersonalized } = useUI();
-
 	const handleSplashComplete = () => {
 		setShowSplash(false);
 	};
@@ -39,7 +39,7 @@ export default function Home() {
 	}
 
 	return (
-		<main className="relative flex min-h-screen flex-col items-center justify-start overflow-x-hidden bg-background">
+		<main className="relative flex flex-col items-center justify-start overflow-x-hidden bg-background">
 			<Header
 				isScrolled={isScrolled}
 				showPersonalized={showPersonalized}
@@ -47,19 +47,11 @@ export default function Home() {
 
 			<div className="w-full">
 				{showPersonalized ? (
-					<section className="relative min-h-screen w-full flex flex-col overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
-						<div className="max-w-7xl mx-auto w-full px-4 md:px-8 py-16">
-							<motion.div
-								initial={{ opacity: 0, y: 20 }}
-								animate={{ opacity: 1, y: 0 }}
-								transition={{ delay: 0.2 }}
-							>
-								<ScrollingCarouselTestimonials />
-								<ResponsiveGridCasestudies />
-								<BookCallSection />
-							</motion.div>
-						</div>
-					</section>
+					<div className="flex flex-col items-center justify-center pt-8">
+						<ScrollingCarouselTestimonials />
+						<ResponsiveGridCasestudies />
+						<BookCallSection />
+					</div>
 				) : (
 					<ChainLabsHero />
 				)}
