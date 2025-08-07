@@ -1,162 +1,212 @@
-"use client";
-
 const API_BASE_URL =
-	process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
 class ApiClient {
-	private getAuthHeaders(): Record<string, string> {
-		const accessToken = localStorage.getItem("access_token");
-		return accessToken
-			? {
-					Authorization: `Bearer ${accessToken}`,
-					"Content-Type": "application/json",
-			  }
-			: {
-					"Content-Type": "application/json",
-			  };
-	}
+    // Helper to check if we're in browser environment
+    private isBrowser(): boolean {
+        return typeof window !== 'undefined' && typeof localStorage !== 'undefined';
+    }
 
-	private async handleResponse(response: Response) {
-		if (!response.ok) {
-			if (response.status === 401) {
-				// Token expired or invalid
-				localStorage.removeItem("access_token");
-				localStorage.removeItem("refresh_token");
-				throw new Error("AUTHENTICATION_FAILED");
-			}
+    // Safe localStorage access
+    private getStorageItem(key: string): string | null {
+        if (!this.isBrowser()) return null;
+        try {
+            return localStorage.getItem(key);
+        } catch (error) {
+            console.warn('localStorage access failed:', error);
+            return null;
+        }
+    }
 
-			const errorData = await response.json().catch(() => ({}));
-			throw new Error(errorData.message || `HTTP ${response.status}`);
-		}
+    private setStorageItem(key: string, value: string): void {
+        if (!this.isBrowser()) return;
+        try {
+            localStorage.setItem(key, value);
+        } catch (error) {
+            console.warn('localStorage write failed:', error);
+        }
+    }
 
-		return response.json();
-	}
+    private removeStorageItem(key: string): void {
+        if (!this.isBrowser()) return;
+        try {
+            localStorage.removeItem(key);
+        } catch (error) {
+            console.warn('localStorage removal failed:', error);
+        }
+    }
 
-	// Initialize session - call this once on app startup
-	async initializeSession(): Promise<void> {
-		// Check if we already have tokens
-		const existingToken = localStorage.getItem("access_token");
-		if (existingToken) {
-			return; // Already authenticated
-		}
+    private getAuthHeaders(): Record<string, string> {
+        const accessToken = this.getStorageItem("access_token");
+        return accessToken
+            ? {
+                    Authorization: `Bearer ${accessToken}`,
+                    "Content-Type": "application/json",
+              }
+            : {
+                    "Content-Type": "application/json",
+              };
+    }
 
-		try {
-			const response = await fetch(`${API_BASE_URL}/api/auth/session`, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-			});
+    private async handleResponse(response: Response) {
+        if (!response.ok) {
+            if (response.status === 401) {
+                // Token expired or invalid
+                this.removeStorageItem("access_token");
+                this.removeStorageItem("refresh_token");
+                throw new Error("AUTHENTICATION_FAILED");
+            }
 
-			if (!response.ok) {
-				throw new Error("Failed to create session");
-			}
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `HTTP ${response.status}`);
+        }
 
-			const data = await response.json();
+        return response.json();
+    }
 
-			// Store tokens in localStorage
-			localStorage.setItem("access_token", data.access_token);
-			localStorage.setItem("refresh_token", data.refresh_token);
+    // Initialize session - call this once on app startup
+    async initializeSession(): Promise<void> {
+        // Only run in browser
+        if (!this.isBrowser()) {
+            console.warn('initializeSession called on server side, skipping...');
+            return;
+        }
 
-			console.log("Session initialized successfully");
-		} catch (error) {
-			console.error("Failed to initialize session:", error);
-			throw error;
-		}
-	}
+        // Check if we already have tokens
+        const existingToken = this.getStorageItem("access_token");
+        if (existingToken) {
+            return; // Already authenticated
+        }
 
-	// Helper method for authenticated requests
-	private async makeAuthenticatedRequest(
-		url: string,
-		options: RequestInit = {}
-	) {
-		const response = await fetch(url, {
-			...options,
-			headers: {
-				...this.getAuthHeaders(),
-				...options.headers,
-			},
-		});
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/auth/session`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+            });
 
-		return this.handleResponse(response);
-	}
+            if (!response.ok) {
+                throw new Error("Failed to create session");
+            }
 
-	// Goal & Personalization endpoints
-	async submitGoal(input: string) {
-		return this.makeAuthenticatedRequest(`${API_BASE_URL}/api/goal`, {
-			method: "POST",
-			body: JSON.stringify({ input }),
-		});
-	}
+            const data = await response.json();
 
-	async clarifyGoal(clarification: string) {
-		return this.makeAuthenticatedRequest(`${API_BASE_URL}/api/clarify`, {
-			method: "POST",
-			body: JSON.stringify({ clarification }),
-		});
-	}
+            // Store tokens in localStorage
+            this.setStorageItem("access_token", data.access_token);
+            this.setStorageItem("refresh_token", data.refresh_token);
 
-	async getPersonalizedContent() {
-		return this.makeAuthenticatedRequest(
-			`${API_BASE_URL}/api/personalised`,
-			{
-				method: "GET",
-			}
-		);
-	}
+            console.log("Session initialized successfully");
+        } catch (error) {
+            console.error("Failed to initialize session:", error);
+            throw error;
+        }
+    }
 
-	// Progress & Missions endpoints
-	async getProgress() {
-		return this.makeAuthenticatedRequest(`${API_BASE_URL}/api/progress`, {
-			method: "GET",
-		});
-	}
+    // Helper method for authenticated requests
+    private async makeAuthenticatedRequest(
+        url: string,
+        options: RequestInit = {}
+    ) {
+        const response = await fetch(url, {
+            ...options,
+            headers: {
+                ...this.getAuthHeaders(),
+                ...options.headers,
+            },
+        });
 
-	async completeMission(missionId: string, answer: string) {
-		return this.makeAuthenticatedRequest(
-			`${API_BASE_URL}/api/mission/complete`,
-			{
-				method: "POST",
-				body: JSON.stringify({
-					mission_id: missionId,
-					artifact: { answer },
-				}),
-			}
-		);
-	}
+        return this.handleResponse(response);
+    }
 
-	async checkUnlockStatus() {
-		return this.makeAuthenticatedRequest(
-			`${API_BASE_URL}/api/unlock-status`,
-			{
-				method: "GET",
-			}
-		);
-	}
+    // Goal & Personalization endpoints
+    async submitGoal(input: string) {
+        return this.makeAuthenticatedRequest(`${API_BASE_URL}/api/goal`, {
+            method: "POST",
+            body: JSON.stringify({ input }),
+        });
+    }
 
-	// Session Management
-	async getFullSession() {
-		return this.makeAuthenticatedRequest(`${API_BASE_URL}/api/session`, {
-			method: "GET",
-		});
-	}
+    async clarifyGoal(clarification: string) {
+        return this.makeAuthenticatedRequest(`${API_BASE_URL}/api/clarify`, {
+            method: "POST",
+            body: JSON.stringify({ clarification }),
+        });
+    }
 
-	// Chat endpoint
-	async chatWithAssistant(message: string, context: any) {
-		return this.makeAuthenticatedRequest(`${API_BASE_URL}/api/chat`, {
-			method: "POST",
-			body: JSON.stringify({ message, context }),
-		});
-	}
+    async getPersonalizedContent() {
+        return this.makeAuthenticatedRequest(
+            `${API_BASE_URL}/api/personalised`,
+            {
+                method: "GET",
+            }
+        );
+    }
 
-	// Utility method to check if user is authenticated
-	isAuthenticated(): boolean {
-		return !!localStorage.getItem("access_token");
-	}
+    // Progress & Missions endpoints
+    async getProgress() {
+        return this.makeAuthenticatedRequest(`${API_BASE_URL}/api/progress`, {
+            method: "GET",
+        });
+    }
 
-	// Utility method to clear authentication
-	clearAuth(): void {
-		localStorage.removeItem("access_token");
-		localStorage.removeItem("refresh_token");
-	}
+    async completeMission(missionId: string, answer: string) {
+        return this.makeAuthenticatedRequest(
+            `${API_BASE_URL}/api/mission/complete`,
+            {
+                method: "POST",
+                body: JSON.stringify({
+                    mission_id: missionId,
+                    artifact: { answer },
+                }),
+            }
+        );
+    }
+
+    async checkUnlockStatus() {
+        return this.makeAuthenticatedRequest(
+            `${API_BASE_URL}/api/unlock-status`,
+            {
+                method: "GET",
+            }
+        );
+    }
+
+    // Session Management
+    async getFullSession() {
+        return this.makeAuthenticatedRequest(`${API_BASE_URL}/api/session`, {
+            method: "GET",
+        });
+    }
+
+    // Chat endpoint
+    async chatWithAssistant(message: string, context: any) {
+        return this.makeAuthenticatedRequest(`${API_BASE_URL}/api/chat`, {
+            method: "POST",
+            body: JSON.stringify({ message, context }),
+        });
+    }
+
+    // Utility method to check if user is authenticated
+    isAuthenticated(): boolean {
+        if (!this.isBrowser()) return false;
+        return !!this.getStorageItem("access_token");
+    }
+
+    // Utility method to clear authentication
+    clearAuth(): void {
+        if (!this.isBrowser()) return;
+        this.removeStorageItem("access_token");
+        this.removeStorageItem("refresh_token");
+    }
+
+    // Get current access token (useful for debugging)
+    getAccessToken(): string | null {
+        return this.getStorageItem("access_token");
+    }
+
+    // Get current refresh token (useful for debugging) 
+    getRefreshToken(): string | null {
+        return this.getStorageItem("refresh_token");
+    }
 }
 
 export const apiClient = new ApiClient();
