@@ -215,7 +215,7 @@ const ChainLabsHero = () => {
 									<div className="max-h-[55vh] overflow-y-auto space-y-4 px-2 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
 										{messages.map((message) => (
 											<ChatBubble
-												key={message.id}
+												key={message.timestamp}
 												message={message}
 											/>
 										))}

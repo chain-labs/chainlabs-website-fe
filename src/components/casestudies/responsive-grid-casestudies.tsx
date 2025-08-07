@@ -509,7 +509,7 @@ const ResponsiveGridCasestudies = () => {
                                     </motion.p>
                                     
                                     {/* Hover indicator - Hidden on touch devices */}
-                                    <div className="mt-3 sm:mt-4 flex items-center text-primary opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 hidden sm:flex">
+                                    <div className="mt-3 sm:mt-4 items-center text-primary opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 hidden sm:flex">
                                         <span className="text-xs sm:text-sm font-semibold mr-2">View Details</span>
                                         <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

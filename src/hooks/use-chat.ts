@@ -1,64 +1,84 @@
-import { useGlobalStore } from "@/global-store";
 import { useCallback } from "react";
+import { useGlobalStore } from "@/global-store";
+import { apiClient } from "@/api-client";
 
 export const useChat = () => {
-	const store = useGlobalStore();
+  const store = useGlobalStore();
 
-	const simulateAIResponse = useCallback((userMessage: string) => {
-		const responses = [
-			"I understand your business needs! Based on your requirements, I'll create a custom website design with AI-powered features.",
-			"Excellent! I'm processing your website requirements using our AI algorithms.",
-			"Perfect! Our AI is analyzing your business model and target audience.",
-		];
+  const sendMessage = useCallback(
+    async (content: string) => {
+      const context = store.currentContext || {
+        page: "hero",
+        section: "chat-input"
+      };
 
-		return responses[Math.floor(Math.random() * responses.length)];
-	}, []);
+      // Add user message to history
+      const userMessage = {
+        role: "user" as const,
+        message: content,
+        timestamp: new Date().toISOString(),
+      };
 
-	const sendMessage = useCallback(
-		(content: string) => {
-			// Add user message
-			const userMessage = {
-				id: crypto.randomUUID(),
-				role: "user" as const,
-				content,
-				timestamp: new Date(),
-			};
+      store.addChatMessage(userMessage);
+      store.setInputValue("");
+      store.setIsThinking(true);
 
-			store.addMessage(userMessage);
-			store.setInputValue("");
-			store.setIsThinking(true);
-			store.incrementConversationCount();
+      try {
+        const response = await apiClient.chatWithAssistant(content, context);
+        
+        // Add assistant response to history
+        const assistantMessage = {
+          role: "assistant" as const,
+          message: response.reply,
+          timestamp: new Date().toISOString(),
+        };
+        
+        store.addChatMessage(assistantMessage);
+        store.setIsThinking(false);
+        
+        // Update progress if provided
+        if (response.progress) {
+          store.updateProgress(response.progress);
+        }
+        
+        return response;
+      } catch (error) {
+        console.error("Failed to send message:", error);
+        store.setIsThinking(false);
+        
+        // Handle authentication failure
+        if (error instanceof Error && error.message === 'AUTHENTICATION_FAILED') {
+          const errorMessage = {
+            role: "assistant" as const,
+            message: "Your session has expired. Please refresh the page to continue.",
+            timestamp: new Date().toISOString(),
+          };
+          store.addChatMessage(errorMessage);
+          return;
+        }
+        
+        // Generic error message
+        const errorMessage = {
+          role: "assistant" as const,
+          message: "I'm sorry, I encountered an error. Please try again.",
+          timestamp: new Date().toISOString(),
+        };
+        store.addChatMessage(errorMessage);
+        
+        throw error;
+      }
+    },
+    [store]
+  );
 
-			// Simulate AI response
-			setTimeout(() => {
-				const aiMessage = {
-					id: crypto.randomUUID(),
-					role: "ai" as const,
-					content: simulateAIResponse(content),
-					timestamp: new Date(),
-				};
-
-				store.addMessage(aiMessage);
-				store.setIsThinking(false);
-
-				// Check if should show personalized page
-				if (store.aiMessageCount() >= 2) {
-					setTimeout(() => {
-						store.setShowPersonalized(true);
-					}, 1000);
-				}
-			}, 2000 + Math.random() * 2000);
-		},
-		[store, simulateAIResponse]
-	);
-
-	return {
-		messages: store.messages,
-		isThinking: store.isThinking,
-		inputValue: store.inputValue,
-		hasMessages: store.hasMessages(),
-		sendMessage,
-		setInputValue: store.setInputValue,
-		clearMessages: store.clearMessages,
-	};
+  return {
+    messages: store.chatHistory,
+    isThinking: store.isThinking,
+    inputValue: store.inputValue,
+    hasMessages: store.chatHistory.length > 0,
+    sendMessage,
+    setInputValue: store.setInputValue,
+    clearMessages: store.clearChatHistory,
+    setCurrentContext: store.setCurrentContext,
+  };
 };

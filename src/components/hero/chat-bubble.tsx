@@ -40,7 +40,7 @@ const ChatBubble = React.memo(({ message }: { message: ChatMessage }) => {
 						isUser ? "text-primary-foreground" : "text-foreground"
 					)}
 				>
-					{message.content}
+					{message.message}
 				</p>
 			</div>
 
