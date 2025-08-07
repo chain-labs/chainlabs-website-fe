@@ -2,6 +2,7 @@
 
 import { ReactNode } from 'react';
 import { useAuth } from '@/hooks/use-auth';
+import { SplashScreen } from '@/components/splash/splash-screen';
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -13,10 +14,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   // Show loading during initialization
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        <span className="ml-2 text-muted-foreground">Initializing...</span>
-      </div>
+      <SplashScreen />
     );
   }
 
