@@ -9,9 +9,6 @@ import InputContainer from "./input-container";
 import RecordingStatus from "./recording-status";
 import { useChat } from "@/hooks/use-chat";
 import { useUI } from "@/hooks/use-ui";
-import { ResponsiveGridCasestudies } from "@/components/casestudies/responsive-grid-casestudies";
-import { ScrollingCarouselTestimonials } from "../testimonials/scrolling-carousel-testimonials";
-import { BookCallSection } from "../book/book-a-call";
 
 const ChainLabsHero = () => {
 	const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -26,13 +23,7 @@ const ChainLabsHero = () => {
 		setInputValue,
 	} = useChat();
 
-	const {
-		isFocused,
-		isRecording,
-		showPersonalized,
-		setIsFocused,
-		toggleRecording,
-	} = useUI();
+	const { isFocused, isRecording, setIsFocused, toggleRecording } = useUI();
 
 	const scrollToBottom = useCallback(() => {
 		messagesEndRef.current?.scrollIntoView({
@@ -78,25 +69,6 @@ const ChainLabsHero = () => {
 
 	const handleFocus = useCallback(() => setIsFocused(true), [setIsFocused]);
 	const handleBlur = useCallback(() => setIsFocused(false), [setIsFocused]);
-
-	// Show personalized page after 2 conversations
-	if (showPersonalized) {
-		return (
-			<section className="relative min-h-screen w-full flex flex-col overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
-				<div className="max-w-7xl mx-auto w-full px-4 md:px-8 py-16">
-					<motion.div
-						initial={{ opacity: 0, y: 20 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ delay: 0.2 }}
-					>
-						<ScrollingCarouselTestimonials />
-						<ResponsiveGridCasestudies />
-						<BookCallSection />
-					</motion.div>
-				</div>
-			</section>
-		);
-	}
 
 	// Original hero/chat UI
 	return (
