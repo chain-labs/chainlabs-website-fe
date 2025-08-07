@@ -315,13 +315,14 @@ const ResponsiveGridCasestudies = () => {
     );
 
     return (
-        <section className="py-16 px-4">
+         <section className="py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-8">
             <div className="container mx-auto">
-                <div className="mb-12 text-center">
-                    <h2 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+                {/* Header - Mobile optimized */}
+                <div className="mb-8 sm:mb-12 text-center">
+                    <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-foreground">
                         AI Solutions in Action
                     </h2>
-                    <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
+                    <p className="mx-auto mt-3 sm:mt-4 max-w-2xl text-base sm:text-lg text-muted-foreground px-4 sm:px-0">
                         See how we've transformed businesses across industries
                     </p>
                 </div>
@@ -339,22 +340,22 @@ const ResponsiveGridCasestudies = () => {
                     )}
                 </AnimatePresence>
 
-                {/* Modal */}
+                {/* Modal - Mobile optimized */}
                 <AnimatePresence>
                     {active && typeof active === "object" ? (
-                        <div className="fixed inset-0 flex items-center justify-center p-4 z-[70]" style={{ zIndex: 70 }}>
+                        <div className="fixed inset-0 flex items-start sm:items-center justify-center p-1 sm:p-4 z-[70] overflow-y-auto" style={{ zIndex: 70 }}>
                             <motion.div
                                 layoutId={`card-${active.title}-${id}`}
                                 ref={ref}
-                                className="relative w-full max-w-4xl max-h-[95vh] bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl overflow-hidden"
-                                initial={{ scale: 0.8, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                exit={{ scale: 0.8, opacity: 0 }}
+                                className="relative w-full max-w-sm sm:max-w-lg lg:max-w-4xl my-4 sm:my-0 bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl overflow-hidden"
+                                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                                animate={{ scale: 1, opacity: 1, y: 0 }}
+                                exit={{ scale: 0.9, opacity: 0, y: 20 }}
                                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
                             >
-                                {/* Close Button */}
+                                {/* Close Button - Mobile optimized */}
                                 <motion.button
-                                    className="absolute top-4 right-4 z-10 flex items-center justify-center bg-white/10 backdrop-blur-sm dark:bg-black/20 rounded-full h-10 w-10 hover:bg-white/20 transition-colors"
+                                    className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 flex items-center justify-center bg-black/30 backdrop-blur-sm rounded-full h-8 w-8 sm:h-10 sm:w-10 hover:bg-black/50 transition-colors touch-manipulation"
                                     onClick={() => setActive(null)}
                                     initial={{ opacity: 0, scale: 0.8 }}
                                     animate={{ opacity: 1, scale: 1 }}
@@ -364,75 +365,75 @@ const ResponsiveGridCasestudies = () => {
                                     <CloseIcon />
                                 </motion.button>
 
-                                {/* Modal Content - Scrollable */}
-                                <div className="flex flex-col h-full max-h-[95vh]">
-                                    {/* Header Image */}
+                                {/* Modal Content - Mobile optimized scrolling */}
+                                <div className="flex flex-col max-h-[90vh] sm:max-h-[95vh]">
+                                    {/* Header Image - Mobile responsive height */}
                                     <motion.div 
                                         layoutId={`image-${active.title}-${id}`}
-                                        className="relative h-64 md:h-80 flex-shrink-0"
+                                        className="relative h-48 sm:h-64 lg:h-80 flex-shrink-0"
                                     >
                                         <img
                                             src={active.src}
                                             alt={active.title}
                                             className="w-full h-full object-cover"
                                         />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
                                         
-                                        {/* Logo and Title Overlay */}
-                                        <div className="absolute bottom-6 left-6 right-16">
-                                            <div className="flex items-center gap-3 mb-2">
-                                                <div className="p-2 bg-white/10 backdrop-blur-sm rounded-lg">
+                                        {/* Logo and Title Overlay - Mobile responsive */}
+                                        <div className="absolute bottom-3 sm:bottom-6 left-3 sm:left-6 right-12 sm:right-16">
+                                            <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                                                <div className="p-1.5 sm:p-2 bg-white/10 backdrop-blur-sm rounded-lg">
                                                     <img
                                                         src={active.logo}
                                                         alt={active.logoAlt}
-                                                        className="h-6 w-6 brightness-0 invert"
+                                                        className="h-4 w-4 sm:h-6 sm:w-6 brightness-0 invert"
                                                     />
                                                 </div>
                                                 <motion.h3
                                                     layoutId={`title-${active.title}-${id}`}
-                                                    className="font-bold text-white text-xl md:text-2xl"
+                                                    className="font-bold text-white text-lg sm:text-xl lg:text-2xl leading-tight"
                                                 >
                                                     {active.title}
                                                 </motion.h3>
                                             </div>
                                             <motion.p
                                                 layoutId={`description-${active.description}-${id}`}
-                                                className="text-white/90 text-lg font-semibold"
+                                                className="text-white/90 text-sm sm:text-base lg:text-lg font-semibold leading-tight"
                                             >
                                                 {active.description}
                                             </motion.p>
                                         </div>
                                     </motion.div>
 
-                                    {/* Scrollable Content Area */}
+                                    {/* Scrollable Content Area - Mobile optimized */}
                                     <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
-                                        <div className="p-6 md:p-8">
-                                            {/* CTA Button */}
+                                        <div className="p-4 sm:p-6 lg:p-8">
+                                            {/* CTA Button - Mobile responsive */}
                                             <motion.div
                                                 initial={{ opacity: 0, y: 20 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 transition={{ delay: 0.2 }}
-                                                className="mb-6"
+                                                className="mb-4 sm:mb-6"
                                             >
                                                 <a
                                                     href={active.ctaLink}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-lg hover:shadow-xl"
+                                                    className="inline-flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-lg hover:shadow-xl touch-manipulation"
                                                 >
                                                     {active.ctaText}
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                                                     </svg>
                                                 </a>
                                             </motion.div>
 
-                                            {/* Main Content */}
+                                            {/* Main Content - Mobile typography */}
                                             <motion.div
                                                 initial={{ opacity: 0, y: 20 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 transition={{ delay: 0.3 }}
-                                                className="prose prose-neutral dark:prose-invert max-w-none"
+                                                className="prose prose-sm sm:prose prose-neutral dark:prose-invert max-w-none"
                                             >
                                                 {typeof active.content === "function"
                                                     ? active.content()
@@ -446,23 +447,28 @@ const ResponsiveGridCasestudies = () => {
                     ) : null}
                 </AnimatePresence>
 
-                {/* Cards Grid */}
-                <div className="mx-auto grid max-w-2xl gap-6 lg:max-w-6xl lg:grid-cols-2">
+                {/* Cards Grid - Mobile first approach */}
+                <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:max-w-6xl lg:mx-auto">
                     {casestudyCards.map((card, index) => {
-                        const isLargeCard = index === 0 || index === 4; // First and fifth cards are large
+                        // On mobile: all cards are same size
+                        // On desktop: maintain the large card layout
+                        const isLargeCard = index === 0 || index === 4;
                         
                         return (
                             <motion.div
                                 layoutId={`card-${card.title}-${id}`}
                                 key={card.title}
                                 onClick={() => setActive(card)}
-                                className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl shadow-lg ${
+                                className={`group relative flex flex-col justify-between overflow-hidden rounded-xl sm:rounded-2xl cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl shadow-lg touch-manipulation ${
                                     isLargeCard 
-                                        ? "row-span-2 aspect-square lg:aspect-auto h-full min-h-[400px]" 
-                                        : "aspect-3/2 md:aspect-2/1 min-h-[250px]"
+                                        ? "aspect-[4/3] sm:row-span-2 sm:aspect-square lg:aspect-auto sm:h-full sm:min-h-[400px]" 
+                                        : "aspect-[4/3] sm:aspect-3/2 md:aspect-2/1 sm:min-h-[250px]"
                                 }`}
                                 whileHover={{ y: -5 }}
                                 whileTap={{ scale: 0.98 }}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: index * 0.1 }}
                             >
                                 <motion.div 
                                     layoutId={`image-${card.title}-${id}`}
@@ -476,38 +482,43 @@ const ResponsiveGridCasestudies = () => {
                                     <div className="absolute inset-0 h-full w-full bg-gradient-to-t from-black/80 via-black/30 to-black/10 group-hover:from-black/90 transition-all duration-500"></div>
                                 </motion.div>
 
-                                {/* Logo */}
-                                <div className="relative z-10 p-6">
-                                    <div className="inline-block p-2 bg-white/10 backdrop-blur-sm rounded-lg">
+                                {/* Logo - Mobile responsive */}
+                                <div className="relative z-10 p-3 sm:p-6">
+                                    <div className="inline-block p-1.5 sm:p-2 bg-white/10 backdrop-blur-sm rounded-lg">
                                         <img
                                             src={card.logo}
                                             alt={card.logoAlt}
-                                            className="h-6 w-6 brightness-0 invert"
+                                            className="h-4 w-4 sm:h-6 sm:w-6 brightness-0 invert"
                                         />
                                     </div>
                                 </div>
 
-                                {/* Content */}
-                                <div className="relative z-10 p-6 pt-0">
+                                {/* Content - Mobile responsive */}
+                                <div className="relative z-10 p-3 sm:p-6 pt-0">
                                     <motion.h3
                                         layoutId={`title-${card.title}-${id}`}
-                                        className="text-xl font-bold text-white mb-3 lg:text-2xl group-hover:text-primary transition-colors"
+                                        className="text-lg sm:text-xl lg:text-2xl font-bold text-white mb-2 sm:mb-3 group-hover:text-primary transition-colors leading-tight"
                                     >
                                         {card.title}
                                     </motion.h3>
                                     <motion.p
                                         layoutId={`description-${card.description}-${id}`}
-                                        className="text-white/90 text-base font-medium max-w-sm"
+                                        className="text-white/90 text-sm sm:text-base font-medium max-w-sm leading-tight"
                                     >
                                         {card.description}
                                     </motion.p>
                                     
-                                    {/* Hover indicator */}
-                                    <div className="mt-4 flex items-center text-primary opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-                                        <span className="text-sm font-semibold mr-2">View Details</span>
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    {/* Hover indicator - Hidden on touch devices */}
+                                    <div className="mt-3 sm:mt-4 flex items-center text-primary opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 hidden sm:flex">
+                                        <span className="text-xs sm:text-sm font-semibold mr-2">View Details</span>
+                                        <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                         </svg>
+                                    </div>
+                                    
+                                    {/* Mobile tap indicator */}
+                                    <div className="mt-3 flex items-center text-primary/70 sm:hidden">
+                                        <span className="text-xs font-medium">Tap to view details</span>
                                     </div>
                                 </div>
                             </motion.div>

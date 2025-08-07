@@ -35,7 +35,11 @@ const ChainLabsHero = () => {
 	} = useUI();
 
 	const scrollToBottom = useCallback(() => {
-		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+		messagesEndRef.current?.scrollIntoView({
+			behavior: "smooth",
+			block: "end",
+			inline: "nearest",
+		});
 	}, []);
 
 	useEffect(() => {
@@ -80,20 +84,6 @@ const ChainLabsHero = () => {
 		return (
 			<section className="relative min-h-screen w-full flex flex-col overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
 				<div className="max-w-7xl mx-auto w-full px-4 md:px-8 py-16">
-					<motion.div
-						initial={{ opacity: 0, y: 20 }}
-						animate={{ opacity: 1, y: 0 }}
-						className="text-center mb-16"
-					>
-						<h2 className="text-3xl font-bold mb-4">
-							How We Can Solve Your Problem
-						</h2>
-						<p className=" text-muted-foreground">
-							Based on your previous conversations, here’s how we
-							can help you achieve your goals.
-						</p>
-					</motion.div>
-
 					<motion.div
 						initial={{ opacity: 0, y: 20 }}
 						animate={{ opacity: 1, y: 0 }}
