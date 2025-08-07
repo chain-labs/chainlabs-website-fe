@@ -26,8 +26,8 @@ export default function Home() {
 			const scrollPosition = window.scrollY;
 			const windowHeight = window.innerHeight;
 
-			// Consider scrolled if we've scrolled more than 80% of viewport height
-			setIsScrolled(scrollPosition > windowHeight * 0.8);
+			// Consider scrolled if we've scrolled more than 10% of viewport height
+			setIsScrolled(scrollPosition > windowHeight * 0.01);
 		};
 
 		window.addEventListener("scroll", handleScroll, { passive: true });

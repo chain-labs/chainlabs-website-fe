@@ -7,97 +7,107 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface HeaderProps {
-  isScrolled: boolean;
-  showPersonalized: boolean;
+	isScrolled: boolean;
+	showPersonalized: boolean;
 }
 
 export const Header = ({ isScrolled, showPersonalized }: HeaderProps) => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  return (
-    <motion.header
-      initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-      className={cn(
-        "fixed w-full top-0 left-0 right-0 z-50 transition-all duration-500",
-        isScrolled || showPersonalized
-          ? "bg-background/95 backdrop-blur-md border-b border-border/50 shadow-lg"
-          : "bg-transparent"
-      )}
-    >
-      <div className="container max-w-7xl mx-auto px-4 md:px-6">
-        <div className="flex items-center justify-between h-16 md:h-20">
-          {/* Logo */}
-          <motion.div
-            className="flex items-center space-x-2"
-            whileHover={{ scale: 1.05 }}
-            transition={{ type: "spring", stiffness: 400 }}
-          >
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
-              <span className="text-background font-bold text-sm">CL</span>
-            </div>
-            <span className="text-xl font-bold text-foreground">
-              Chain Labs
-            </span>
-          </motion.div>
+	return (
+		<motion.header
+			initial={{ y: -100, opacity: 0 }}
+			animate={{ y: 0, opacity: 1 }}
+			transition={{ duration: 0.6, ease: "easeOut" }}
+			className={cn(
+				"fixed w-full top-0 left-0 right-0 z-50 transition-all duration-500",
+				isScrolled || showPersonalized
+					? "bg-background/95 backdrop-blur-md border-b border-border/50 shadow-lg"
+					: "bg-transparent"
+			)}
+		>
+			<div className="container max-w-7xl mx-auto px-4 md:px-6">
+				<div className="flex items-center justify-between h-16 md:h-20">
+					{/* Logo */}
+					<motion.div className="flex items-center space-x-2">
+						<div className="rounded-lg text-[#5cfda2] flex items-center justify-center">
+							<svg
+								width="42"
+								height="43"
+								fill="none"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<path
+									fill-rule="evenodd"
+									clip-rule="evenodd"
+									d="M41.99 21.513c0 11.348-9.396 20.548-20.988 20.548C9.41 42.06.013 32.86.013 21.513.013 10.165 9.41.966 21.002.966s20.989 9.2 20.989 20.547zm-31.435 8.434c.953.267 1.94.398 2.93.39 1.54.066 3.076-.192 4.505-.757 2.453-1.066 3.485-3.083 3.833-5.55.035-.256-.11-.232-.235-.21-.033.005-.064.01-.09.01h-3.801c-.32-.004-.433.085-.514.394-.447 1.694-1.547 2.428-3.35 2.212a1.538 1.538 0 01-1.104-.471 1.478 1.478 0 01-.402-1.113c-.004-.21.008-.42.036-.628l.197-1.172c.272-1.622.54-3.225.853-4.834.348-1.76 1.497-2.591 3.301-2.459a7.086 7.086 0 002.813-.385 6.986 6.986 0 002.422-1.455c.23-.194.19-.309 0-.495a4.601 4.601 0 00-1.669-1.061 10.79 10.79 0 00-4.923-.38c-3.305.362-5.564 2.255-6.313 5.421-.278 1.177-.488 2.378-.697 3.57-.107.605-.212 1.208-.326 1.804a13.922 13.922 0 00-.365 3.512c.121 1.888 1.064 3.087 2.899 3.657zM24.41 19.249c-1.497 1.41-3.363 1.65-5.266 1.809-.16.013-.32.02-.48.026-.162.007-.322.014-.48.027-.316.027-.424 0-.357-.363.23-1.185.451-2.379.64-3.573.043-.254.185-.258.362-.262l.09-.003a6.645 6.645 0 003.778-1.248 5.876 5.876 0 002.083-2.985.436.436 0 01.185-.307.455.455 0 01.356-.073h4.4c.38 0 .416.11.357.442a7348.037 7348.037 0 00-3.062 17.124c-.058.328-.17.412-.496.407h-3.755c-.348 0-.451-.057-.366-.442.55-2.822 1.086-5.65 1.62-8.476l.355-1.873c.014-.049.023-.12.036-.23zm4.617 11.008h2.286c.767 0 1.53 0 2.314.008.351 0 .468-.119.518-.442a149.3 149.3 0 01.645-3.799c.054-.314-.068-.34-.33-.34h-4.626c-.324 0-.405.115-.45.376-.096.515-.186 1.03-.277 1.546-.13.749-.262 1.497-.409 2.244-.063.318-.018.407.33.407z"
+									fill="currentColor"
+								></path>
+							</svg>
+						</div>
+						<span className="text-xl text-foreground">
+							Chain Labs
+						</span>
+					</motion.div>
 
-          {/* CTA Button & Mobile Menu */}
-          <div className="flex items-center space-x-4">
-            <Button
-              size="sm"
-              className={cn(
-                "hidden sm:flex items-center gap-2 transition-all duration-300",
-                isScrolled || showPersonalized
-                  ? "bg-primary hover:bg-primary/90 text-primary-foreground"
-                  : "bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white border border-white/20"
-              )}
-            >
-              <Phone className="w-4 h-4" />
-              <span className="text-sm">Book Call</span>
-            </Button>
+					{/* CTA Button & Mobile Menu */}
+					<div className="flex items-center space-x-4">
+						<Button
+							size="sm"
+							className={cn(
+								"hidden sm:flex items-center gap-2 transition-all duration-300",
+								isScrolled || showPersonalized
+									? "bg-primary hover:bg-primary/90 text-primary-foreground"
+									: "bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white border border-white/20"
+							)}
+						>
+							<Phone className="w-4 h-4" />
+							<span className="text-sm">Book Call</span>
+						</Button>
 
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className={cn(
-                "md:hidden p-2 rounded-lg transition-colors",
-                isScrolled || showPersonalized
-                  ? "text-foreground hover:bg-muted"
-                  : "text-white hover:bg-white/10"
-              )}
-            >
-              {isMobileMenuOpen ? (
-                <X className="w-5 h-5" />
-              ) : (
-                <Menu className="w-5 h-5" />
-              )}
-            </button>
-          </div>
-        </div>
+						{/* Mobile Menu Button */}
+						<button
+							onClick={() =>
+								setIsMobileMenuOpen(!isMobileMenuOpen)
+							}
+							className={cn(
+								"md:hidden p-2 rounded-lg transition-colors",
+								isScrolled || showPersonalized
+									? "text-foreground hover:bg-muted"
+									: "text-white hover:bg-white/10"
+							)}
+						>
+							{isMobileMenuOpen ? (
+								<X className="w-5 h-5" />
+							) : (
+								<Menu className="w-5 h-5" />
+							)}
+						</button>
+					</div>
+				</div>
 
-        {/* Mobile Navigation */}
-        <AnimatePresence>
-          {isMobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-              className="md:hidden border-t border-border/20 bg-background/95 backdrop-blur-md"
-            >
-              <div className="py-4 space-y-2">
-                <div className="px-4 pt-2">
-                  <Button size="sm" className="w-full">
-                    <Phone className="w-4 h-4 mr-2" />
-                    Book Call
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </motion.header>
-  );
+				{/* Mobile Navigation */}
+				<AnimatePresence>
+					{isMobileMenuOpen && (
+						<motion.div
+							initial={{ opacity: 0, height: 0 }}
+							animate={{ opacity: 1, height: "auto" }}
+							exit={{ opacity: 0, height: 0 }}
+							transition={{ duration: 0.3, ease: "easeOut" }}
+							className="md:hidden border-t border-border/20 bg-background/95 backdrop-blur-md"
+						>
+							<div className="py-4 space-y-2">
+								<div className="px-4 pt-2">
+									<Button size="sm" className="w-full">
+										<Phone className="w-4 h-4 mr-2" />
+										Book Call
+									</Button>
+								</div>
+							</div>
+						</motion.div>
+					)}
+				</AnimatePresence>
+			</div>
+		</motion.header>
+	);
 };
