@@ -1,72 +1,38 @@
 "use client";
 
-import React, {
-	useState,
-	KeyboardEvent,
-	FormEvent,
-	useEffect,
-	useRef,
-	useCallback,
-	useMemo,
-} from "react";
+import React, { useEffect, useRef, useCallback, KeyboardEvent } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import {
-	Mic,
-	ArrowRight,
-	Sparkles,
-	Bot,
-	User,
-	Globe,
-	Zap,
-	Blocks,
-	Code2,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Sparkles, Globe, Zap, Blocks, Code2 } from "lucide-react";
 import ChatBubble from "./chat-bubble";
 import ThinkingIndicator from "./think-indicator";
 import InputContainer from "./input-container";
 import RecordingStatus from "./recording-status";
+import { useChat } from "@/hooks/use-chat";
+import { useUI } from "@/hooks/use-ui";
+import { ResponsiveGridCasestudies } from "@/components/casestudies/responsive-grid-casestudies";
+import { ScrollingCarouselTestimonials } from "../testimonials/scrolling-carousel-testimonials";
+import { BookCallSection } from "../book/book-a-call";
 
-export interface ChatMessage {
-	id: string;
-	role: "user" | "ai";
-	content: string;
-	timestamp: Date;
-}
-
-interface ChainLabsHeroProps {
-	isFullscreen?: boolean;
-}
-
-// Move outside component to prevent recreation on every render
-const AI_RESPONSES = [
-	"I understand your business needs! Based on your requirements, I'll create a custom website design with AI-powered features. Let me analyze your industry and suggest the perfect layout, functionality, and blockchain integrations.",
-	"Excellent! I'm processing your website requirements using our AI algorithms. I can build you a modern, responsive site with smart automation, personalized user experiences, and blockchain-powered features tailored to your business.",
-	"Perfect! Our AI is analyzing your business model and target audience. I'll create a comprehensive website solution with intelligent features, automated workflows, and blockchain integrations that will help scale your business.",
-	"Great input! I'm using our proprietary AI to design your website architecture. This will include smart user interfaces, automated business processes, and blockchain security features that align with your goals.",
-	"Fantastic! Let me leverage our AI and blockchain expertise to build your ideal website. I'll create a solution with intelligent automation, personalized user journeys, and cutting-edge technology integrations.",
-];
-
-const WEBSITE_BUILDING_FEATURES = [
-	{ icon: Globe, text: "AI-Powered Design" },
-	{ icon: Zap, text: "Smart Automation" },
-	{ icon: Blocks, text: "Blockchain Integration" },
-	{ icon: Code2, text: "Custom Development" },
-];
-
-const ChainLabsHero = ({ isFullscreen = false }: ChainLabsHeroProps) => {
-	const [inputValue, setInputValue] = useState<string>("");
-	const [isRecording, setIsRecording] = useState<boolean>(false);
-	const [isFocused, setIsFocused] = useState<boolean>(false);
-	const [isThinking, setIsThinking] = useState<boolean>(false);
-	const [messages, setMessages] = useState<ChatMessage[]>([]);
+const ChainLabsHero = () => {
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 
-	// Memoize expensive calculations
-	const hasMessages = messages.length > 0;
-	const hasInputValue = inputValue.trim().length > 0;
+	// Global state hooks
+	const {
+		messages,
+		isThinking,
+		inputValue,
+		hasMessages,
+		sendMessage,
+		setInputValue,
+	} = useChat();
+
+	const {
+		isFocused,
+		isRecording,
+		showPersonalized,
+		setIsFocused,
+		toggleRecording,
+	} = useUI();
 
 	const scrollToBottom = useCallback(() => {
 		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -80,74 +46,69 @@ const ChainLabsHero = ({ isFullscreen = false }: ChainLabsHeroProps) => {
 
 	const handleKeyDown = useCallback(
 		(e: KeyboardEvent<HTMLTextAreaElement>) => {
-			if (e.code === "Space" && inputValue.trim() === "") {
+			if (e.ctrlKey && e.code === "Space") {
 				e.preventDefault();
-				setIsRecording((prev) => !prev);
+				toggleRecording();
 			}
 		},
-		[inputValue]
+		[inputValue, toggleRecording]
 	);
 
-	const toggleRecording = useCallback(() => {
-		setIsRecording((prev) => {
-			const newValue = !prev;
-			console.log(
-				newValue ? "Recording started..." : "Recording stopped."
-			);
-			return newValue;
-		});
-	}, []);
-
-	const simulateAIResponse = useCallback((query: string): string => {
-		return AI_RESPONSES[Math.floor(Math.random() * AI_RESPONSES.length)];
-	}, []);
-
 	const handleSubmit = useCallback(
-		async (e: FormEvent) => {
+		async (e: React.FormEvent) => {
 			e.preventDefault();
 			const trimmedInput = inputValue.trim();
-
 			if (trimmedInput) {
-				const userMessage: ChatMessage = {
-					id: crypto.randomUUID(),
-					role: "user",
-					content: trimmedInput,
-					timestamp: new Date(),
-				};
-
-				setMessages((prev) => [...prev, userMessage]);
-				setInputValue("");
-				setIsThinking(true);
-
-				// Simulate AI processing time (2-4 seconds)
-				const thinkingTime = Math.random() * 2000 + 2000;
-
-				setTimeout(() => {
-					const aiMessage: ChatMessage = {
-						id: crypto.randomUUID(),
-						role: "ai",
-						content: simulateAIResponse(trimmedInput),
-						timestamp: new Date(),
-					};
-
-					setMessages((prev) => [...prev, aiMessage]);
-					setIsThinking(false);
-				}, thinkingTime);
+				sendMessage(trimmedInput);
 			}
 		},
-		[inputValue, simulateAIResponse]
+		[inputValue, sendMessage]
 	);
 
 	const handleInputChange = useCallback(
 		(e: React.ChangeEvent<HTMLTextAreaElement>) => {
 			setInputValue(e.target.value);
 		},
-		[]
+		[setInputValue]
 	);
 
-	const handleFocus = useCallback(() => setIsFocused(true), []);
-	const handleBlur = useCallback(() => setIsFocused(false), []);
+	const handleFocus = useCallback(() => setIsFocused(true), [setIsFocused]);
+	const handleBlur = useCallback(() => setIsFocused(false), [setIsFocused]);
 
+	// Show personalized page after 2 conversations
+	if (showPersonalized) {
+		return (
+			<section className="relative min-h-screen w-full flex flex-col overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
+				<div className="max-w-7xl mx-auto w-full px-4 md:px-8 py-16">
+					<motion.div
+						initial={{ opacity: 0, y: 20 }}
+						animate={{ opacity: 1, y: 0 }}
+						className="text-center mb-16"
+					>
+						<h2 className="text-3xl font-bold mb-4">
+							How We Can Solve Your Problem
+						</h2>
+						<p className=" text-muted-foreground">
+							Based on your previous conversations, here’s how we
+							can help you achieve your goals.
+						</p>
+					</motion.div>
+
+					<motion.div
+						initial={{ opacity: 0, y: 20 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ delay: 0.2 }}
+					>
+						<ScrollingCarouselTestimonials />
+						<ResponsiveGridCasestudies />
+						<BookCallSection />
+					</motion.div>
+				</div>
+			</section>
+		);
+	}
+
+	// Original hero/chat UI
 	return (
 		<section className="relative min-h-screen w-full flex flex-col overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
 			{/* Background Elements */}
@@ -221,12 +182,9 @@ const ChainLabsHero = ({ isFullscreen = false }: ChainLabsHeroProps) => {
 				)}
 			</div>
 
-			{/* Main Content */}
 			<div className="relative z-10 flex-1 flex flex-col max-w-7xl mx-auto w-full">
-				{/* Header spacing */}
 				<div className="h-12 md:h-16" />
 
-				{/* Content Container */}
 				<div className="flex-1 flex flex-col items-center justify-center px-4 md:px-6 lg:px-8">
 					<div className="w-full max-w-4xl mx-auto flex flex-col">
 						{/* Hero Text - Only show when no messages */}
@@ -274,22 +232,6 @@ const ChainLabsHero = ({ isFullscreen = false }: ChainLabsHeroProps) => {
 											Dream Website
 										</span>
 									</motion.h1>
-
-									<motion.p
-										initial={{ opacity: 0, y: 15 }}
-										animate={{ opacity: 1, y: 0 }}
-										transition={{
-											duration: 0.7,
-											ease: "easeOut",
-											delay: 0.4,
-										}}
-										className="mt-4 text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed"
-									>
-										Tell our AI about your business and
-										watch it create a custom website with
-										smart automation and blockchain
-										integration.
-									</motion.p>
 								</motion.div>
 							)}
 						</AnimatePresence>
@@ -316,7 +258,6 @@ const ChainLabsHero = ({ isFullscreen = false }: ChainLabsHeroProps) => {
 											/>
 										))}
 
-										{/* Thinking indicator */}
 										<AnimatePresence>
 											{isThinking && (
 												<ThinkingIndicator />
@@ -357,9 +298,6 @@ const ChainLabsHero = ({ isFullscreen = false }: ChainLabsHeroProps) => {
 											onFocus={handleFocus}
 											onBlur={handleBlur}
 											onToggleRecording={toggleRecording}
-											onSubmit={() =>
-												handleSubmit({} as FormEvent)
-											}
 										/>
 
 										<div className="flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -374,7 +312,6 @@ const ChainLabsHero = ({ isFullscreen = false }: ChainLabsHeroProps) => {
 					</div>
 				</div>
 
-				{/* Footer spacing */}
 				<div className="h-8 md:h-12" />
 			</div>
 		</section>

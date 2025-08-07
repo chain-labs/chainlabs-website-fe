@@ -6,11 +6,15 @@ import { Mic, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { useGlobalStore } from "@/global-store";
 
 export default function GoalInputSection() {
-  const [inputValue, setInputValue] = useState<string>("");
-  const [isRecording, setIsRecording] = useState<boolean>(false);
-  const [isFocused, setIsFocused] = useState<boolean>(false);
+  const inputValue = useGlobalStore((state) => state.inputValue);
+  const isRecording = useGlobalStore((state) => state.isRecording);
+  const isFocused = useGlobalStore((state) => state.isFocused);
+  const setInputValue = useGlobalStore((state) => state.setInputValue);
+  const toggleRecording = useGlobalStore((state) => state.toggleRecording);
+  const setIsFocused = useGlobalStore((state) => state.setIsFocused);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.code === "Space" && inputValue.trim() === "") {
@@ -19,21 +23,10 @@ export default function GoalInputSection() {
     }
   };
 
-  const toggleRecording = () => {
-    setIsRecording((prev) => !prev);
-    // In a real application, you would integrate a voice-to-text service here.
-    if (!isRecording) {
-      console.log("Recording started...");
-    } else {
-      console.log("Recording stopped.");
-    }
-  };
-
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (inputValue.trim()) {
       console.log("Submitting goals:", inputValue);
-      // Here you would typically send the data to your backend
       alert(`Thank you! Your request for a strategy session has been submitted.`);
       setInputValue("");
     }
