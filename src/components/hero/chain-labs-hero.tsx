@@ -47,9 +47,6 @@ const ChainLabsHero = () => {
 			if (e.ctrlKey && e.code === "Space") {
 				e.preventDefault();
 				toggleRecording();
-				if (!isRecording)
-					SpeechRecognition.startListening({ continuous: true });
-				else SpeechRecognition.stopListening();
 			}
 		},
 		[inputValue, toggleRecording]
