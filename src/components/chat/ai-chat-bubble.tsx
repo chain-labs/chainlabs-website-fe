@@ -2,12 +2,23 @@
 
 import { useState, useRef, useEffect, FormEvent } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Bot, Minus, SendHorizontal, Calendar } from "lucide-react";
+import {
+	Bot,
+	Minus,
+	SendHorizontal,
+	Calendar,
+	Mic,
+	MicOff,
+	User,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useChat } from "@/hooks/use-chat";
 import { useGlobalStore } from "@/global-store";
+import SpeechRecognition, {
+	useSpeechRecognition,
+} from "react-speech-recognition";
 
 const conversationStarters = [
 	"Tell me more about your services",
@@ -18,29 +29,89 @@ const conversationStarters = [
 
 const AIChatBubble = () => {
 	const [isOpen, setIsOpen] = useState(false);
+	const [isRecording, setIsRecording] = useState(false);
 
 	// Progress bar state
 	const [progress, setProgress] = useState(0);
 	const [showBookCall, setShowBookCall] = useState(false);
 
 	const scrollRef = useRef<HTMLDivElement>(null);
+	const wasListeningRef = useRef(false);
 
 	// Use the chat hook for all message operations
 	const {
 		messages,
 		isThinking,
 		inputValue,
+		voiceInputValue,
 		hasMessages,
 		sendMessage,
 		setInputValue,
+		setVoiceInputValue,
 	} = useChat();
+
 	const showPersonalized = useGlobalStore((state) => state.showPersonalized);
 	const shouldShow = useGlobalStore((state) => state.canShowPersonalized());
+
+	const {
+		transcript,
+		listening,
+		resetTranscript,
+		browserSupportsSpeechRecognition,
+	} = useSpeechRecognition();
+
+	// Voice recording toggle
+	const toggleRecording = () => {
+		if (listening) {
+			SpeechRecognition.stopListening();
+			setIsRecording(false);
+		} else {
+			SpeechRecognition.startListening({ continuous: true });
+			setIsRecording(true);
+		}
+	};
+
+	// Handle voice recognition state changes (same logic as hero)
+	useEffect(() => {
+		// When listening starts, clear previous voice input
+		if (listening && !wasListeningRef.current) {
+			setVoiceInputValue("");
+			resetTranscript();
+		}
+
+		// While listening, update voice input value with live transcript
+		if (listening) {
+			setVoiceInputValue(transcript);
+		}
+
+		// When listening stops, merge voice into text input
+		if (!listening && wasListeningRef.current) {
+			const spokenText = transcript.trim();
+			if (spokenText) {
+				// Use functional update to avoid stale closure
+				setInputValue(
+					inputValue ? `${inputValue} ${spokenText}` : spokenText
+				);
+			}
+			// Clear voice input and transcript
+			setVoiceInputValue("");
+			resetTranscript();
+		}
+
+		// Update ref for next comparison
+		wasListeningRef.current = listening;
+		setIsRecording(listening);
+	}, [
+		listening,
+		transcript,
+		setInputValue,
+		setVoiceInputValue,
+		resetTranscript,
+	]);
 
 	// Initialize with a greeting when first opened
 	useEffect(() => {
 		if (isOpen && !hasMessages) {
-			// Default greeting if no chat history
 			setTimeout(() => {
 				const defaultGreeting = {
 					role: "assistant" as const,
@@ -48,9 +119,6 @@ const AIChatBubble = () => {
 						"Hi! I'm your AI assistant. How can I help you today?",
 					timestamp: new Date().toISOString(),
 				};
-
-				// For now, we'll add this directly to the global store
-				// In a real implementation, you might want to add a method to add system messages
 				const store = useGlobalStore.getState();
 				store.addChatMessage(defaultGreeting);
 			}, 1200);
@@ -110,11 +178,18 @@ const AIChatBubble = () => {
 			e.preventDefault();
 		}
 
-		const content = typeof e === "string" ? e : inputValue.trim();
+		const content =
+			typeof e === "string" ? e : (inputValue + voiceInputValue).trim();
 		if (!content) return;
 
+		// Clear voice input when submitting
+		setVoiceInputValue("");
 		// Use the sendMessage from the hook
 		sendMessage(content);
+	};
+
+	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setInputValue(e.target.value);
 	};
 
 	// Don't render if shouldn't show
@@ -298,25 +373,93 @@ const AIChatBubble = () => {
 								onSubmit={handleSendMessage}
 								className="flex items-center gap-2"
 							>
-								<Input
-									type="text"
-									value={inputValue}
-									onChange={(e) =>
-										setInputValue(e.target.value)
-									}
-									placeholder="Ask me anything..."
-									className="flex-1 bg-input"
-									aria-label="Chat input"
-								/>
+								<div className="flex-1 relative">
+									<Input
+										type="text"
+										value={inputValue + voiceInputValue}
+										onChange={handleInputChange}
+										placeholder="Ask me anything..."
+										className="flex-1 bg-input pr-12"
+										aria-label="Chat input"
+									/>
+									{/* Voice input indicator */}
+									{voiceInputValue && (
+										<div className="absolute right-12 top-1/2 -translate-y-1/2">
+											<motion.div
+												animate={{
+													opacity: [0.5, 1, 0.5],
+												}}
+												transition={{
+													duration: 1.5,
+													repeat: Infinity,
+													ease: "easeInOut",
+												}}
+												className="w-2 h-2 bg-red-500 rounded-full"
+											/>
+										</div>
+									)}
+								</div>
+
+								{/* Voice toggle button */}
+								{browserSupportsSpeechRecognition && (
+									<Button
+										type="button"
+										variant={
+											isRecording ? "default" : "outline"
+										}
+										size="icon"
+										onClick={toggleRecording}
+										aria-label={
+											isRecording
+												? "Stop recording"
+												: "Start recording"
+										}
+										className={cn(
+											"transition-colors",
+											isRecording &&
+												"bg-red-500 hover:bg-red-600"
+										)}
+									>
+										{isRecording ? (
+											<MicOff className="w-5 h-5" />
+										) : (
+											<Mic className="w-5 h-5" />
+										)}
+									</Button>
+								)}
+
 								<Button
 									type="submit"
 									size="icon"
-									disabled={!inputValue.trim()}
+									disabled={
+										!(inputValue + voiceInputValue).trim()
+									}
 									aria-label="Send message"
 								>
 									<SendHorizontal className="w-5 h-5" />
 								</Button>
 							</form>
+
+							{/* Recording status */}
+							{isRecording && (
+								<motion.div
+									initial={{ opacity: 0, y: 10 }}
+									animate={{ opacity: 1, y: 0 }}
+									exit={{ opacity: 0, y: 10 }}
+									className="mt-2 flex items-center gap-2 text-xs text-muted-foreground"
+								>
+									<motion.div
+										animate={{ scale: [1, 1.2, 1] }}
+										transition={{
+											duration: 1,
+											repeat: Infinity,
+											ease: "easeInOut",
+										}}
+										className="w-2 h-2 bg-red-500 rounded-full"
+									/>
+									Listening... (Ctrl+Space to toggle)
+								</motion.div>
+							)}
 						</footer>
 					</motion.div>
 				)}
@@ -383,34 +526,46 @@ const AIChatBubble = () => {
 
 // Updated MessageBubble component
 const MessageBubble = ({ message }: { message: any }) => {
-	const isAi = message.role === "ai";
-	return (
-		<motion.div
-			initial={{ opacity: 0, y: 10 }}
-			animate={{ opacity: 1, y: 0 }}
-			transition={{ duration: 0.3 }}
-			className={cn(
-				"flex items-end gap-2 w-full",
-				!isAi && "justify-end"
-			)}
-		>
-			{isAi && (
-				<div className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center bg-secondary">
-					<Bot className="w-5 h-5 text-primary" />
-				</div>
-			)}
-			<div
-				className={cn(
-					"px-3.5 py-2.5 rounded-2xl max-w-[85%] sm:max-w-[80%] text-sm leading-relaxed",
-					isAi
-						? "bg-secondary text-foreground rounded-bl-sm"
-						: "bg-primary text-primary-foreground rounded-br-sm"
-				)}
-			>
-				<p>{message.content}</p>
-			</div>
-		</motion.div>
-	);
+    const isAi = message.role === "ai" || message.role === "assistant";
+    const content = message.content || message.message || "";
+    
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className={cn(
+                "flex items-end gap-2 w-full",
+                !isAi && "justify-end"
+            )}
+        >
+            {/* AI Avatar */}
+            {isAi && (
+                <div className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center bg-secondary">
+                    <Bot className="w-5 h-5 text-primary" />
+                </div>
+            )}
+            
+            {/* Message Content */}
+            <div
+                className={cn(
+                    "px-3.5 py-2.5 rounded-2xl max-w-[85%] sm:max-w-[80%] text-sm leading-relaxed",
+                    isAi
+                        ? "bg-secondary text-foreground rounded-bl-sm"
+                        : "bg-primary text-primary-foreground rounded-br-sm"
+                )}
+            >
+                <p>{content}</p>
+            </div>
+
+            {/* User Avatar */}
+            {!isAi && (
+                <div className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center bg-primary">
+                    <User className="w-5 h-5 text-primary-foreground" />
+                </div>
+            )}
+        </motion.div>
+    );
 };
 
 // Typing Indicator Component
@@ -460,6 +615,3 @@ const TypingIndicator = () => (
 );
 
 export default AIChatBubble;
-
-// privacy policy
-// ai disclosure

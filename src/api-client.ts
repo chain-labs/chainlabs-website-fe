@@ -1,212 +1,437 @@
 const API_BASE_URL =
-    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+	process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
 class ApiClient {
-    // Helper to check if we're in browser environment
-    private isBrowser(): boolean {
-        return typeof window !== 'undefined' && typeof localStorage !== 'undefined';
-    }
+	// Helper to check if we're in browser environment
+	private isBrowser(): boolean {
+		return (
+			typeof window !== "undefined" && typeof localStorage !== "undefined"
+		);
+	}
 
-    // Safe localStorage access
-    private getStorageItem(key: string): string | null {
-        if (!this.isBrowser()) return null;
-        try {
-            return localStorage.getItem(key);
-        } catch (error) {
-            console.warn('localStorage access failed:', error);
-            return null;
-        }
-    }
+	// Safe localStorage access
+	private getStorageItem(key: string): string | null {
+		if (!this.isBrowser()) return null;
+		try {
+			return localStorage.getItem(key);
+		} catch (error) {
+			console.warn("localStorage access failed:", error);
+			return null;
+		}
+	}
 
-    private setStorageItem(key: string, value: string): void {
-        if (!this.isBrowser()) return;
-        try {
-            localStorage.setItem(key, value);
-        } catch (error) {
-            console.warn('localStorage write failed:', error);
-        }
-    }
+	private setStorageItem(key: string, value: string): void {
+		if (!this.isBrowser()) return;
+		try {
+			localStorage.setItem(key, value);
+		} catch (error) {
+			console.warn("localStorage write failed:", error);
+		}
+	}
 
-    private removeStorageItem(key: string): void {
-        if (!this.isBrowser()) return;
-        try {
-            localStorage.removeItem(key);
-        } catch (error) {
-            console.warn('localStorage removal failed:', error);
-        }
-    }
+	private removeStorageItem(key: string): void {
+		if (!this.isBrowser()) return;
+		try {
+			localStorage.removeItem(key);
+		} catch (error) {
+			console.warn("localStorage removal failed:", error);
+		}
+	}
 
-    private getAuthHeaders(): Record<string, string> {
-        const accessToken = this.getStorageItem("access_token");
-        return accessToken
-            ? {
-                    Authorization: `Bearer ${accessToken}`,
-                    "Content-Type": "application/json",
-              }
-            : {
-                    "Content-Type": "application/json",
-              };
-    }
+	private getAuthHeaders(): Record<string, string> {
+		const accessToken = this.getStorageItem("access_token");
+		return accessToken
+			? {
+					Authorization: `Bearer ${accessToken}`,
+					"Content-Type": "application/json",
+			  }
+			: {
+					"Content-Type": "application/json",
+			  };
+	}
 
-    private async handleResponse(response: Response) {
-        if (!response.ok) {
-            if (response.status === 401) {
-                // Token expired or invalid
-                this.removeStorageItem("access_token");
-                this.removeStorageItem("refresh_token");
-                throw new Error("AUTHENTICATION_FAILED");
-            }
+	private async handleResponse(response: Response) {
+		if (!response.ok) {
+			if (response.status === 401) {
+				// Token expired or invalid
+				this.removeStorageItem("access_token");
+				this.removeStorageItem("refresh_token");
+				throw new Error("AUTHENTICATION_FAILED");
+			}
 
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || `HTTP ${response.status}`);
-        }
+			const errorData = await response.json().catch(() => ({}));
+			throw new Error(errorData.message || `HTTP ${response.status}`);
+		}
 
-        return response.json();
-    }
+		return response.json();
+	}
 
-    // Initialize session - call this once on app startup
-    async initializeSession(): Promise<void> {
-        // Only run in browser
-        if (!this.isBrowser()) {
-            console.warn('initializeSession called on server side, skipping...');
-            return;
-        }
+	async startSession() {
+		const res = await fetch(`${API_BASE_URL}/api/auth/session`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+		});
+		const body = await this.handleResponse(res);
 
-        // Check if we already have tokens
-        const existingToken = this.getStorageItem("access_token");
-        if (existingToken) {
-            return; // Already authenticated
-        }
+		// Accept both {access_token,...} or {data:{access_token,...}}
+		const access = body?.data?.access_token ?? body?.access_token;
+		const refresh = body?.data?.refresh_token ?? body?.refresh_token;
 
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/auth/session`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-            });
+		if (!access) {
+			throw new Error("SESSION_INIT_FAILED");
+		}
+		this.setStorageItem("access_token", access);
+		if (refresh) this.setStorageItem("refresh_token", refresh);
 
-            if (!response.ok) {
-                throw new Error("Failed to create session");
-            }
+		return body;
+	}
 
-            const data = await response.json();
+	// Ensure we have a session before making API calls
+	async ensureSession() {
+		if (!this.isAuthenticated()) {
+			await this.startSession();
+		}
+	}
 
-            // Store tokens in localStorage
-            this.setStorageItem("access_token", data.access_token);
-            this.setStorageItem("refresh_token", data.refresh_token);
+	// Initialize session - call this once on app startup
+	async initializeSession(): Promise<void> {
+		// Only run in browser
+		if (!this.isBrowser()) {
+			console.warn(
+				"initializeSession called on server side, skipping..."
+			);
+			return;
+		}
 
-            console.log("Session initialized successfully");
-        } catch (error) {
-            console.error("Failed to initialize session:", error);
-            throw error;
-        }
-    }
+		// Check if we already have tokens
+		const existingToken = this.getStorageItem("access_token");
+		if (existingToken) {
+			return; // Already authenticated
+		}
 
-    // Helper method for authenticated requests
-    private async makeAuthenticatedRequest(
-        url: string,
-        options: RequestInit = {}
-    ) {
-        const response = await fetch(url, {
-            ...options,
-            headers: {
-                ...this.getAuthHeaders(),
-                ...options.headers,
-            },
-        });
+		try {
+			const response = await fetch(`${API_BASE_URL}/api/auth/session`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+			});
 
-        return this.handleResponse(response);
-    }
+			if (!response.ok) {
+				throw new Error("Failed to create session");
+			}
 
-    // Goal & Personalization endpoints
-    async submitGoal(input: string) {
-        return this.makeAuthenticatedRequest(`${API_BASE_URL}/api/goal`, {
-            method: "POST",
-            body: JSON.stringify({ input }),
-        });
-    }
+			const data = await response.json();
 
-    async clarifyGoal(clarification: string) {
-        return this.makeAuthenticatedRequest(`${API_BASE_URL}/api/clarify`, {
-            method: "POST",
-            body: JSON.stringify({ clarification }),
-        });
-    }
+			// Store tokens in localStorage
+			this.setStorageItem("access_token", data.access_token);
+			this.setStorageItem("refresh_token", data.refresh_token);
 
-    async getPersonalizedContent() {
-        return this.makeAuthenticatedRequest(
-            `${API_BASE_URL}/api/personalised`,
-            {
-                method: "GET",
-            }
-        );
-    }
+			console.log("Session initialized successfully");
+		} catch (error) {
+			console.error("Failed to initialize session:", error);
+			throw error;
+		}
+	}
 
-    // Progress & Missions endpoints
-    async getProgress() {
-        return this.makeAuthenticatedRequest(`${API_BASE_URL}/api/progress`, {
-            method: "GET",
-        });
-    }
+    
+	// Helper method for authenticated requests
+	private async makeAuthenticatedRequest(
+		url: string,
+		options: RequestInit = {}
+	) {
+		const response = await fetch(url, {
+			...options,
+			headers: {
+				...this.getAuthHeaders(),
+				...options.headers,
+			},
+		});
 
-    async completeMission(missionId: string, answer: string) {
-        return this.makeAuthenticatedRequest(
-            `${API_BASE_URL}/api/mission/complete`,
-            {
-                method: "POST",
-                body: JSON.stringify({
-                    mission_id: missionId,
-                    artifact: { answer },
-                }),
-            }
-        );
-    }
+		return this.handleResponse(response);
+	}
 
-    async checkUnlockStatus() {
-        return this.makeAuthenticatedRequest(
-            `${API_BASE_URL}/api/unlock-status`,
-            {
-                method: "GET",
-            }
-        );
-    }
+	// Goal & Personalization endpoints
+	async submitGoal(input: string) {
+		type GoalResponse = {
+			assistantMessage: {
+				message: string;
+				datetime: string;
+			};
+			history: [
+				{
+					role: "user" | "assistant";
+					message: string;
+					datetime: string;
+				}
+			];
+		};
+		const response: GoalResponse = await this.makeAuthenticatedRequest(
+			`${API_BASE_URL}/api/goal`,
+			{
+				method: "POST",
+				body: JSON.stringify({ input }),
+			}
+		);
+		return {
+			role: "assistant",
+			message: response.assistantMessage.message,
+			timestamp: new Date(
+				response.assistantMessage.datetime
+			).toISOString(),
+		};
+	}
 
-    // Session Management
-    async getFullSession() {
-        return this.makeAuthenticatedRequest(`${API_BASE_URL}/api/session`, {
-            method: "GET",
-        });
-    }
+	async clarifyGoal(clarification: string) {
+		type ClarificationResponse = {
+			goal: {
+				description: string;
+				category: string;
+				priority: string;
+			};
+			missions: [
+				{
+					id: string;
+					title: string;
+					points: number;
+					status: string;
+				}
+			];
+			headline: string;
+			recommended_case_studies: [
+				{
+					id: string;
+					title: string;
+					summary: string;
+				}
+			];
+		};
+		const response: ClarificationResponse =
+			await this.makeAuthenticatedRequest(`${API_BASE_URL}/api/clarify`, {
+				method: "POST",
+				body: JSON.stringify({ clarification }),
+			});
 
-    // Chat endpoint
-    async chatWithAssistant(message: string, context: any) {
-        return this.makeAuthenticatedRequest(`${API_BASE_URL}/api/chat`, {
-            method: "POST",
-            body: JSON.stringify({ message, context }),
-        });
-    }
+		return response;
+	}
 
-    // Utility method to check if user is authenticated
-    isAuthenticated(): boolean {
-        if (!this.isBrowser()) return false;
-        return !!this.getStorageItem("access_token");
-    }
+	async getPersonalizedContent() {
+		type PersonalizedContentResponse = {
+			headline: string;
+			goal: {
+				description: string;
+				category: string;
+				priority: string;
+			};
+			missions: [
+				{
+					id: string;
+					title: string;
+					points: number;
+					status: string;
+				}
+			];
+			recommended_case_studies: [
+				{
+					id: string;
+					title: string;
+					summary: string;
+				}
+			];
+		};
+		const response: PersonalizedContentResponse =
+			await this.makeAuthenticatedRequest(
+				`${API_BASE_URL}/api/personalised`,
+				{
+					method: "GET",
+				}
+			);
+		return response;
+	}
 
-    // Utility method to clear authentication
-    clearAuth(): void {
-        if (!this.isBrowser()) return;
-        this.removeStorageItem("access_token");
-        this.removeStorageItem("refresh_token");
-    }
+	// Progress & Missions endpoints
+	async getProgress() {
+		type ProgressResponse = {
+			pointsTotal: number;
+			missions: [
+				{
+					id: string;
+					status: string;
+					points: number;
+				}
+			];
+			callUnlocked: boolean;
+		};
+		const response: ProgressResponse = await this.makeAuthenticatedRequest(
+			`${API_BASE_URL}/api/progress`,
+			{
+				method: "GET",
+			}
+		);
+		return response;
+	}
 
-    // Get current access token (useful for debugging)
-    getAccessToken(): string | null {
-        return this.getStorageItem("access_token");
-    }
+	async completeMission(missionId: string, answer: string) {
+		type CompleteMissionResponse = {
+			points_awarded: number;
+			points_total: number;
+			call_unlocked: boolean;
+			next_mission: {
+				id: string;
+				title: string;
+				points: number;
+				status: string;
+			};
+		};
+		const response: CompleteMissionResponse =
+			await this.makeAuthenticatedRequest(
+				`${API_BASE_URL}/api/mission/complete`,
+				{
+					method: "POST",
+					body: JSON.stringify({
+						mission_id: missionId,
+						artifact: { answer },
+					}),
+				}
+			);
+		return response;
+	}
 
-    // Get current refresh token (useful for debugging) 
-    getRefreshToken(): string | null {
-        return this.getStorageItem("refresh_token");
-    }
+	async checkUnlockStatus() {
+		type UnlockStatusResponse = {
+			call_unlocked: boolean;
+		};
+		const response: UnlockStatusResponse =
+			await this.makeAuthenticatedRequest(
+				`${API_BASE_URL}/api/unlock-status`,
+				{
+					method: "GET",
+				}
+			);
+		return response;
+	}
+
+	// Session Management
+	async getFullSession() {
+		type SessionResponse = {
+			goal: {
+				description: string;
+				category: string;
+				priority: string;
+			};
+			missions: [
+				{
+					id: string;
+					status: string;
+					points: number;
+				}
+			];
+			points_total: number;
+			call_unlocked: boolean;
+		};
+		const response: SessionResponse = await this.makeAuthenticatedRequest(
+			`${API_BASE_URL}/api/session`,
+			{
+				method: "GET",
+			}
+		);
+
+		return response;
+	}
+
+	// Chat endpoint
+	async chatWithAssistant(
+		message: string,
+		context: {
+			page: string;
+			section: string;
+			metadata: {
+				additionalProp1: any;
+			};
+		}
+	): Promise<{
+		role: "user" | "assistant";
+		message: string;
+		timestamp: string;
+	}> {
+		type ChatResponse = {
+			reply: string;
+			history: [
+				{
+					role: "user" | "assistant";
+					message: string;
+					timestamp: string;
+				}
+			];
+			followUpMissions: [
+				{
+					id: string;
+					title: string;
+					points: number;
+					status: string;
+				}
+			];
+			updatedProgress: {
+				pointsTotal: number;
+				missions: [
+					{
+						id: string;
+						status: string;
+						points: number;
+					}
+				];
+				callUnlocked: true;
+			};
+			suggestedRead: [
+				{
+					id: string;
+					title: string;
+					summary: string;
+				}
+			];
+			navigate: {
+				page: string;
+				section: string;
+				metadata: {
+					additionalProp1: {};
+				};
+			};
+		};
+		const response: ChatResponse = await this.makeAuthenticatedRequest(
+			`${API_BASE_URL}/api/chat`,
+			{
+				method: "POST",
+				body: JSON.stringify({ message, context }),
+			}
+		);
+		const lastMessage = response.history[response.history.length - 1];
+		return {
+			role: lastMessage.role,
+			message: lastMessage.message,
+			timestamp: lastMessage.timestamp,
+		};
+	}
+
+	// Utility method to check if user is authenticated
+	isAuthenticated(): boolean {
+		if (!this.isBrowser()) return false;
+		return !!this.getStorageItem("access_token");
+	}
+
+	// Utility method to clear authentication
+	clearAuth(): void {
+		if (!this.isBrowser()) return;
+		this.removeStorageItem("access_token");
+		this.removeStorageItem("refresh_token");
+	}
+
+	// Get current access token (useful for debugging)
+	getAccessToken(): string | null {
+		return this.getStorageItem("access_token");
+	}
+
+	// Get current refresh token (useful for debugging)
+	getRefreshToken(): string | null {
+		return this.getStorageItem("refresh_token");
+	}
 }
 
 export const apiClient = new ApiClient();

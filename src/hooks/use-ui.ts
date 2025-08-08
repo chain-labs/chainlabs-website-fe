@@ -1,14 +1,20 @@
 import { useGlobalStore } from "@/global-store";
-import SpeechRecognition from "react-speech-recognition";
+import SpeechRecognition, {
+	useSpeechRecognition,
+} from "react-speech-recognition";
 
 export const useUI = () => {
 	const store = useGlobalStore();
+	const { resetTranscript } = useSpeechRecognition();
 
 	const toggleRecording = () => {
-		if (!store.isRecording)
-			SpeechRecognition.startListening({ continuous: true });
-		else SpeechRecognition.stopListening();
 		store.toggleRecording();
+		if (store.isRecording) {
+			SpeechRecognition.stopListening();
+			resetTranscript();
+		} else {
+			SpeechRecognition.startListening({ continuous: true });
+		}
 	};
 
 	return {
@@ -21,6 +27,7 @@ export const useUI = () => {
 		setIsFocused: store.setIsFocused,
 		setIsRecording: store.setIsRecording,
 		toggleRecording: toggleRecording,
+		stopRecording: store.stopRecording,
 		setShowPersonalized: store.setShowPersonalized,
 		setSidebarOpen: store.setSidebarOpen,
 		toggleSidebar: store.toggleSidebar,

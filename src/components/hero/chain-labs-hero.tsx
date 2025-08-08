@@ -15,18 +15,27 @@ import SpeechRecognition, {
 
 const ChainLabsHero = () => {
 	const messagesEndRef = useRef<HTMLDivElement>(null);
+	const wasListeningRef = useRef(false);
 
 	// Global state hooks
 	const {
 		messages,
 		isThinking,
 		inputValue,
+		voiceInputValue,
 		hasMessages,
 		sendMessage,
 		setInputValue,
+		setVoiceInputValue,
 	} = useChat();
 
-	const { isFocused, isRecording, setIsFocused, toggleRecording } = useUI();
+	const {
+		isFocused,
+		isRecording,
+		setIsFocused,
+		toggleRecording,
+		stopRecording,
+	} = useUI();
 
 	const scrollToBottom = useCallback(() => {
 		messagesEndRef.current?.scrollIntoView({
@@ -49,23 +58,31 @@ const ChainLabsHero = () => {
 				toggleRecording();
 			}
 		},
-		[inputValue, toggleRecording]
+		[inputValue, toggleRecording] 
 	);
 
 	const handleSubmit = useCallback(
 		async (e: React.FormEvent) => {
 			e.preventDefault();
-			const trimmedInput = inputValue.trim();
-			if (trimmedInput) {
-				sendMessage(trimmedInput);
+
+			// Combine text input and voice input
+			const combinedInput = (inputValue + voiceInputValue).trim();
+
+			if (combinedInput) {
+				// Clear voice input when submitting
+				setVoiceInputValue("");
+				await sendMessage(combinedInput);
 			}
 		},
-		[inputValue, sendMessage]
+		[inputValue, voiceInputValue, sendMessage, setVoiceInputValue]
 	);
 
 	const handleInputChange = useCallback(
 		(e: React.ChangeEvent<HTMLTextAreaElement>) => {
 			setInputValue(e.target.value);
+			SpeechRecognition.stopListening();
+			resetTranscript();
+			stopRecording();
 		},
 		[setInputValue]
 	);
@@ -84,13 +101,42 @@ const ChainLabsHero = () => {
 		return <span>Browser doesn't support speech recognition.</span>;
 	}
 
+	// Handle voice recognition state changes
 	useEffect(() => {
-		if (listening) {
-			handleInputChange({
-				target: { value: inputValue + transcript },
-			} as React.ChangeEvent<HTMLTextAreaElement>);
+		// When listening starts, clear previous voice input
+		if (listening && !wasListeningRef.current) {
+			setVoiceInputValue("");
+			resetTranscript();
 		}
-	}, [listening, transcript, handleInputChange]);
+
+		// While listening, update voice input value with live transcript
+		if (listening) {
+			setVoiceInputValue(transcript);
+		}
+
+		// When listening stops, merge voice into text input
+		if (!listening && wasListeningRef.current) {
+			const spokenText = transcript.trim();
+			if (spokenText) {
+				// Use functional update to avoid stale closure
+				setInputValue(
+					inputValue ? `${inputValue} ${spokenText}` : spokenText
+				);
+			}
+			// Clear voice input and transcript
+			setVoiceInputValue("");
+			resetTranscript();
+		}
+
+		// Update ref for next comparison
+		wasListeningRef.current = listening;
+	}, [
+		listening,
+		transcript,
+		setInputValue,
+		setVoiceInputValue,
+		resetTranscript,
+	]);
 
 	// Original hero/chat UI
 	return (
@@ -273,7 +319,9 @@ const ChainLabsHero = () => {
 										className="space-y-4"
 									>
 										<InputContainer
-											inputValue={inputValue}
+											inputValue={
+												inputValue + voiceInputValue
+											}
 											isFocused={isFocused}
 											isRecording={isRecording}
 											hasMessages={hasMessages}

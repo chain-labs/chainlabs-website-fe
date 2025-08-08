@@ -36,7 +36,7 @@ const ChatBubble = React.memo(({ message }: { message: ChatMessage }) => {
 			>
 				<p
 					className={cn(
-						"text-sm leading-relaxed",
+						"text-sm leading-relaxed w-full break-words whitespace-pre-wrap",
 						isUser ? "text-primary-foreground" : "text-foreground"
 					)}
 				>

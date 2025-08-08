@@ -9,7 +9,7 @@ const RecordingStatus = React.memo(({ isRecording }: { isRecording: boolean }) =
     )}
     {isRecording 
       ? "Recording your business requirements..." 
-      : "Describe your business needs or press space to record."
+      : "Describe your business needs or press ctrl + space to record."
     }
   </p>
 ));
