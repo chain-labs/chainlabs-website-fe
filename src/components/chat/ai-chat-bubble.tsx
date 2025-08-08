@@ -577,7 +577,7 @@ const MessageBubble = ({
 						: "bg-primary text-primary-foreground rounded-br-sm"
 				)}
 			>
-				<p>
+				<p className="leading-relaxed w-full break-words whitespace-pre-wrap">
 					{!isAi ? (
 						message.message
 					) : shouldAnimate ? (
