@@ -24,6 +24,7 @@ const ChainLabsHero = () => {
 		inputValue,
 		voiceInputValue,
 		hasMessages,
+		isThisLatestAssistantMessage,
 		sendMessage,
 		setInputValue,
 		setVoiceInputValue,
@@ -58,7 +59,7 @@ const ChainLabsHero = () => {
 				toggleRecording();
 			}
 		},
-		[inputValue, toggleRecording] 
+		[inputValue, toggleRecording]
 	);
 
 	const handleSubmit = useCallback(
@@ -281,10 +282,15 @@ const ChainLabsHero = () => {
 									className="flex-1 mb-6"
 								>
 									<div className="max-h-[55vh] overflow-y-auto space-y-4 px-2 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
-										{messages.map((message) => (
+										{messages.map((message, index) => (
 											<ChatBubble
 												key={message.timestamp}
 												message={message}
+												isLatest={
+													index ===
+														messages.length - 1 &&
+													isThisLatestAssistantMessage
+												}
 											/>
 										))}
 

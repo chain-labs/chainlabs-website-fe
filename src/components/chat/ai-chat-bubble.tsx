@@ -19,6 +19,7 @@ import { useGlobalStore } from "@/global-store";
 import SpeechRecognition, {
 	useSpeechRecognition,
 } from "react-speech-recognition";
+import TextGenerateEffect from "../ui/text-generate-effect";
 
 const conversationStarters = [
 	"Tell me more about your services",
@@ -45,6 +46,7 @@ const AIChatBubble = () => {
 		inputValue,
 		voiceInputValue,
 		hasMessages,
+		isThisLatestAssistantMessage,
 		sendMessage,
 		setInputValue,
 		setVoiceInputValue,
@@ -276,6 +278,10 @@ const AIChatBubble = () => {
 								<MessageBubble
 									key={`message-${index}-${message.timestamp}`}
 									message={message}
+									isLatest={
+										index === messages.length - 1 &&
+										isThisLatestAssistantMessage
+									}
 								/>
 							))}
 
@@ -525,47 +531,71 @@ const AIChatBubble = () => {
 };
 
 // Updated MessageBubble component
-const MessageBubble = ({ message }: { message: any }) => {
-    const isAi = message.role === "ai" || message.role === "assistant";
-    const content = message.content || message.message || "";
-    
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className={cn(
-                "flex items-end gap-2 w-full",
-                !isAi && "justify-end"
-            )}
-        >
-            {/* AI Avatar */}
-            {isAi && (
-                <div className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center bg-secondary">
-                    <Bot className="w-5 h-5 text-primary" />
-                </div>
-            )}
-            
-            {/* Message Content */}
-            <div
-                className={cn(
-                    "px-3.5 py-2.5 rounded-2xl max-w-[85%] sm:max-w-[80%] text-sm leading-relaxed",
-                    isAi
-                        ? "bg-secondary text-foreground rounded-bl-sm"
-                        : "bg-primary text-primary-foreground rounded-br-sm"
-                )}
-            >
-                <p>{content}</p>
-            </div>
+const MessageBubble = ({
+	message,
+	isLatest,
+}: {
+	message: any;
+	isLatest: boolean;
+}) => {
+	const isAi = message.role === "ai" || message.role === "assistant";
+	const content = message.content || message.message || "";
+	const hasAnimated = useRef(false);
+	const [shouldAnimate, setShouldAnimate] = useState(false);
 
-            {/* User Avatar */}
-            {!isAi && (
-                <div className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center bg-primary">
-                    <User className="w-5 h-5 text-primary-foreground" />
-                </div>
-            )}
-        </motion.div>
-    );
+	// Only animate if this is the latest assistant message and hasn't animated yet
+	useEffect(() => {
+		if (isAi && isLatest && !hasAnimated.current) {
+			setShouldAnimate(true);
+			hasAnimated.current = true;
+		}
+	}, [isAi, isLatest]);
+
+	return (
+		<motion.div
+			initial={{ opacity: 0, y: 10 }}
+			animate={{ opacity: 1, y: 0 }}
+			transition={{ duration: 0.3 }}
+			className={cn(
+				"flex items-end gap-2 w-full",
+				!isAi && "justify-end"
+			)}
+		>
+			{/* AI Avatar */}
+			{isAi && (
+				<div className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center bg-secondary">
+					<Bot className="w-5 h-5 text-primary" />
+				</div>
+			)}
+
+			{/* Message Content */}
+			<div
+				className={cn(
+					"px-3.5 py-2.5 rounded-2xl max-w-[85%] sm:max-w-[80%] text-sm leading-relaxed",
+					isAi
+						? "bg-secondary text-foreground rounded-bl-sm"
+						: "bg-primary text-primary-foreground rounded-br-sm"
+				)}
+			>
+				<p>
+					{!isAi ? (
+						message.message
+					) : shouldAnimate ? (
+						<TextGenerateEffect text={message.message} />
+					) : (
+						message.message
+					)}
+				</p>
+			</div>
+
+			{/* User Avatar */}
+			{!isAi && (
+				<div className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center bg-primary">
+					<User className="w-5 h-5 text-primary-foreground" />
+				</div>
+			)}
+		</motion.div>
+	);
 };
 
 // Typing Indicator Component

@@ -1,15 +1,25 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { Bot, User } from "lucide-react";
 import { ChatMessage } from "@/global-store";
+import TextGenerateEffect from "../ui/text-generate-effect";
 
 // Memoized components to prevent unnecessary re-renders
-const ChatBubble = React.memo(({ message }: { message: ChatMessage }) => {
+const ChatBubble = React.memo(({ message, isLatest }: { message: ChatMessage, isLatest: boolean }) => {
 	const isUser = message.role === "user";
+	const hasAnimated = React.useRef(false);
+	const [shouldAnimate, setShouldAnimate] = React.useState(false);
 
+	// Only animate if this is the latest assistant message and hasn't animated yet
+	useEffect(() => {
+		if (!isUser && isLatest && !hasAnimated.current) {
+			setShouldAnimate(true);
+			hasAnimated.current = true;
+		}
+	}, [isUser, isLatest]);
 	return (
 		<motion.div
 			initial={{ opacity: 0, y: 15, scale: 0.98 }}
@@ -40,7 +50,13 @@ const ChatBubble = React.memo(({ message }: { message: ChatMessage }) => {
 						isUser ? "text-primary-foreground" : "text-foreground"
 					)}
 				>
-					{message.message}
+					{isUser ? (
+						message.message
+					) : shouldAnimate ? (
+						<TextGenerateEffect text={message.message} />
+					) : (
+						message.message
+					)}
 				</p>
 			</div>
 
