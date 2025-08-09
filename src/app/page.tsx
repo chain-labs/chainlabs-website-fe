@@ -12,6 +12,8 @@ import { ResponsiveGridCasestudies } from "@/components/casestudies/responsive-g
 import { BookCallSection } from "@/components/book/book-a-call";
 import { motion } from "motion/react";
 import { useGlobalStore } from "@/global-store";
+import { ProcessSection } from "@/components/process/process-section";
+import { OurMissions } from "@/components/missions/missions-section";
 
 export default function Home() {
 	const [showSplash, setShowSplash] = useState(true);
@@ -48,8 +50,10 @@ export default function Home() {
 			<div className="w-full">
 				{showPersonalized ? (
 					<div className="flex flex-col items-center justify-center pt-8">
+						<ProcessSection />
 						<ScrollingCarouselTestimonials />
 						<ResponsiveGridCasestudies />
+						<OurMissions />
 						<BookCallSection />
 					</div>
 				) : (
