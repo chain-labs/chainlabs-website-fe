@@ -26,6 +26,27 @@ export interface ChatAPIResponse extends APIResponse {
   }
 }
 
+// New: API wire shape for personalized content
+export interface PersonalizedContentResponse {
+  headline: string
+  goal: {
+    description: string
+    category: string
+    priority: string
+  }
+  missions: {
+    id: string
+    title: string
+    points: number
+    status: string
+  }[]
+  recommended_case_studies: {
+    id: string
+    title: string
+    summary: string
+  }[]
+}
+
 export interface UserAPIRequest {
   profile: Partial<UserProfile>
 }

@@ -12,6 +12,7 @@ import {
   Rocket,
   Zap,
 } from "lucide-react";
+import usePersonalized from "@/hooks/use-personalized";
 
 interface ServerMission {
   id: string;
@@ -183,15 +184,27 @@ const MissionCard = ({
   );
 };
 
+
 export const OurMissions = () => {
-  const totalPoints = missionsData.reduce(
-    (sum, mission) => sum + mission.points,
-    0
-  );
+  const { data, isLoading, error, refresh } = usePersonalized(); // added
+
+  // Prefer personalized missions; fallback to sample
+  const missions: ServerMission[] = React.useMemo(() => {
+    const list = data?.missions ?? [];
+    if (!list.length) return missionsData;
+    return list.map((m) => ({
+      id: m.id,
+      title: m.title,
+      points: typeof m.points === "number" ? m.points : 0,
+      // Personalized only returns 'pending' | 'completed' — keep as-is
+      status: (m.status as ServerMission["status"]) ?? "pending",
+    }));
+  }, [data]);
+
+  const totalPoints = missions.reduce((sum, mission) => sum + mission.points, 0);
 
   return (
     <section className="relative py-24 overflow-hidden">
-
       <div className="relative z-10 container max-w-7xl mx-auto px-4 md:px-6">
         {/* Header */}
         <motion.div
@@ -202,19 +215,50 @@ export const OurMissions = () => {
           className="text-center mb-12 md:mb-16"
         >
           <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
-            Your{" "}
-            <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              Missions
-            </span>
+            {data?.headline ? (
+              <>
+                Your{" "}
+                <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  {data.headline}
+                </span>
+              </>
+            ) : (
+              <>
+                Your{" "}
+                <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  Missions
+                </span>
+              </>
+            )}
           </h2>
           <p className="mt-3 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
-            Track your AI transformation progress and earn rewards for every milestone.
+            {data?.goal?.description ??
+              "Track your AI transformation progress and earn rewards for every milestone."}
           </p>
+
+          {/* Status UI */}
+          {isLoading && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              Loading your missions…
+            </p>
+          )}
+          {error && (
+            <div className="mt-2 flex items-center justify-center gap-3">
+              <p className="text-xs text-destructive/90">{error}</p>
+              <button
+                type="button"
+                onClick={() => void refresh()}
+                className="text-xs underline text-primary"
+              >
+                Retry
+              </button>
+            </div>
+          )}
         </motion.div>
 
         {/* Mission List */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-          {missionsData.map((mission, index) => (
+          {missions.map((mission, index) => (
             <MissionCard key={mission.id} mission={mission} index={index} />
           ))}
         </div>

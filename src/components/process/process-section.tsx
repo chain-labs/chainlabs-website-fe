@@ -3,6 +3,7 @@
 import React from "react";
 import { motion } from "motion/react";
 import { Search, Lightbulb, Wrench, Code, CheckCircle } from "lucide-react";
+import { usePersonalized } from "@/hooks/use-personalized"; // added
 
 const processSteps = [
 	{
@@ -48,6 +49,14 @@ const processSteps = [
 ];
 
 export const ProcessSection = () => {
+	// Fetch and hydrate personalized data (headline, goal, missions, case studies)
+	const { data, isLoading, error, refresh } = usePersonalized();
+
+	const title = data?.headline ?? "Our Process";
+	const subtitle =
+		data?.goal?.description ??
+		"A refined methodology for delivering exceptional AI solutions";
+
 	return (
 		<section className="relative py-24">
 			<div className="container mx-auto px-6 max-w-6xl">
@@ -60,12 +69,32 @@ export const ProcessSection = () => {
 					className="text-center mb-14"
 				>
 					<h2 className="text-3xl md:text-4xl font-medium text-foreground tracking-tight">
-						Our Process
+						{title}
 					</h2>
 					<p className="mt-3 text-muted-foreground text-base md:text-lg">
-						A refined methodology for delivering exceptional AI
-						solutions
+						{subtitle}
 					</p>
+
+					{/* Lightweight status UI */}
+					{isLoading && (
+						<p className="mt-2 text-xs text-muted-foreground">
+							Loading personalized content…
+						</p>
+					)}
+					{error && (
+						<div className="mt-2 flex items-center justify-center gap-3">
+							<p className="text-xs text-destructive/90">
+								{error}
+							</p>
+							<button
+								type="button"
+								onClick={() => void refresh()}
+								className="text-xs underline text-primary"
+							>
+								Retry
+							</button>
+						</div>
+					)}
 				</motion.div>
 
 				{/* Grid */}
