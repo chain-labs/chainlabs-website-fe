@@ -14,6 +14,7 @@ import { motion } from "motion/react";
 import { useGlobalStore } from "@/global-store";
 import { ProcessSection } from "@/components/process/process-section";
 import { OurMissions } from "@/components/missions/missions-section";
+import InitialLoadingScreen from "@/components/ui/initial-loading-screen";
 
 export default function Home() {
 	const [showSplash, setShowSplash] = useState(true);
@@ -36,7 +37,7 @@ export default function Home() {
 		return () => window.removeEventListener("scroll", handleScroll);
 	}, []);
 
-	if (showPersonalized && showSplash) {
+	if (showSplash || showPersonalized) {
 		return <SplashScreen onComplete={handleSplashComplete} />;
 	}
 

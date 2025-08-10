@@ -79,7 +79,7 @@ const InputContainer = React.memo(
 			<div className="relative w-full group">
 				<div
 					className={cn(
-						"relative w-full rounded-2xl bg-surface/50 backdrop-blur-sm border transition-all duration-300",
+						"relative w-full rounded-2xl bg-surface/50 backdrop-blur-lg border transition-all duration-300",
 						"shadow-[0_8px_30px_rgb(0,0,0,0.08),0_2px_8px_rgb(0,0,0,0.04)]",
 						isFocused
 							? "border-primary shadow-[0_0_0_1px_rgb(var(--primary)),0_8px_30px_rgb(0,0,0,0.12)]"
@@ -104,7 +104,7 @@ const InputContainer = React.memo(
                         autoCorrect="on"
                         inputMode="text"
                         className={cn(
-                            "w-full bg-transparent border-0 rounded-2xl text-base resize-none focus-visible:ring-0 focus-visible:ring-offset-0 text-text-primary placeholder:text-muted-foreground leading-relaxed",
+                            "w-full bg-black/10 backdrop-blur-xl border-0 rounded-2xl text-base resize-none focus-visible:ring-0 focus-visible:ring-offset-0 text-text-primary placeholder:text-muted-foreground leading-relaxed",
                             // Mobile friendly padding/heights + scroll when tall
                             isMobile
                                 ? "p-4 pb-20 min-h-[52px] max-h-[40vh] overflow-y-auto"

@@ -13,6 +13,7 @@ import SpeechRecognition, {
 	useSpeechRecognition,
 } from "react-speech-recognition";
 import Orb from "@/components/ui/orb";
+import { GradientBars } from "../ui/gradient-bars";
 
 const ChainLabsHero = () => {
 	const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -146,15 +147,15 @@ const ChainLabsHero = () => {
 			{/* Background Elements */}
 			<div className="absolute inset-0 overflow-hidden">
 				{/* Main spherical gradient */}
-				<motion.div
+				{/* <motion.div
 					initial={{ opacity: 0, scale: 0.8 }}
 					animate={{ opacity: 1, scale: 1 }}
 					transition={{ duration: 1.2, ease: "easeOut" }}
 					className="absolute left-1/2 top-[15%] size-80 -translate-x-1/2 rounded-full bg-gradient-to-br from-primary/15 via-primary/25 to-primary/35 blur-3xl"
-				/>
+				/> */}
 
 				{/* Secondary accent orbs */}
-				<motion.div
+				{/* <motion.div
 					initial={{ opacity: 0, x: -100 }}
 					animate={{ opacity: 1, x: 0 }}
 					transition={{ duration: 1.5, ease: "easeOut", delay: 0.3 }}
@@ -166,7 +167,9 @@ const ChainLabsHero = () => {
 					animate={{ opacity: 1, x: 0 }}
 					transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
 					className="absolute right-[15%] top-[25%] size-20 rounded-full bg-gradient-to-l from-primary/12 to-transparent blur-xl"
-				/>
+				/> */}
+
+				<GradientBars />
 
 				{/* Grid pattern overlay */}
 				<div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_1px,hsl(var(--muted))_1px)] bg-[length:40px_40px] opacity-[0.015]" />
@@ -195,7 +198,7 @@ const ChainLabsHero = () => {
 					)}
 				</AnimatePresence>
 				{/* Floating code elements - only show when no messages */}
-				{!hasMessages && (
+				{hasMessages && (
 					<div className="absolute inset-0 overflow-hidden pointer-events-none">
 						<motion.div
 							initial={{ opacity: 0, y: 50 }}
@@ -244,7 +247,7 @@ const ChainLabsHero = () => {
 					<div className="w-full max-w-4xl mx-auto flex flex-col">
 						{/* Hero Text - Only show when no messages */}
 						<AnimatePresence mode="wait">
-							{!hasMessages && (
+							{hasMessages && (
 								<motion.div
 									key="hero-text"
 									initial={{ opacity: 0, y: 20 }}
@@ -293,7 +296,7 @@ const ChainLabsHero = () => {
 
 						{/* Chat Messages */}
 						<AnimatePresence>
-							{hasMessages && (
+							{!hasMessages && (
 								<motion.div
 									key="chat-messages"
 									initial={{ opacity: 0, height: 0 }}
