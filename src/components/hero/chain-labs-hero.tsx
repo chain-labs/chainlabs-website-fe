@@ -198,7 +198,7 @@ const ChainLabsHero = () => {
 					)}
 				</AnimatePresence>
 				{/* Floating code elements - only show when no messages */}
-				{hasMessages && (
+				{!hasMessages && (
 					<div className="absolute inset-0 overflow-hidden pointer-events-none">
 						<motion.div
 							initial={{ opacity: 0, y: 50 }}
@@ -247,7 +247,7 @@ const ChainLabsHero = () => {
 					<div className="w-full max-w-4xl mx-auto flex flex-col">
 						{/* Hero Text - Only show when no messages */}
 						<AnimatePresence mode="wait">
-							{hasMessages && (
+							{!hasMessages && (
 								<motion.div
 									key="hero-text"
 									initial={{ opacity: 0, y: 20 }}
@@ -296,7 +296,7 @@ const ChainLabsHero = () => {
 
 						{/* Chat Messages */}
 						<AnimatePresence>
-							{!hasMessages && (
+							{hasMessages && (
 								<motion.div
 									key="chat-messages"
 									initial={{ opacity: 0, height: 0 }}
