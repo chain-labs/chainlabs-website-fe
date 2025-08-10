@@ -84,11 +84,7 @@ interface SessionActions {
 	// Progress
 	setPointsTotal: (points: number) => void;
 	setCallUnlocked: (unlocked: boolean) => void;
-	updateProgress: (progress: {
-		points_total: number;
-		missions: MissionStatus[];
-		call_unlocked: boolean;
-	}) => void;
+	updateProgress: (progress: any) => void;
 
 	// Chat
 	addChatMessage: (message: ChatMessage) => void;
@@ -177,11 +173,11 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 			setCallUnlocked: (callUnlocked) => set({ callUnlocked }),
 			updateProgress: (progress) =>
 				set((state) => ({
-					pointsTotal: progress.points_total,
-					callUnlocked: progress.call_unlocked,
+					pointsTotal: progress.pointsTotal,
+					callUnlocked: progress.callUnlocked,
 					missions: state.missions.map((mission) => {
 						const updated = progress.missions.find(
-							(m) => m.id === mission.id
+							(m: any) => m.id === mission.id
 						);
 						return updated
 							? { ...mission, status: updated.status }
