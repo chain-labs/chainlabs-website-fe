@@ -46,46 +46,16 @@ export const useChat = () => {
 			try {
 				let response;
 
-				// Check if this is the first user message (goal vs chat)
-				const userMessages = store.chatHistory.filter(
-					(msg) => msg.role === "user"
-				);
-				const isFirstMessage = userMessages.length === 1; // We just added one, so check if it's the only one
+				console.log("Sending first message to /api/goal");
+				response = await apiClient.submitGoal(content);
 
-				if (isFirstMessage) {
-					// First message goes to /api/goal
-					console.log("Sending first message to /api/goal");
-					response = await apiClient.submitGoal(content);
-
-					// For goal endpoint, response is already formatted correctly
-					const assistantMessage = {
-						role: "assistant" as const,
-						message: response.message || "I'm here to help.",
-						timestamp:
-							response.timestamp || new Date().toISOString(),
-					};
-					store.addChatMessage(assistantMessage);
-				} else {
-					// Subsequent messages go to /api/chat
-					console.log("Sending message to /api/chat");
-					const chatResponse = await apiClient.chatWithAssistant(
-						content,
-						context
-					);
-
-					// For chat endpoint, response is already formatted correctly
-					const assistantMessage = {
-						role: "assistant" as const,
-						message: chatResponse.message || "I'm here to help.",
-						timestamp:
-							chatResponse.timestamp || new Date().toISOString(),
-					};
-					store.addChatMessage(assistantMessage);
-
-					// Handle additional data from chat response if needed
-					// Note: The full chat response contains more data that could be used
-					// for missions, progress updates, etc.
-				}
+				// For goal endpoint, response is already formatted correctly
+				const assistantMessage = {
+					role: "assistant" as const,
+					message: response.message || "I'm here to help.",
+					timestamp: response.timestamp || new Date().toISOString(),
+				};
+				store.addChatMessage(assistantMessage);
 
 				store.setIsThinking(false);
 				return response;
