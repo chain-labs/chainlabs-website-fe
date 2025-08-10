@@ -13,15 +13,12 @@ const ThinkingIndicator = React.memo(() => (
 		className="flex gap-4 max-w-4xl mx-auto justify-start"
 	>
 		<div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/30 flex items-center justify-center shadow-sm">
-			<motion.div
-				animate={{ rotate: 360 }}
-				transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-			>
+			<motion.div>
 				<Bot className="w-5 h-5 text-primary" />
 			</motion.div>
 		</div>
 
-		<div className="bg-surface/80 border border-border/50 rounded-2xl rounded-bl-md px-5 py-4 shadow-lg backdrop-blur-sm">
+		<div className="bg-muted/50 border border-border/50 rounded-2xl rounded-bl-md px-5 py-4 shadow-lg backdrop-blur-sm">
 			<div className="flex items-center space-x-3">
 				<motion.span
 					className="h-2 w-2 rounded-full bg-primary/60"

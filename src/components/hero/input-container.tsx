@@ -18,6 +18,7 @@ interface InputContainerProps {
 	onBlur: () => void;
 	onToggleRecording: () => void;
 	removeVoiceInput: boolean;
+	disabled: boolean;
 }
 
 const InputContainer = React.memo(
@@ -32,24 +33,47 @@ const InputContainer = React.memo(
 		onBlur,
 		onToggleRecording,
 		removeVoiceInput,
+		disabled,
 	}: InputContainerProps) => {
 		const hasInputValue = inputValue.trim().length > 0;
-		const submitButtonRef = React.useRef<HTMLButtonElement>(null);
-		const isMobile = useIsMobile();
+        const submitButtonRef = React.useRef<HTMLButtonElement>(null);
+        const isMobile = useIsMobile();
 
-		const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-			// Handle Ctrl+Enter to submit (desktop only)
-			if (!isMobile && e.ctrlKey && e.key === "Enter") {
-				e.preventDefault();
-				if (hasInputValue) {
-					submitButtonRef.current?.click();
-				}
-				return;
-			}
+        // Auto-resize the textarea
+        const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+        const autoResize = React.useCallback(() => {
+            const el = textareaRef.current;
+            if (!el) return;
+            el.style.height = "auto";
+            const maxPx = isMobile ? 0.4 * window.innerHeight : 0.5 * window.innerHeight;
+            const next = Math.min(el.scrollHeight, Math.max(160, maxPx));
+            el.style.height = `${next}px`;
+            el.style.overflowY = el.scrollHeight > next ? "auto" : "hidden";
+        }, [isMobile]);
 
-			// Call the original onKeyDown handler
-			onKeyDown(e);
-		};
+        React.useEffect(() => {
+            autoResize();
+        }, [inputValue, isMobile, autoResize]);
+
+        const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+            // Mobile: Enter to send, Shift+Enter for newline
+            if (isMobile && e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                if (hasInputValue) submitButtonRef.current?.click();
+                return;
+            }
+
+            // Desktop: Ctrl+Enter to submit
+            if (!isMobile && e.ctrlKey && e.key === "Enter") {
+                e.preventDefault();
+                if (hasInputValue) submitButtonRef.current?.click();
+                return;
+            }
+
+            onKeyDown(e);
+        };
+
+        const showSendButton = isMobile || hasInputValue;
 
 		return (
 			<div className="relative w-full group">
@@ -63,36 +87,39 @@ const InputContainer = React.memo(
 					)}
 				>
 					<Textarea
-						autoFocus
-						placeholder={
-							hasMessages
-								? "Need any changes to your website?"
-								: isMobile
-								? "Describe your business and website needs..."
-								: "Describe your business and website needs... (e.g., 'I need an e-commerce site for my clothing brand with AI recommendations')"
-						}
-						className={cn(
-							"w-full bg-transparent border-0 rounded-2xl text-base resize-none focus-visible:ring-0 focus-visible:ring-offset-0 text-text-primary placeholder:text-muted-foreground leading-relaxed",
-							// Mobile responsive padding and heights
-							isMobile
-								? "p-4 pb-16 min-h-[100px]"
-								: "p-6 min-h-[120px] md:min-h-[140px]",
-							// Right padding adjustment for mobile
-							isMobile && hasInputValue
-								? "pr-4"
-								: isMobile
-								? "pr-4"
-								: hasInputValue
-								? "pr-6 pb-16"
-								: "pr-20 pb-6"
-						)}
-						value={inputValue}
-						onChange={onInputChange}
-						onKeyDown={handleKeyDown}
-						onFocus={onFocus}
-						onBlur={onBlur}
-						aria-label="Describe your business and website needs"
-					/>
+                        // Avoid auto focus on mobile to prevent keyboard popup
+                        autoFocus={!isMobile}
+                        placeholder={
+                            hasMessages
+                                ? "Need any changes to your website?"
+                                : isMobile
+                                ? "Describe your business and website needs..."
+                                : "Describe your business and website needs... (e.g., 'I need an e-commerce site for my clothing brand with AI recommendations')"
+                        }
+                        ref={textareaRef}
+                        rows={isMobile ? 1 : 3}
+                        enterKeyHint="send"
+                        spellCheck
+                        autoCapitalize="sentences"
+                        autoCorrect="on"
+                        inputMode="text"
+                        className={cn(
+                            "w-full bg-transparent border-0 rounded-2xl text-base resize-none focus-visible:ring-0 focus-visible:ring-offset-0 text-text-primary placeholder:text-muted-foreground leading-relaxed",
+                            // Mobile friendly padding/heights + scroll when tall
+                            isMobile
+                                ? "p-4 pb-20 min-h-[52px] max-h-[40vh] overflow-y-auto"
+                                : "p-6 pb-16 min-h-[120px] md:min-h-[140px] max-h-[50vh] overflow-y-auto",
+                            // Right padding
+                            isMobile ? "pr-4" : hasInputValue ? "pr-6" : "pr-20"
+                        )}
+                        value={inputValue}
+                        onChange={onInputChange}
+                        onInput={autoResize}
+                        onKeyDown={handleKeyDown}
+                        onFocus={onFocus}
+                        onBlur={onBlur}
+                        aria-label="Describe your business and website needs"
+                    />
 
 					{/* Mic button - top right (desktop only) */}
 					{!isMobile && (
@@ -201,8 +228,11 @@ const InputContainer = React.memo(
 											"shadow-sm hover:shadow-md transition-all duration-200",
 											"flex items-center gap-2 rounded-lg touch-manipulation",
 											// Mobile responsive sizing
-											isMobile ? "h-9 px-3" : "h-9 px-4"
+											isMobile ? "h-9 px-3" : "h-9 px-4",
+											disabled &&
+												"opacity-50 cursor-not-allowed pointer-events-none"
 										)}
+										disabled={disabled}
 									>
 										<Send
 											className={cn(

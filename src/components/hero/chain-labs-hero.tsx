@@ -12,6 +12,7 @@ import { useUI } from "@/hooks/use-ui";
 import SpeechRecognition, {
 	useSpeechRecognition,
 } from "react-speech-recognition";
+import Orb from "@/components/ui/orb";
 
 const ChainLabsHero = () => {
 	const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -170,6 +171,29 @@ const ChainLabsHero = () => {
 				{/* Grid pattern overlay */}
 				<div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_1px,hsl(var(--muted))_1px)] bg-[length:40px_40px] opacity-[0.015]" />
 
+				{/* Thinking Orb - appears only while AI is thinking */}
+				<AnimatePresence>
+					{isThinking && (
+						<motion.div
+							key="thinking-orb"
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 0.45 }}
+							exit={{ opacity: 0 }}
+							transition={{ duration: 0.6, ease: "easeOut" }}
+							className="absolute inset-0 pointer-events-none"
+						>
+							{/* Slightly larger than viewport for soft edges */}
+							<div className="absolute -inset-16">
+								<Orb
+									hue={20}
+									hoverIntensity={0.35}
+									rotateOnHover
+									forceHoverState
+								/>
+							</div>
+						</motion.div>
+					)}
+				</AnimatePresence>
 				{/* Floating code elements - only show when no messages */}
 				{!hasMessages && (
 					<div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -308,49 +332,48 @@ const ChainLabsHero = () => {
 
 						{/* Input Form */}
 						<AnimatePresence mode="wait">
-							{!isThinking && (
-								<motion.div
-									key="input-section"
-									initial={{ opacity: 0, y: 20 }}
-									animate={{ opacity: 1, y: 0 }}
-									exit={{ opacity: 0, y: -20 }}
-									transition={{
-										duration: 0.4,
-										ease: "easeOut",
-									}}
-									className="w-full"
+							<motion.div
+								key="input-section"
+								initial={{ opacity: 0, y: 20 }}
+								animate={{ opacity: 1, y: 0 }}
+								exit={{ opacity: 0, y: -20 }}
+								transition={{
+									duration: 0.4,
+									ease: "easeOut",
+								}}
+								className="w-full"
+							>
+								<form
+									onSubmit={handleSubmit}
+									className="space-y-4"
 								>
-									<form
-										onSubmit={handleSubmit}
-										className="space-y-4"
-									>
-										<InputContainer
-											inputValue={
-												inputValue + voiceInputValue
-											}
-											isFocused={isFocused}
-											isRecording={isRecording}
-											hasMessages={hasMessages}
-											onInputChange={handleInputChange}
-											onKeyDown={handleKeyDown}
-											onFocus={handleFocus}
-											onBlur={handleBlur}
-											onToggleRecording={toggleRecording}
-											removeVoiceInput={
-												!browserSupportsSpeechRecognition
-											}
-										/>
+									<InputContainer
+										inputValue={
+											inputValue + voiceInputValue
+										}
+										isFocused={isFocused}
+										isRecording={isRecording}
+										hasMessages={hasMessages}
+										onInputChange={handleInputChange}
+										onKeyDown={handleKeyDown}
+										onFocus={handleFocus}
+										onBlur={handleBlur}
+										onToggleRecording={toggleRecording}
+										removeVoiceInput={
+											!browserSupportsSpeechRecognition
+										}
+										disabled={isThinking}
+									/>
 
-										{browserSupportsSpeechRecognition && (
-											<div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-												<RecordingStatus
-													isRecording={isRecording}
-												/>
-											</div>
-										)}
-									</form>
-								</motion.div>
-							)}
+									{browserSupportsSpeechRecognition && (
+										<div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+											<RecordingStatus
+												isRecording={isRecording}
+											/>
+										</div>
+									)}
+								</form>
+							</motion.div>
 						</AnimatePresence>
 					</div>
 				</div>
