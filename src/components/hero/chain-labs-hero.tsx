@@ -174,29 +174,6 @@ const ChainLabsHero = () => {
 				{/* Grid pattern overlay */}
 				<div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_1px,hsl(var(--muted))_1px)] bg-[length:40px_40px] opacity-[0.015]" />
 
-				{/* Thinking Orb - appears only while AI is thinking */}
-				<AnimatePresence>
-					{isThinking && (
-						<motion.div
-							key="thinking-orb"
-							initial={{ opacity: 0 }}
-							animate={{ opacity: 0.45 }}
-							exit={{ opacity: 0 }}
-							transition={{ duration: 0.6, ease: "easeOut" }}
-							className="absolute inset-0 pointer-events-none"
-						>
-							{/* Slightly larger than viewport for soft edges */}
-							<div className="absolute -inset-16">
-								<Orb
-									hue={20}
-									hoverIntensity={0.35}
-									rotateOnHover
-									forceHoverState
-								/>
-							</div>
-						</motion.div>
-					)}
-				</AnimatePresence>
 				{/* Floating code elements - only show when no messages */}
 				{!hasMessages && (
 					<div className="absolute inset-0 overflow-hidden pointer-events-none">

@@ -3,6 +3,7 @@
 import React from "react";
 import { motion } from "motion/react";
 import { Bot } from "lucide-react";
+import Orb from "../ui/orb";
 
 const ThinkingIndicator = React.memo(() => (
 	<motion.div
@@ -19,25 +20,13 @@ const ThinkingIndicator = React.memo(() => (
 		</div>
 
 		<div className="bg-muted/50 border border-border/50 rounded-2xl rounded-bl-md px-5 py-4 shadow-lg backdrop-blur-sm">
-			<div className="flex items-center space-x-3">
-				<motion.span
-					className="h-2 w-2 rounded-full bg-primary/60"
-					animate={{ scale: [1, 1.3, 1], opacity: [0.5, 1, 0.5] }}
-					transition={{ duration: 1.2, repeat: Infinity, delay: 0 }}
+			<div className="flex items-center space-x-3 h-12 w-12">
+				<Orb
+					hue={20}
+					hoverIntensity={0.35}
+					rotateOnHover
+					forceHoverState
 				/>
-				<motion.span
-					className="h-2 w-2 rounded-full bg-primary/60"
-					animate={{ scale: [1, 1.3, 1], opacity: [0.5, 1, 0.5] }}
-					transition={{ duration: 1.2, repeat: Infinity, delay: 0.3 }}
-				/>
-				<motion.span
-					className="h-2 w-2 rounded-full bg-primary/60"
-					animate={{ scale: [1, 1.3, 1], opacity: [0.5, 1, 0.5] }}
-					transition={{ duration: 1.2, repeat: Infinity, delay: 0.6 }}
-				/>
-				<span className="text-sm text-text-secondary ml-2">
-					AI is thinking...
-				</span>
 			</div>
 		</div>
 	</motion.div>

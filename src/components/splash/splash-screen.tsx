@@ -7,15 +7,40 @@ import Orb from "@/components/ui/orb";
 
 interface SplashScreenProps {
 	onComplete?: () => void;
+	exitWhen?: boolean;
 }
 
-export const SplashScreen = ({ onComplete }: SplashScreenProps) => {
+export const SplashScreen = ({ onComplete, exitWhen }: SplashScreenProps) => {
 	const [progress, setProgress] = useState(0);
 	const [isVisible, setIsVisible] = useState(true);
 
 	const bars = 20;
 
 	const DURATION = 5000;
+
+	// Track when the default duration has elapsed (used when exitWhen is undefined)
+	const [timerDone, setTimerDone] = useState(false);
+
+	useEffect(() => {
+		// Progress animation over DURATION ms
+		const progressInterval = setInterval(() => {
+			setProgress((prev) => {
+				if (prev >= 100) {
+					clearInterval(progressInterval);
+					return 100;
+				}
+				return prev + 100 / (DURATION / 16.67); // 60fps over DURATION ms
+			});
+		}, 16.67);
+
+		// Mark default timer as done after DURATION ms
+		const durationTimer = setTimeout(() => setTimerDone(true), DURATION);
+
+		return () => {
+			clearInterval(progressInterval);
+			clearTimeout(durationTimer);
+		};
+	}, []);
 
 	useEffect(() => {
 		// Progress animation over DURATION ms
@@ -43,6 +68,18 @@ export const SplashScreen = ({ onComplete }: SplashScreenProps) => {
 		};
 	}, [onComplete]);
 
+	useEffect(() => {
+		const shouldHide = exitWhen !== undefined ? exitWhen : timerDone;
+
+		if (shouldHide && isVisible) {
+			setIsVisible(false);
+			const completeTimer = setTimeout(() => {
+				onComplete?.();
+			}, 800); // Wait for fade-out animation
+			return () => clearTimeout(completeTimer);
+		}
+	}, [exitWhen, timerDone, isVisible, onComplete]);
+
 	return (
 		<motion.div
 			initial={{ opacity: 0 }}
@@ -61,7 +98,7 @@ export const SplashScreen = ({ onComplete }: SplashScreenProps) => {
 						animate={{ scale: 1, opacity: 1 }}
 						exit={{ scale: 0, opacity: 0 }}
 						transition={{ duration: 0.5 }}
-						className="absolute inset-0 flex items-center justify-center"
+						className="absolute inset-0 flex items-center justify-center origin-center"
 					>
 						<div className="w-[600px] h-[600px] opacity-60">
 							<Orb
@@ -163,7 +200,8 @@ export const SplashScreen = ({ onComplete }: SplashScreenProps) => {
 							<motion.div
 								initial={{ opacity: 0 }}
 								animate={{ opacity: 1 }}
-								transition={{ duration: 0.8, delay: 0.6 }}
+								exit={{ opacity: 0 }}
+								transition={{ duration: 0.5 }}
 								className="text-center"
 							>
 								<h1 className="text-4xl md:text-6xl font-bold text-white font-display mb-2 tracking-tight">
