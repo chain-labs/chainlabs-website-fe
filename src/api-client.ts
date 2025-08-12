@@ -1,3 +1,5 @@
+import { ClarificationResponse, GoalResponse } from "./types";
+
 const API_BASE_URL =
 	process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
@@ -59,8 +61,22 @@ class ApiClient {
 				throw new Error("AUTHENTICATION_FAILED");
 			}
 
-			const errorData = await response.json().catch(() => ({}));
-			throw new Error(errorData.message || `HTTP ${response.status}`);
+			const errorData = await response.json().catch(() => ({} as any));
+
+			// Try to extract the most useful message from nested error shapes
+			const nestedMessage =
+				errorData?.message ??
+				errorData?.detail?.error?.message ??
+				errorData?.detail?.message ??
+				errorData?.error?.message ??
+				errorData?.detail ??
+				undefined;
+
+			const message =
+				(typeof nestedMessage === "string" && nestedMessage) ||
+				`HTTP ${response.status}`;
+
+			throw new Error(message);
 		}
 
 		return response.json();
@@ -132,7 +148,6 @@ class ApiClient {
 		}
 	}
 
-    
 	// Helper method for authenticated requests
 	private async makeAuthenticatedRequest(
 		url: string,
@@ -151,19 +166,6 @@ class ApiClient {
 
 	// Goal & Personalization endpoints
 	async submitGoal(input: string) {
-		type GoalResponse = {
-			assistantMessage: {
-				message: string;
-				datetime: string;
-			};
-			history: [
-				{
-					role: "user" | "assistant";
-					message: string;
-					datetime: string;
-				}
-			];
-		};
 		const response: GoalResponse = await this.makeAuthenticatedRequest(
 			`${API_BASE_URL}/api/goal`,
 			{
@@ -181,29 +183,6 @@ class ApiClient {
 	}
 
 	async clarifyGoal(clarification: string) {
-		type ClarificationResponse = {
-			goal: {
-				description: string;
-				category: string;
-				priority: string;
-			};
-			missions: [
-				{
-					id: string;
-					title: string;
-					points: number;
-					status: string;
-				}
-			];
-			headline: string;
-			recommended_case_studies: [
-				{
-					id: string;
-					title: string;
-					summary: string;
-				}
-			];
-		};
 		const response: ClarificationResponse =
 			await this.makeAuthenticatedRequest(`${API_BASE_URL}/api/clarify`, {
 				method: "POST",

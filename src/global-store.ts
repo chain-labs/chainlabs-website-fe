@@ -13,6 +13,7 @@ export interface Mission {
 	title: string;
 	points: number;
 	status: "pending" | "completed";
+	description?: string;
 }
 
 export interface MissionStatus {
@@ -29,7 +30,7 @@ export interface CaseStudy {
 
 export interface ChatMessage {
 	role: "user" | "assistant";
-	message: string;
+	message: React.ReactNode;
 	timestamp: string; // ISO string
 }
 
@@ -68,6 +69,20 @@ interface SessionState {
 	hasCompletedOnboarding: boolean;
 	theme: "light" | "dark";
 	animations: boolean;
+
+	// Flags
+	hasSession: boolean;
+	isEnsuringSession: boolean;
+	isSubmittingGoal: boolean;
+	isClarifying: boolean;
+	isFetchingProgress: boolean;
+	isCheckingUnlock: boolean;
+
+	// Missions flow
+	currentMissionId: string | null;
+
+	// Errors
+	lastError: string | null;
 }
 
 interface SessionActions {
@@ -110,6 +125,21 @@ interface SessionActions {
 	toggleTheme: () => void;
 	setAnimations: (enabled: boolean) => void;
 
+	// Flags
+	setHasSession: (has: boolean) => void;
+	setIsEnsuringSession: (b: boolean) => void;
+	setIsSubmittingGoal: (b: boolean) => void;
+	setIsClarifying: (b: boolean) => void;
+	setIsFetchingProgress: (b: boolean) => void;
+	setIsCheckingUnlock: (b: boolean) => void;
+
+	// Missions flow
+	setCurrentMissionId: (id: string | null) => void;
+	advanceToNextPendingMission: () => void;
+
+	// Errors
+	setLastError: (msg: string | null) => void;
+
 	// Session Management
 	hydrateFromSession: (sessionData: any) => void;
 	resetSession: () => void;
@@ -120,6 +150,8 @@ interface SessionActions {
 	pendingMissionsCount: () => number;
 	progressPercentage: () => number;
 	canShowPersonalized: () => boolean;
+	getCurrentMission: () => Mission | null;
+	getNextPendingMission: () => Mission | null;
 }
 
 export const useGlobalStore = create<SessionState & SessionActions>()(
@@ -152,6 +184,20 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 			hasCompletedOnboarding: false,
 			theme: "dark",
 			animations: true,
+
+			// Initial Flags
+			hasSession: false,
+			isEnsuringSession: false,
+			isSubmittingGoal: false,
+			isClarifying: false,
+			isFetchingProgress: false,
+			isCheckingUnlock: false,
+
+			// Missions flow
+			currentMissionId: null,
+
+			// Errors
+			lastError: null,
 
 			// Actions - Goal & Personalization
 			setGoal: (goal) => set({ goal }),
@@ -221,6 +267,32 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 				})),
 			setAnimations: (animations) => set({ animations }),
 
+			// Flags
+			setHasSession: (hasSession) => set({ hasSession }),
+			setIsEnsuringSession: (isEnsuringSession) =>
+				set({ isEnsuringSession }),
+			setIsSubmittingGoal: (isSubmittingGoal) =>
+				set({ isSubmittingGoal }),
+			setIsClarifying: (isClarifying) => set({ isClarifying }),
+			setIsFetchingProgress: (isFetchingProgress) =>
+				set({ isFetchingProgress }),
+			setIsCheckingUnlock: (isCheckingUnlock) =>
+				set({ isCheckingUnlock }),
+
+			// Missions flow
+			setCurrentMissionId: (currentMissionId) =>
+				set({ currentMissionId }),
+			advanceToNextPendingMission: () =>
+				set((state) => {
+					const next = state.missions.find(
+						(m) => m.status === "pending"
+					);
+					return { currentMissionId: next ? next.id : null };
+				}),
+
+			// Errors
+			setLastError: (lastError) => set({ lastError }),
+
 			// Actions - Session Management
 			hydrateFromSession: (sessionData) =>
 				set({
@@ -267,6 +339,14 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 			canShowPersonalized: () => {
 				const { goal, missions, showPersonalized } = get();
 				return showPersonalized && goal !== null && missions.length > 0;
+			},
+			getCurrentMission: () => {
+				const { currentMissionId, missions } = get();
+				return missions.find((m) => m.id === currentMissionId) || null;
+			},
+			getNextPendingMission: () => {
+				const { missions } = get();
+				return missions.find((m) => m.status === "pending") || null;
 			},
 		}),
 		{
