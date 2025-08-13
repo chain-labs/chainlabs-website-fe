@@ -1,36 +1,11 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-
-// API Types (matching your OpenAPI spec)
-export interface Goal {
-	description: string;
-	category?: string;
-	priority?: string;
-}
-
-export interface Mission {
-	id: string;
-	title: string;
-	points: number;
-	status: "pending" | "completed";
-	description?: string;
-}
-
-export interface MissionStatus {
-	id: string;
-	status: "pending" | "completed";
-	points: number;
-}
-
-export interface CaseStudy {
-	id: string;
-	title: string;
-	summary: string;
-}
+import { GoalResponse, PersonalisedResponse } from "./types";
+import { CaseStudy, Mission as MissionResponseAPI } from "./types/store";
 
 export interface ChatMessage {
 	role: "user" | "assistant";
-	message: React.ReactNode;
+	message: string;
 	timestamp: string; // ISO string
 }
 
@@ -40,17 +15,21 @@ export interface ChatContext {
 	metadata?: Record<string, any>;
 }
 
+interface Mission extends MissionResponseAPI {
+	status: "pending" | "completed";
+}
+
 // Session State (removed authentication tokens)
 interface SessionState {
 	// Goal & Personalization
-	goal: Goal | null;
+	goal: string | null;
 	headline: string | null;
 	missions: Mission[];
+	personalised: PersonalisedResponse | null;
 	recommendedCaseStudies: CaseStudy[];
 
 	// Progress
 	pointsTotal: number;
-	callUnlocked: boolean;
 
 	// Chat
 	chatHistory: ChatMessage[];
@@ -71,12 +50,18 @@ interface SessionState {
 	animations: boolean;
 
 	// Flags
-	hasSession: boolean;
-	isEnsuringSession: boolean;
-	isSubmittingGoal: boolean;
-	isClarifying: boolean;
-	isFetchingProgress: boolean;
-	isCheckingUnlock: boolean;
+	goalSubmitted: boolean;
+	clarificationSubmitted: boolean;
+	personalizationGenerated: boolean;
+	callUnlocked: boolean;
+
+	// Session/async flags
+	hasSession?: boolean;
+	isEnsuringSession?: boolean;
+	isSubmittingGoal?: boolean;
+	isClarifying?: boolean;
+	isFetchingProgress?: boolean;
+	isCheckingUnlock?: boolean;
 
 	// Missions flow
 	currentMissionId: string | null;
@@ -87,7 +72,7 @@ interface SessionState {
 
 interface SessionActions {
 	// Goal & Personalization
-	setGoal: (goal: Goal) => void;
+	setGoal: (goal: string) => void;
 	setHeadline: (headline: string) => void;
 	setMissions: (missions: Mission[]) => void;
 	updateMissionStatus: (
@@ -95,11 +80,16 @@ interface SessionActions {
 		status: "pending" | "completed"
 	) => void;
 	setRecommendedCaseStudies: (caseStudies: CaseStudy[]) => void;
+	setPersonalised: (personalised: PersonalisedResponse | null) => void;
 
 	// Progress
 	setPointsTotal: (points: number) => void;
 	setCallUnlocked: (unlocked: boolean) => void;
-	updateProgress: (progress: any) => void;
+	updateProgress: (progress: {
+		pointsTotal: number;
+		callUnlocked: boolean;
+		missions: { id: string; status: "pending" | "completed" }[];
+	}) => void;
 
 	// Chat
 	addChatMessage: (message: ChatMessage) => void;
@@ -160,12 +150,12 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 			// Initial State - Goal & Personalization
 			goal: null,
 			headline: null,
+			personalised: null,
 			missions: [],
 			recommendedCaseStudies: [],
 
 			// Initial State - Progress
 			pointsTotal: 0,
-			callUnlocked: false,
 
 			// Initial State - Chat
 			chatHistory: [],
@@ -186,6 +176,12 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 			animations: true,
 
 			// Initial Flags
+			goalSubmitted: false,
+			clarificationSubmitted: false,
+			personalizationGenerated: false,
+			callUnlocked: false,
+
+			// Session/async flags
 			hasSession: false,
 			isEnsuringSession: false,
 			isSubmittingGoal: false,
@@ -201,6 +197,7 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 
 			// Actions - Goal & Personalization
 			setGoal: (goal) => set({ goal }),
+			setPersonalised: (personalised) => set({ personalised }),
 			setHeadline: (headline) => set({ headline }),
 			setMissions: (missions) => set({ missions }),
 			updateMissionStatus: (missionId, status) =>
@@ -223,7 +220,7 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 					callUnlocked: progress.callUnlocked,
 					missions: state.missions.map((mission) => {
 						const updated = progress.missions.find(
-							(m: any) => m.id === mission.id
+							(m) => m.id === mission.id
 						);
 						return updated
 							? { ...mission, status: updated.status }
@@ -248,16 +245,14 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 			setIsRecording: (isRecording) => set({ isRecording }),
 			toggleRecording: () =>
 				set((state) => ({ isRecording: !state.isRecording })),
-			stopRecording: () => {
-				set({ isRecording: false });
-			},
+			stopRecording: () => set({ isRecording: false }),
 			setShowPersonalized: (showPersonalized) =>
 				set({ showPersonalized }),
 			setSidebarOpen: (sidebarOpen) => set({ sidebarOpen }),
 			toggleSidebar: () =>
 				set((state) => ({ sidebarOpen: !state.sidebarOpen })),
 
-			// Actions - App
+			// App Actions
 			setHasCompletedOnboarding: (hasCompletedOnboarding) =>
 				set({ hasCompletedOnboarding }),
 			setTheme: (theme) => set({ theme }),
@@ -268,59 +263,12 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 			setAnimations: (animations) => set({ animations }),
 
 			// Flags
-			setHasSession: (hasSession) => set({ hasSession }),
-			setIsEnsuringSession: (isEnsuringSession) =>
-				set({ isEnsuringSession }),
-			setIsSubmittingGoal: (isSubmittingGoal) =>
-				set({ isSubmittingGoal }),
-			setIsClarifying: (isClarifying) => set({ isClarifying }),
-			setIsFetchingProgress: (isFetchingProgress) =>
-				set({ isFetchingProgress }),
-			setIsCheckingUnlock: (isCheckingUnlock) =>
-				set({ isCheckingUnlock }),
-
-			// Missions flow
-			setCurrentMissionId: (currentMissionId) =>
-				set({ currentMissionId }),
-			advanceToNextPendingMission: () =>
-				set((state) => {
-					const next = state.missions.find(
-						(m) => m.status === "pending"
-					);
-					return { currentMissionId: next ? next.id : null };
-				}),
-
-			// Errors
-			setLastError: (lastError) => set({ lastError }),
-
-			// Actions - Session Management
-			hydrateFromSession: (sessionData) =>
-				set({
-					goal: sessionData.goal,
-					missions:
-						sessionData.missions?.map((m: any) => ({
-							id: m.id,
-							title: m.title || m.id,
-							points: m.points,
-							status: m.status,
-						})) || [],
-					pointsTotal: sessionData.points_total || 0,
-					callUnlocked: sessionData.call_unlocked || false,
-					showPersonalized: true,
-				}),
-
-			resetSession: () =>
-				set({
-					goal: null,
-					headline: null,
-					missions: [],
-					recommendedCaseStudies: [],
-					pointsTotal: 0,
-					callUnlocked: false,
-					chatHistory: [],
-					showPersonalized: false,
-					hasCompletedOnboarding: false,
-				}),
+			setHasSession: (has) => set({ hasSession: has }),
+			setIsEnsuringSession: (b) => set({ isEnsuringSession: b }),
+			setIsSubmittingGoal: (b) => set({ isSubmittingGoal: b }),
+			setIsClarifying: (b) => set({ isClarifying: b }),
+			setIsFetchingProgress: (b) => set({ isFetchingProgress: b }),
+			setIsCheckingUnlock: (b) => set({ isCheckingUnlock: b }),
 
 			// Computed
 			hasGoal: () => get().goal !== null,
@@ -336,10 +284,7 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 				).length;
 				return (completed / missions.length) * 100;
 			},
-			canShowPersonalized: () => {
-				const { goal, missions, showPersonalized } = get();
-				return showPersonalized && goal !== null && missions.length > 0;
-			},
+			canShowPersonalized: () => get().personalised !== null,
 			getCurrentMission: () => {
 				const { currentMissionId, missions } = get();
 				return missions.find((m) => m.id === currentMissionId) || null;
@@ -348,6 +293,68 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 				const { missions } = get();
 				return missions.find((m) => m.status === "pending") || null;
 			},
+
+			// Missions flow
+			setCurrentMissionId: (currentMissionId) =>
+				set({ currentMissionId }),
+			advanceToNextPendingMission: () =>
+				set((state) => {
+					const next = state.missions.find(
+						(m) => m.status === "pending"
+					);
+					return { currentMissionId: next ? next.id : null };
+				}),
+
+			// Errors
+			setLastError: (lastError) => set({ lastError }),
+
+			// Session Management
+			hydrateFromSession: (sessionData) =>
+				set({
+					goal: sessionData.goal,
+					personalised: sessionData.personalised || null,
+					missions:
+						sessionData.missions?.map((m: any) => ({
+							id: m.id,
+							title: m.title || m.id,
+							points: m.points,
+							status: m.status,
+						})) || [],
+					pointsTotal: sessionData.points_total || 0,
+					callUnlocked: sessionData.call_unlocked || false,
+					showPersonalized: true,
+				}),
+			resetSession: () =>
+				set({
+					goal: null,
+					headline: null,
+					personalised: null,
+					missions: [],
+					recommendedCaseStudies: [],
+					pointsTotal: 0,
+					callUnlocked: false,
+					chatHistory: [],
+					isThinking: false,
+					currentContext: null,
+					inputValue: "",
+					voiceInputValue: "",
+					isFocused: false,
+					isRecording: false,
+					showPersonalized: false,
+					sidebarOpen: true,
+					hasCompletedOnboarding: false,
+					goalSubmitted: false,
+					clarificationSubmitted: false,
+					personalizationGenerated: false,
+					currentMissionId: null,
+					lastError: null,
+					hasSession: false,
+					isEnsuringSession: false,
+					isSubmittingGoal: false,
+					isClarifying: false,
+					isFetchingProgress: false,
+					isCheckingUnlock: false,
+				}),
 		}),
 		{
 			name: "chainlabs-session-store",
@@ -364,6 +371,7 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 				animations: state.animations,
 				sidebarOpen: state.sidebarOpen,
 				showPersonalized: state.showPersonalized,
+				personalised: state.personalised,
 			}),
 		}
 	)

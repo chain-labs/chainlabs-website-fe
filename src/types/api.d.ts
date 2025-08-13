@@ -1,70 +1,50 @@
-export interface APIResponse<T = any> {
-	data?: T;
-	error?: string;
-	message?: string;
-	status: number;
-	success: boolean;
-}
+import { CaseStudy, Hero, History, Message, Process } from "./store";
 
-export interface ChatAPIRequest {
-	message: string;
-	context?: Record<string, any>;
-	model?: string;
-	temperature?: number;
-}
-
-export interface ChatAPIResponse extends APIResponse {
-	data: {
-		message: string;
-		id: string;
-		timestamp: string;
-		metadata?: {
-			tokens: number;
-			model: string;
-			responseTime: number;
+export type ErrorResponse = {
+	detail: {
+		error: {
+			code: number;
+			message: string;
 		};
 	};
-}
+};
 
-export interface UserAPIRequest {
-	profile: Partial<UserProfile>;
-}
-
-export interface UserAPIResponse extends APIResponse {
-	data: UserProfile;
-}
+export type SessionResponse = {
+	access_token: string;
+	expires_in: number;
+	refresh_token: string;
+	refresh_expires_in: number;
+};
 
 export type GoalResponse = {
 	assistantMessage: {
 		message: string;
 		datetime: string;
 	};
-	history: [
-		{
-			role: "user" | "assistant";
-			message: string;
-			datetime: string;
-		}
-	];
+	history: History[];
 };
 
 export type ClarificationResponse = {
-	hero: {
-		title: string;
-		description: string;
-	};
-	process: {
-		name: string;
-		description: string;
-	}[];
+	hero: Hero;
+	process: Process[];
 	goal: string;
-	caseStudies: [];
-	whyThisCaseStudiesWereSelected: "";
-	missions: {
-		id: string;
-		title: string;
-		description: string;
-		points: number;
-	}[];
+	caseStudies: CaseStudy[];
+	whyThisCaseStudiesWereSelected: string;
+	missions: Mission[];
 	why: string;
+};
+
+export type PersonalisedResponse = {
+	status: "INITIAL" | "GOAL_SET" | "CLARIFIED";
+	messages: Message[];
+	personalisation: {
+		hero: Hero;
+		process: Process[];
+		goal: string;
+		caseStudies: CaseStudy[];
+		whyThisCaseStudiesWereSelected: string;
+		missions: Mission[];
+		why: string;
+		fallbackToGenericData: boolean;
+	};
 };

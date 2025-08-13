@@ -37,7 +37,7 @@ export default function Home() {
 		return () => window.removeEventListener("scroll", handleScroll);
 	}, []);
 
-	if (showSplash || showPersonalized) {
+	if (showSplash && showPersonalized) {
 		return <SplashScreen onComplete={handleSplashComplete} />;
 	}
 

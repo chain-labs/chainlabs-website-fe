@@ -1,4 +1,4 @@
-import { ClarificationResponse, GoalResponse } from "./types";
+import { ClarificationResponse, GoalResponse, PersonalisedResponse } from "./types";
 
 const API_BASE_URL =
 	process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
@@ -126,21 +126,7 @@ class ApiClient {
 		}
 
 		try {
-			const response = await fetch(`${API_BASE_URL}/api/auth/session`, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-			});
-
-			if (!response.ok) {
-				throw new Error("Failed to create session");
-			}
-
-			const data = await response.json();
-
-			// Store tokens in localStorage
-			this.setStorageItem("access_token", data.access_token);
-			this.setStorageItem("refresh_token", data.refresh_token);
-
+			await this.startSession();
 			console.log("Session initialized successfully");
 		} catch (error) {
 			console.error("Failed to initialize session:", error);
@@ -193,30 +179,7 @@ class ApiClient {
 	}
 
 	async getPersonalizedContent() {
-		type PersonalizedContentResponse = {
-			headline: string;
-			goal: {
-				description: string;
-				category: string;
-				priority: string;
-			};
-			missions: [
-				{
-					id: string;
-					title: string;
-					points: number;
-					status: string;
-				}
-			];
-			recommended_case_studies: [
-				{
-					id: string;
-					title: string;
-					summary: string;
-				}
-			];
-		};
-		const response: PersonalizedContentResponse =
+		const response: PersonalisedResponse =
 			await this.makeAuthenticatedRequest(
 				`${API_BASE_URL}/api/personalised`,
 				{
@@ -227,167 +190,167 @@ class ApiClient {
 	}
 
 	// Progress & Missions endpoints
-	async getProgress() {
-		type ProgressResponse = {
-			pointsTotal: number;
-			missions: [
-				{
-					id: string;
-					status: string;
-					points: number;
-				}
-			];
-			callUnlocked: boolean;
-		};
-		const response: ProgressResponse = await this.makeAuthenticatedRequest(
-			`${API_BASE_URL}/api/progress`,
-			{
-				method: "GET",
-			}
-		);
-		return response;
-	}
+	// async getProgress() {
+	// 	type ProgressResponse = {
+	// 		pointsTotal: number;
+	// 		missions: [
+	// 			{
+	// 				id: string;
+	// 				status: string;
+	// 				points: number;
+	// 			}
+	// 		];
+	// 		callUnlocked: boolean;
+	// 	};
+	// 	const response: ProgressResponse = await this.makeAuthenticatedRequest(
+	// 		`${API_BASE_URL}/api/progress`,
+	// 		{
+	// 			method: "GET",
+	// 		}
+	// 	);
+	// 	return response;
+	// }
 
-	async completeMission(missionId: string, answer: string) {
-		type CompleteMissionResponse = {
-			points_awarded: number;
-			points_total: number;
-			call_unlocked: boolean;
-			next_mission: {
-				id: string;
-				title: string;
-				points: number;
-				status: string;
-			};
-		};
-		const response: CompleteMissionResponse =
-			await this.makeAuthenticatedRequest(
-				`${API_BASE_URL}/api/mission/complete`,
-				{
-					method: "POST",
-					body: JSON.stringify({
-						mission_id: missionId,
-						artifact: { answer },
-					}),
-				}
-			);
-		return response;
-	}
+	// async completeMission(missionId: string, answer: string) {
+	// 	type CompleteMissionResponse = {
+	// 		points_awarded: number;
+	// 		points_total: number;
+	// 		call_unlocked: boolean;
+	// 		next_mission: {
+	// 			id: string;
+	// 			title: string;
+	// 			points: number;
+	// 			status: string;
+	// 		};
+	// 	};
+	// 	const response: CompleteMissionResponse =
+	// 		await this.makeAuthenticatedRequest(
+	// 			`${API_BASE_URL}/api/mission/complete`,
+	// 			{
+	// 				method: "POST",
+	// 				body: JSON.stringify({
+	// 					mission_id: missionId,
+	// 					artifact: { answer },
+	// 				}),
+	// 			}
+	// 		);
+	// 	return response;
+	// }
 
-	async checkUnlockStatus() {
-		type UnlockStatusResponse = {
-			call_unlocked: boolean;
-		};
-		const response: UnlockStatusResponse =
-			await this.makeAuthenticatedRequest(
-				`${API_BASE_URL}/api/unlock-status`,
-				{
-					method: "GET",
-				}
-			);
-		return response;
-	}
+	// async checkUnlockStatus() {
+	// 	type UnlockStatusResponse = {
+	// 		call_unlocked: boolean;
+	// 	};
+	// 	const response: UnlockStatusResponse =
+	// 		await this.makeAuthenticatedRequest(
+	// 			`${API_BASE_URL}/api/unlock-status`,
+	// 			{
+	// 				method: "GET",
+	// 			}
+	// 		);
+	// 	return response;
+	// }
 
 	// Session Management
-	async getFullSession() {
-		type SessionResponse = {
-			goal: {
-				description: string;
-				category: string;
-				priority: string;
-			};
-			missions: [
-				{
-					id: string;
-					status: string;
-					points: number;
-				}
-			];
-			points_total: number;
-			call_unlocked: boolean;
-		};
-		const response: SessionResponse = await this.makeAuthenticatedRequest(
-			`${API_BASE_URL}/api/session`,
-			{
-				method: "GET",
-			}
-		);
+	// async getFullSession() {
+	// 	type SessionResponse = {
+	// 		goal: {
+	// 			description: string;
+	// 			category: string;
+	// 			priority: string;
+	// 		};
+	// 		missions: [
+	// 			{
+	// 				id: string;
+	// 				status: string;
+	// 				points: number;
+	// 			}
+	// 		];
+	// 		points_total: number;
+	// 		call_unlocked: boolean;
+	// 	};
+	// 	const response: SessionResponse = await this.makeAuthenticatedRequest(
+	// 		`${API_BASE_URL}/api/session`,
+	// 		{
+	// 			method: "GET",
+	// 		}
+	// 	);
 
-		return response;
-	}
+	// 	return response;
+	// }
 
 	// Chat endpoint
-	async chatWithAssistant(
-		message: string,
-		context: {
-			page: string;
-			section: string;
-			metadata: {
-				additionalProp1: any;
-			};
-		}
-	): Promise<{
-		role: "user" | "assistant";
-		message: string;
-		timestamp: string;
-	}> {
-		type ChatResponse = {
-			reply: string;
-			history: [
-				{
-					role: "user" | "assistant";
-					message: string;
-					timestamp: string;
-				}
-			];
-			followUpMissions: [
-				{
-					id: string;
-					title: string;
-					points: number;
-					status: string;
-				}
-			];
-			updatedProgress: {
-				pointsTotal: number;
-				missions: [
-					{
-						id: string;
-						status: string;
-						points: number;
-					}
-				];
-				callUnlocked: true;
-			};
-			suggestedRead: [
-				{
-					id: string;
-					title: string;
-					summary: string;
-				}
-			];
-			navigate: {
-				page: string;
-				section: string;
-				metadata: {
-					additionalProp1: {};
-				};
-			};
-		};
-		const response: ChatResponse = await this.makeAuthenticatedRequest(
-			`${API_BASE_URL}/api/chat`,
-			{
-				method: "POST",
-				body: JSON.stringify({ message, context }),
-			}
-		);
-		const lastMessage = response.history[response.history.length - 1];
-		return {
-			role: lastMessage.role,
-			message: lastMessage.message,
-			timestamp: lastMessage.timestamp,
-		};
-	}
+	// async chatWithAssistant(
+	// 	message: string,
+	// 	context: {
+	// 		page: string;
+	// 		section: string;
+	// 		metadata: {
+	// 			additionalProp1: any;
+	// 		};
+	// 	}
+	// ): Promise<{
+	// 	role: "user" | "assistant";
+	// 	message: string;
+	// 	timestamp: string;
+	// }> {
+	// 	type ChatResponse = {
+	// 		reply: string;
+	// 		history: [
+	// 			{
+	// 				role: "user" | "assistant";
+	// 				message: string;
+	// 				timestamp: string;
+	// 			}
+	// 		];
+	// 		followUpMissions: [
+	// 			{
+	// 				id: string;
+	// 				title: string;
+	// 				points: number;
+	// 				status: string;
+	// 			}
+	// 		];
+	// 		updatedProgress: {
+	// 			pointsTotal: number;
+	// 			missions: [
+	// 				{
+	// 					id: string;
+	// 					status: string;
+	// 					points: number;
+	// 				}
+	// 			];
+	// 			callUnlocked: true;
+	// 		};
+	// 		suggestedRead: [
+	// 			{
+	// 				id: string;
+	// 				title: string;
+	// 				summary: string;
+	// 			}
+	// 		];
+	// 		navigate: {
+	// 			page: string;
+	// 			section: string;
+	// 			metadata: {
+	// 				additionalProp1: {};
+	// 			};
+	// 		};
+	// 	};
+	// 	const response: ChatResponse = await this.makeAuthenticatedRequest(
+	// 		`${API_BASE_URL}/api/chat`,
+	// 		{
+	// 			method: "POST",
+	// 			body: JSON.stringify({ message, context }),
+	// 		}
+	// 	);
+	// 	const lastMessage = response.history[response.history.length - 1];
+	// 	return {
+	// 		role: lastMessage.role,
+	// 		message: lastMessage.message,
+	// 		timestamp: lastMessage.timestamp,
+	// 	};
+	// }
 
 	// Utility method to check if user is authenticated
 	isAuthenticated(): boolean {

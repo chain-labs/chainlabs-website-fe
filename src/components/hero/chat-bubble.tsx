@@ -76,7 +76,7 @@ const ChatBubble = React.memo(
 						) : shouldAnimate ? (
 							<TextGenerateEffect text={message.message} />
 						) : (
-							<MessageComponent />
+							MessageComponent || message.message
 						)}
 					</p>
 				</div>
