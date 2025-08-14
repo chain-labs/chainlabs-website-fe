@@ -71,8 +71,8 @@ const BookCallSection = () => {
 
 	useEffect(() => {
 		// Fire confetti only on transition false -> true
-		fireCelebration();
 		if (!prevUnlockedRef.current && callUnlocked) {
+			fireCelebration();
 		}
 		prevUnlockedRef.current = callUnlocked;
 	}, [callUnlocked]);

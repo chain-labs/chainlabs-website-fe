@@ -4,6 +4,7 @@ import React from "react";
 import { motion } from "motion/react";
 import { Bot } from "lucide-react";
 import Orb from "../ui/orb";
+import ShinyText from "../ui/shiny-text";
 
 const ThinkingIndicator = React.memo(() => (
 	<motion.div
@@ -20,13 +21,8 @@ const ThinkingIndicator = React.memo(() => (
 		</div>
 
 		<div className="bg-muted/50 border border-border/50 rounded-2xl rounded-bl-md px-5 py-4 shadow-lg backdrop-blur-sm">
-			<div className="flex items-center space-x-3 h-12 w-12">
-				<Orb
-					hue={20}
-					hoverIntensity={0.35}
-					rotateOnHover
-					forceHoverState
-				/>
+			<div className="flex items-center space-x-3">
+				<ShinyText text={"Thinking..."} disabled={false} speed={5}  />
 			</div>
 		</div>
 	</motion.div>
