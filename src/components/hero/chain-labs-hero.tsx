@@ -155,19 +155,16 @@ const ChainLabsHero = () => {
 				/> */}
 
 				{/* Secondary accent orbs */}
-				{/* <motion.div
-					initial={{ opacity: 0, x: -100 }}
-					animate={{ opacity: 1, x: 0 }}
-					transition={{ duration: 1.5, ease: "easeOut", delay: 0.3 }}
-					className="absolute left-[10%] top-[60%] size-24 rounded-full bg-gradient-to-r from-primary/8 to-transparent blur-2xl"
-				/>
-
-				<motion.div
-					initial={{ opacity: 0, x: 100 }}
-					animate={{ opacity: 1, x: 0 }}
-					transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
-					className="absolute right-[15%] top-[25%] size-20 rounded-full bg-gradient-to-l from-primary/12 to-transparent blur-xl"
-				/> */}
+				<AnimatePresence>
+					{isThinking && (
+						<Orb
+							hue={20}
+							hoverIntensity={0.35}
+							rotateOnHover
+							forceHoverState
+						/>
+					)}
+				</AnimatePresence>
 
 				<GradientBars />
 

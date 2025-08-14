@@ -13,6 +13,7 @@ export type Mission = {
 	title: string;
 	description: string;
 	points: number;
+	status: "pending" | "completed";
 };
 
 export type CaseStudy = {

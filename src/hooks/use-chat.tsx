@@ -71,10 +71,6 @@ export const useChat = () => {
 		[store]
 	);
 
-	useEffect(() => {
-		getPersonalizedContent();
-	}, [getPersonalizedContent]);
-
 	return {
 		messages: store.chatHistory,
 		isThinking: store.isThinking,
@@ -88,5 +84,6 @@ export const useChat = () => {
 		clearMessages: store.clearChatHistory,
 		setCurrentContext: store.setCurrentContext,
 		placeHolder,
+		getPersonalizedContent
 	};
 };

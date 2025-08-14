@@ -46,5 +46,7 @@ export type PersonalisedResponse = {
 		missions: Mission[];
 		why: string;
 		fallbackToGenericData: boolean;
+		points_total: 0;
+		call_unlocked: false;
 	};
 };

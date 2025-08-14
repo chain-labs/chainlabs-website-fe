@@ -15,6 +15,7 @@ import { useGlobalStore } from "@/global-store";
 import { ProcessSection } from "@/components/process/process-section";
 import { OurMissions } from "@/components/missions/missions-section";
 import InitialLoadingScreen from "@/components/ui/initial-loading-screen";
+import { useChat } from "@/hooks/use-chat";
 
 export default function Home() {
 	const [showSplash, setShowSplash] = useState(true);
@@ -23,6 +24,7 @@ export default function Home() {
 	const handleSplashComplete = () => {
 		setShowSplash(false);
 	};
+	const { getPersonalizedContent } = useChat();
 
 	useEffect(() => {
 		const handleScroll = () => {
@@ -35,6 +37,10 @@ export default function Home() {
 
 		window.addEventListener("scroll", handleScroll, { passive: true });
 		return () => window.removeEventListener("scroll", handleScroll);
+	}, []);
+
+	useEffect(() => {
+		getPersonalizedContent();
 	}, []);
 
 	if (showSplash && showPersonalized) {

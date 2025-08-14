@@ -13,6 +13,7 @@ import {
 	MapPin,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useGlobalStore } from "@/global-store";
 
 interface FooterProps {
 	showPersonalized: boolean;
@@ -20,6 +21,8 @@ interface FooterProps {
 }
 
 export const Footer = ({ showPersonalized, className }: FooterProps) => {
+	const callUnlocked =
+		useGlobalStore().personalised?.personalisation.call_unlocked;
 	const socialLinks = [
 		{ name: "GitHub", icon: Github, href: "#" },
 		{ name: "LinkedIn", icon: Linkedin, href: "#" },
@@ -126,15 +129,37 @@ export const Footer = ({ showPersonalized, className }: FooterProps) => {
 								whileInView={{ opacity: 1, y: 0 }}
 								viewport={{ once: true }}
 								transition={{ duration: 0.6, delay: 0.2 }}
+								className="w-fit"
 							>
-								<Button
-									className="group relative overflow-hidden bg-primary hover:bg-primary/90 text-primary-foreground"
-									size="lg"
-								>
-									<Phone className="mr-2 h-4 w-4" />
-									Book a Call
-									<MoveUpRight className="ml-2 h-4 w-4 transform transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
-								</Button>
+								{callUnlocked ? (
+									<Button
+										className="group relative overflow-hidden bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
+										size="lg"
+									>
+										<Phone className="mr-2 h-4 w-4" />
+										Book a Call
+										<MoveUpRight className="ml-2 h-4 w-4 transform transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
+									</Button>
+								) : (
+									<div className="relative">
+										<Button
+											className="group relative overflow-hidden bg-primary/60 text-primary-foreground/70 blur-[1px] cursor-not-allowed pointer-events-none"
+											size="lg"
+											disabled
+											aria-disabled="true"
+											title="Complete the missions to unlock"
+										>
+											<Phone className="mr-2 h-4 w-4" />
+											Book a Call
+											<MoveUpRight className="ml-2 h-4 w-4" />
+										</Button>
+										<div className="absolute inset-0 grid place-items-center pointer-events-none">
+											<span className="rounded-md bg-background/80 px-3 py-1 text-xs text-muted-foreground border border-border/50 shadow-sm text-center">
+												Complete the missions to unlock
+											</span>
+										</div>
+									</div>
+								)}
 							</motion.div>
 						</div>
 					</div>

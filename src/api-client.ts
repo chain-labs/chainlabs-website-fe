@@ -1,4 +1,5 @@
 import { ClarificationResponse, GoalResponse, PersonalisedResponse } from "./types";
+import { Mission } from "./types/store";
 
 const API_BASE_URL =
 	process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
@@ -190,38 +191,33 @@ class ApiClient {
 	}
 
 	// Progress & Missions endpoints
-	// async getProgress() {
-	// 	type ProgressResponse = {
-	// 		pointsTotal: number;
-	// 		missions: [
-	// 			{
-	// 				id: string;
-	// 				status: string;
-	// 				points: number;
-	// 			}
-	// 		];
-	// 		callUnlocked: boolean;
-	// 	};
-	// 	const response: ProgressResponse = await this.makeAuthenticatedRequest(
-	// 		`${API_BASE_URL}/api/progress`,
-	// 		{
-	// 			method: "GET",
-	// 		}
-	// 	);
-	// 	return response;
-	// }
+	async getProgress() {
+		type ProgressResponse = {
+			points_total: number;
+			missions: [
+				{
+					id: string;
+					status: string;
+					points: number;
+				}
+			];
+			call_unlocked: boolean;
+		};
+		const response: ProgressResponse = await this.makeAuthenticatedRequest(
+			`${API_BASE_URL}/api/progress`,
+			{
+				method: "GET",
+			}
+		);
+		return response;
+	}
 
 	async completeMission(missionId: string, answer: string) {
 		type CompleteMissionResponse = {
 			points_awarded: number;
 			points_total: number;
 			call_unlocked: boolean;
-			next_mission: {
-				id: string;
-				title: string;
-				points: number;
-				status: string;
-			};
+			next_mission: Mission;
 		};
 		const response: CompleteMissionResponse =
 			await this.makeAuthenticatedRequest(

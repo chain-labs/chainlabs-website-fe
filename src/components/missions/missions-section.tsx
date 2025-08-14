@@ -95,6 +95,12 @@ const MissionCard = React.memo(
 			getError,
 		} = useMissions();
 
+		// Detect mission interaction type from id prefix
+		const id = String(mission.id);
+		const isClickMission =
+			id.startsWith("cs_mission_") || id.startsWith("view_process_");
+		const isInputMission = id.startsWith("input_") || !isClickMission;
+
 		const onMouseMove = (e: React.MouseEvent) => {
 			const el = containerRef.current;
 			if (!el) return;
@@ -114,9 +120,11 @@ const MissionCard = React.memo(
 			(getMissionStatus(mission.id) as Status) ??
 			((mission as any).status as Status);
 
-		// Treat typing as "in-progress" visually (without changing server state)
+		// Treat typing as "in-progress" visually for input-type missions only
 		const visualStatus =
-			answer.trim().length > 0 && currentStatus !== "completed"
+			isInputMission &&
+			answer.trim().length > 0 &&
+			currentStatus !== "completed"
 				? ("in-progress" as Status)
 				: (currentStatus as Status);
 		const visualMeta = prettyStatus(visualStatus);
@@ -130,6 +138,16 @@ const MissionCard = React.memo(
 				setAnswer("");
 			} catch {
 				// Error state is set inside the hook; no-op here
+			}
+		};
+
+		const handleClickComplete = async () => {
+			if (completed || submitting) return;
+			try {
+				// For click-only missions, a simple action marks completion
+				await submitAnswer(mission.id, "");
+			} catch {
+				// Error is handled by the hook
 			}
 		};
 
@@ -209,63 +227,126 @@ const MissionCard = React.memo(
 							/>
 						</div>
 
-						{/* Answer input + submit */}
-						<form
-							onSubmit={handleSubmit}
-							className="mt-5 space-y-3"
-						>
-							<label
-								htmlFor={`mission-answer-${mission.id}`}
-								className="sr-only"
+						{/* Interaction */}
+						{isInputMission ? (
+							<form
+								onSubmit={handleSubmit}
+								className="mt-5 space-y-3"
 							>
-								Answer for mission {mission.title}
-							</label>
+								<label
+									htmlFor={`mission-answer-${mission.id}`}
+									className="sr-only"
+								>
+									Answer for mission {mission.title}
+								</label>
 
-							<div
-								className={`relative rounded-2xl border transition-colors focus-within:ring-2 ${
-									error
-										? "border-red-500/60 focus-within:ring-red-500/30"
-										: "border-border/40 focus-within:ring-primary/30 focus-within:border-primary/50"
-								} bg-black/5 backdrop-blur-xl ${
-									completed ? "opacity-70" : ""
-								}`}
-							>
-								<Textarea
-									id={`mission-answer-${mission.id}`}
-									value={answer}
-									onChange={(e) => setAnswer(e.target.value)}
-									onKeyDown={(e) => {
-										if (
-											e.key === "Enter" &&
-											(e.metaKey || e.ctrlKey)
-										) {
-											e.preventDefault();
-											(
-												e.currentTarget
-													.form as HTMLFormElement | null
-											)?.requestSubmit();
-										}
-									}}
-									placeholder={
-										completed
-											? "This mission is completed."
-											: "Share your thoughts, links, or notes…"
-									}
-									disabled={completed || submitting}
-									maxLength={280}
-									aria-invalid={!!error}
-									aria-describedby={`mission-help-${
-										mission.id
-									} ${
+								<div
+									className={`relative rounded-2xl border transition-colors focus-within:ring-2 ${
 										error
-											? `mission-error-${mission.id}`
-											: ""
+											? "border-red-500/60 focus-within:ring-red-500/30"
+											: "border-border/40 focus-within:ring-primary/30 focus-within:border-primary/50"
+									} bg-black/5 backdrop-blur-xl ${
+										completed ? "opacity-70" : ""
 									}`}
-									className="w-full rounded-2xl bg-transparent  py-3 min-h-24 resize-y text-base leading-relaxed placeholder:text-muted-foreground border-0 focus-visible:ring-0 focus-visible:ring-offset-0 disabled:cursor-not-allowed"
-								/>
-							</div>
+								>
+									<Textarea
+										id={`mission-answer-${mission.id}`}
+										value={answer}
+										onChange={(e) =>
+											setAnswer(e.target.value)
+										}
+										onKeyDown={(e) => {
+											if (
+												e.key === "Enter" &&
+												(e.metaKey || e.ctrlKey)
+											) {
+												e.preventDefault();
+												(
+													e.currentTarget
+														.form as HTMLFormElement | null
+												)?.requestSubmit();
+											}
+										}}
+										placeholder={
+											completed
+												? "This mission is completed."
+												: "Share your thoughts, links, or notes…"
+										}
+										disabled={completed || submitting}
+										maxLength={280}
+										aria-invalid={!!error}
+										aria-describedby={`mission-help-${
+											mission.id
+										} ${
+											error
+												? `mission-error-${mission.id}`
+												: ""
+										}`}
+										className="w-full rounded-2xl bg-transparent  py-3 min-h-24 resize-y text-base leading-relaxed placeholder:text-muted-foreground border-0 focus-visible:ring-0 focus-visible:ring-offset-0 disabled:cursor-not-allowed"
+									/>
+								</div>
 
-							<div className="flex items-center justify-between gap-3">
+								<div className="flex items-center justify-between gap-3">
+									<div className="min-h-5 text-xs">
+										{error ? (
+											<span
+												id={`mission-error-${mission.id}`}
+												className="text-red-500"
+												aria-live="polite"
+											>
+												{error}
+											</span>
+										) : (
+											<span
+												id={`mission-help-${mission.id}`}
+												className="text-muted-foreground"
+											>
+												This will help us to understand
+												you more
+											</span>
+										)}
+									</div>
+
+									<div className="flex items-center gap-2">
+										<span
+											className={`text-xs tabular-nums ${
+												answer.length > 260
+													? "text-amber-600"
+													: "text-muted-foreground"
+											}`}
+										>
+											{answer.length}/280
+										</span>
+										{answer && !completed && !submitting ? (
+											<Button
+												type="button"
+												variant="ghost"
+												size="sm"
+												onClick={() => setAnswer("")}
+											>
+												Clear
+											</Button>
+										) : null}
+										<Button
+											type="submit"
+											size="sm"
+											disabled={
+												completed ||
+												submitting ||
+												!answer.trim()
+											}
+										>
+											{completed
+												? "Completed"
+												: submitting
+												? "Submitting..."
+												: "Submit"}
+										</Button>
+									</div>
+								</div>
+							</form>
+						) : (
+							<div className="mt-5 flex items-center justify-between gap-3">
 								<div className="min-h-5 text-xs">
 									{error ? (
 										<span
@@ -277,61 +358,33 @@ const MissionCard = React.memo(
 										</span>
 									) : (
 										<span
-											id={`mission-help-${mission.id}`}
 											className="text-muted-foreground"
+											id={`mission-help-${mission.id}`}
 										>
-											This will help us to understand you
-											more
+											Click to complete this step
 										</span>
 									)}
 								</div>
-
-								<div className="flex items-center gap-2">
-									<span
-										className={`text-xs tabular-nums ${
-											answer.length > 260
-												? "text-amber-600"
-												: "text-muted-foreground"
-										}`}
-									>
-										{answer.length}/280
-									</span>
-									{answer && !completed && !submitting ? (
-										<Button
-											type="button"
-											variant="ghost"
-											size="sm"
-											onClick={() => setAnswer("")}
-										>
-											Clear
-										</Button>
-									) : null}
-									<Button
-										type="submit"
-										size="sm"
-										disabled={
-											completed ||
-											submitting ||
-											!answer.trim()
-										}
-									>
-										{completed
-											? "Completed"
-											: submitting
-											? "Submitting..."
-											: "Submit"}
-									</Button>
-								</div>
+								<Button
+									type="button"
+									size="sm"
+									onClick={handleClickComplete}
+									disabled={completed || submitting}
+								>
+									{completed
+										? "Completed"
+										: submitting
+										? "Submitting..."
+										: "Complete"}
+								</Button>
 							</div>
-						</form>
+						)}
 					</div>
 				</motion.div>
 			</motion.div>
 		);
 	}
 );
-MissionCard.displayName = "MissionCard";
-// ...existing code...
 
 export const OurMissions = () => {
 	const store = useGlobalStore().personalised;
@@ -339,10 +392,7 @@ export const OurMissions = () => {
 	if (store === null || store.personalisation.missions.length === 0)
 		return null;
 
-	const totalPoints = store.personalisation.missions.reduce(
-		(sum, mission) => sum + mission.points,
-		0
-	);
+	const totalPoints = 50;
 
 	return (
 		<section className="relative py-24 overflow-hidden">
@@ -399,14 +449,47 @@ export const OurMissions = () => {
 					transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
 					className="mt-12 md:mt-16 text-center"
 				>
-					<div className="inline-flex items-center gap-4 rounded-2xl border border-primary/25 bg-gradient-to-r from-primary/12 to-primary/5 px-7 py-4 shadow-lg backdrop-blur">
-						<Star className="size-6 text-primary drop-shadow" />
-						<div className="text-left">
-							<div className="text-sm text-muted-foreground font-medium">
-								Total Points
-							</div>
-							<div className="text-2xl font-extrabold text-primary">
-								{totalPoints}
+					<div className="inline-flex flex-col sm:flex-row sm:items-center gap-4 rounded-2xl border border-primary/25 bg-gradient-to-r from-primary/12 to-primary/5 px-7 py-5 shadow-lg backdrop-blur">
+						<div className="inline-flex items-center gap-3">
+							<Star
+								className="size-6 text-primary drop-shadow"
+								fill={
+									store.personalisation.points_total >=
+									totalPoints
+										? "currentColor"
+										: "none"
+								}
+							/>
+							<div className="text-left">
+								<div className="text-sm text-muted-foreground font-medium">
+									Points Earned to Unlock Call
+								</div>
+								<div className="flex justify-center items-center gap-2">
+									<div className="text-2xl font-extrabold text-primary">
+										{store.personalisation.points_total}
+										<span className="ml-1 text-foreground/60 text-base font-semibold">
+											/ {totalPoints}
+										</span>
+									</div>
+									<div className="w-full sm:w-56">
+										<div className="h-2 rounded-full bg-muted/40 overflow-hidden">
+											<div
+												className="h-full rounded-full bg-primary/80"
+												style={{
+													width: `${
+														(store.personalisation
+															.points_total /
+															Math.max(
+																totalPoints,
+																1
+															)) *
+														100
+													}%`,
+												}}
+											/>
+										</div>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
