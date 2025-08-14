@@ -6,6 +6,7 @@ import { Mic, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "motion/react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useChat } from "@/hooks/use-chat";
 
 interface InputContainerProps {
 	inputValue: string;
@@ -36,44 +37,47 @@ const InputContainer = React.memo(
 		disabled,
 	}: InputContainerProps) => {
 		const hasInputValue = inputValue.trim().length > 0;
-        const submitButtonRef = React.useRef<HTMLButtonElement>(null);
-        const isMobile = useIsMobile();
+		const submitButtonRef = React.useRef<HTMLButtonElement>(null);
+		const isMobile = useIsMobile();
+		const { placeHolder } = useChat();
 
-        // Auto-resize the textarea
-        const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-        const autoResize = React.useCallback(() => {
-            const el = textareaRef.current;
-            if (!el) return;
-            el.style.height = "auto";
-            const maxPx = isMobile ? 0.4 * window.innerHeight : 0.5 * window.innerHeight;
-            const next = Math.min(el.scrollHeight, Math.max(160, maxPx));
-            el.style.height = `${next}px`;
-            el.style.overflowY = el.scrollHeight > next ? "auto" : "hidden";
-        }, [isMobile]);
+		// Auto-resize the textarea
+		const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+		const autoResize = React.useCallback(() => {
+			const el = textareaRef.current;
+			if (!el) return;
+			el.style.height = "auto";
+			const maxPx = isMobile
+				? 0.4 * window.innerHeight
+				: 0.5 * window.innerHeight;
+			const next = Math.min(el.scrollHeight, Math.max(160, maxPx));
+			el.style.height = `${next}px`;
+			el.style.overflowY = el.scrollHeight > next ? "auto" : "hidden";
+		}, [isMobile]);
 
-        React.useEffect(() => {
-            autoResize();
-        }, [inputValue, isMobile, autoResize]);
+		React.useEffect(() => {
+			autoResize();
+		}, [inputValue, isMobile, autoResize]);
 
-        const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-            // Mobile: Enter to send, Shift+Enter for newline
-            if (isMobile && e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                if (hasInputValue) submitButtonRef.current?.click();
-                return;
-            }
+		const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+			// Mobile: Enter to send, Shift+Enter for newline
+			if (isMobile && e.key === "Enter" && !e.shiftKey) {
+				e.preventDefault();
+				if (hasInputValue) submitButtonRef.current?.click();
+				return;
+			}
 
-            // Desktop: Ctrl+Enter to submit
-            if (!isMobile && e.ctrlKey && e.key === "Enter") {
-                e.preventDefault();
-                if (hasInputValue) submitButtonRef.current?.click();
-                return;
-            }
+			// Desktop: Ctrl+Enter to submit
+			if (!isMobile && e.ctrlKey && e.key === "Enter") {
+				e.preventDefault();
+				if (hasInputValue) submitButtonRef.current?.click();
+				return;
+			}
 
-            onKeyDown(e);
-        };
+			onKeyDown(e);
+		};
 
-        const showSendButton = isMobile || hasInputValue;
+		const showSendButton = isMobile || hasInputValue;
 
 		return (
 			<div className="relative w-full group">
@@ -87,39 +91,33 @@ const InputContainer = React.memo(
 					)}
 				>
 					<Textarea
-                        // Avoid auto focus on mobile to prevent keyboard popup
-                        autoFocus={!isMobile}
-                        placeholder={
-                            hasMessages
-                                ? "Need any changes to your website?"
-                                : isMobile
-                                ? "Describe your business and website needs..."
-                                : "Describe your business and website needs... (e.g., 'I need an e-commerce site for my clothing brand with AI recommendations')"
-                        }
-                        ref={textareaRef}
-                        rows={isMobile ? 1 : 3}
-                        enterKeyHint="send"
-                        spellCheck
-                        autoCapitalize="sentences"
-                        autoCorrect="on"
-                        inputMode="text"
-                        className={cn(
-                            "w-full bg-black/10 backdrop-blur-xl border-0 rounded-2xl text-base resize-none focus-visible:ring-0 focus-visible:ring-offset-0 text-text-primary placeholder:text-muted-foreground leading-relaxed",
-                            // Mobile friendly padding/heights + scroll when tall
-                            isMobile
-                                ? "p-4 pb-20 min-h-[52px] max-h-[40vh] overflow-y-auto"
-                                : "p-6 pb-16 min-h-[120px] md:min-h-[140px] max-h-[50vh] overflow-y-auto",
-                            // Right padding
-                            isMobile ? "pr-4" : hasInputValue ? "pr-6" : "pr-20"
-                        )}
-                        value={inputValue}
-                        onChange={onInputChange}
-                        onInput={autoResize}
-                        onKeyDown={handleKeyDown}
-                        onFocus={onFocus}
-                        onBlur={onBlur}
-                        aria-label="Describe your business and website needs"
-                    />
+						// Avoid auto focus on mobile to prevent keyboard popup
+						autoFocus={!isMobile}
+						placeholder={placeHolder}
+						ref={textareaRef}
+						rows={isMobile ? 1 : 3}
+						enterKeyHint="send"
+						spellCheck
+						autoCapitalize="sentences"
+						autoCorrect="on"
+						inputMode="text"
+						className={cn(
+							"w-full bg-black/10 backdrop-blur-xl border-0 rounded-2xl text-base resize-none focus-visible:ring-0 focus-visible:ring-offset-0 text-text-primary placeholder:text-muted-foreground leading-relaxed",
+							// Mobile friendly padding/heights + scroll when tall
+							isMobile
+								? "p-4 pb-20 min-h-[52px] max-h-[40vh] overflow-y-auto"
+								: "p-6 pb-16 min-h-[120px] md:min-h-[140px] max-h-[50vh] overflow-y-auto",
+							// Right padding
+							isMobile ? "pr-4" : hasInputValue ? "pr-6" : "pr-20"
+						)}
+						value={inputValue}
+						onChange={onInputChange}
+						onInput={autoResize}
+						onKeyDown={handleKeyDown}
+						onFocus={onFocus}
+						onBlur={onBlur}
+						aria-label="Describe your business and website needs"
+					/>
 
 					{/* Mic button - top right (desktop only) */}
 					{!isMobile && (

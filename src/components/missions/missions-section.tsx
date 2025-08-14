@@ -14,6 +14,9 @@ import {
 } from "lucide-react";
 import { useGlobalStore } from "@/global-store";
 import { Mission } from "@/types/store";
+import { useMissions } from "@/hooks/use-missions";
+import { Textarea } from "../ui/textarea";
+import { Button } from "../ui/button";
 
 type Status = Mission extends { status: infer S } ? S : string;
 
@@ -79,10 +82,18 @@ const MissionCard = React.memo(
 	({ mission, index }: { mission: Mission; index: number }) => {
 		const containerRef = React.useRef<HTMLDivElement | null>(null);
 		const IconComponent = iconPool[index % iconPool.length];
-		// Replace 'status' with the correct property name if it differs, e.g., 'mission.state'
-		const meta = prettyStatus(
-			(mission as any).status ?? ("not-started" as Status)
-		);
+
+		// Local UI state for this card's input
+		const [answer, setAnswer] = React.useState("");
+
+		// Hook: centralize submit, status, errors
+		const {
+			submitAnswer,
+			getMissionStatus,
+			hasCompleted,
+			isSubmitting,
+			getError,
+		} = useMissions();
 
 		const onMouseMove = (e: React.MouseEvent) => {
 			const el = containerRef.current;
@@ -92,6 +103,34 @@ const MissionCard = React.memo(
 			const y = ((e.clientY - rect.top) / rect.height) * 100;
 			el.style.setProperty("--x", `${x}%`);
 			el.style.setProperty("--y", `${y}%`);
+		};
+
+		const completed = hasCompleted(mission.id);
+		const submitting = isSubmitting(mission.id);
+		const error = getError(mission.id);
+
+		// Use latest status from store (falls back to prop)
+		const currentStatus =
+			(getMissionStatus(mission.id) as Status) ??
+			((mission as any).status as Status);
+
+		// Treat typing as "in-progress" visually (without changing server state)
+		const visualStatus =
+			answer.trim().length > 0 && currentStatus !== "completed"
+				? ("in-progress" as Status)
+				: (currentStatus as Status);
+		const visualMeta = prettyStatus(visualStatus);
+
+		const handleSubmit = async (e: React.FormEvent) => {
+			e.preventDefault();
+			if (!answer.trim() || submitting) return;
+
+			try {
+				await submitAnswer(mission.id, answer.trim());
+				setAnswer("");
+			} catch {
+				// Error state is set inside the hook; no-op here
+			}
 		};
 
 		return (
@@ -104,7 +143,7 @@ const MissionCard = React.memo(
 					delay: index * 0.08,
 					ease: "easeOut",
 				}}
-				className="group relative"
+				className="group relative max-w-7xl"
 				role="listitem"
 			>
 				{/* Top accent line */}
@@ -137,12 +176,7 @@ const MissionCard = React.memo(
 										{mission.title}
 									</h3>
 									<div className="mt-2">
-										<StatusBadge
-											status={
-												(mission as any)
-													.status as Status
-											}
-										/>
+										<StatusBadge status={visualStatus} />
 									</div>
 								</div>
 							</div>
@@ -166,12 +200,130 @@ const MissionCard = React.memo(
 						<div className="mt-4 h-1.5 w-full rounded-full bg-muted/40 overflow-hidden">
 							<motion.div
 								initial={{ width: 0 }}
-								whileInView={{ width: `${meta.progress}%` }}
+								whileInView={{
+									width: `${visualMeta.progress}%`,
+								}}
 								viewport={{ once: true }}
 								transition={{ duration: 0.7, ease: "easeOut" }}
-								className={`h-full rounded-full ${meta.bar}`}
+								className={`h-full rounded-full ${visualMeta.bar}`}
 							/>
 						</div>
+
+						{/* Answer input + submit */}
+						<form
+							onSubmit={handleSubmit}
+							className="mt-5 space-y-3"
+						>
+							<label
+								htmlFor={`mission-answer-${mission.id}`}
+								className="sr-only"
+							>
+								Answer for mission {mission.title}
+							</label>
+
+							<div
+								className={`relative rounded-2xl border transition-colors focus-within:ring-2 ${
+									error
+										? "border-red-500/60 focus-within:ring-red-500/30"
+										: "border-border/40 focus-within:ring-primary/30 focus-within:border-primary/50"
+								} bg-black/5 backdrop-blur-xl ${
+									completed ? "opacity-70" : ""
+								}`}
+							>
+								<Textarea
+									id={`mission-answer-${mission.id}`}
+									value={answer}
+									onChange={(e) => setAnswer(e.target.value)}
+									onKeyDown={(e) => {
+										if (
+											e.key === "Enter" &&
+											(e.metaKey || e.ctrlKey)
+										) {
+											e.preventDefault();
+											(
+												e.currentTarget
+													.form as HTMLFormElement | null
+											)?.requestSubmit();
+										}
+									}}
+									placeholder={
+										completed
+											? "This mission is completed."
+											: "Share your thoughts, links, or notes…"
+									}
+									disabled={completed || submitting}
+									maxLength={280}
+									aria-invalid={!!error}
+									aria-describedby={`mission-help-${
+										mission.id
+									} ${
+										error
+											? `mission-error-${mission.id}`
+											: ""
+									}`}
+									className="w-full rounded-2xl bg-transparent  py-3 min-h-24 resize-y text-base leading-relaxed placeholder:text-muted-foreground border-0 focus-visible:ring-0 focus-visible:ring-offset-0 disabled:cursor-not-allowed"
+								/>
+							</div>
+
+							<div className="flex items-center justify-between gap-3">
+								<div className="min-h-5 text-xs">
+									{error ? (
+										<span
+											id={`mission-error-${mission.id}`}
+											className="text-red-500"
+											aria-live="polite"
+										>
+											{error}
+										</span>
+									) : (
+										<span
+											id={`mission-help-${mission.id}`}
+											className="text-muted-foreground"
+										>
+											This will help us to understand you
+											more
+										</span>
+									)}
+								</div>
+
+								<div className="flex items-center gap-2">
+									<span
+										className={`text-xs tabular-nums ${
+											answer.length > 260
+												? "text-amber-600"
+												: "text-muted-foreground"
+										}`}
+									>
+										{answer.length}/280
+									</span>
+									{answer && !completed && !submitting ? (
+										<Button
+											type="button"
+											variant="ghost"
+											size="sm"
+											onClick={() => setAnswer("")}
+										>
+											Clear
+										</Button>
+									) : null}
+									<Button
+										type="submit"
+										size="sm"
+										disabled={
+											completed ||
+											submitting ||
+											!answer.trim()
+										}
+									>
+										{completed
+											? "Completed"
+											: submitting
+											? "Submitting..."
+											: "Submit"}
+									</Button>
+								</div>
+							</div>
+						</form>
 					</div>
 				</motion.div>
 			</motion.div>
@@ -179,7 +331,6 @@ const MissionCard = React.memo(
 	}
 );
 MissionCard.displayName = "MissionCard";
-
 // ...existing code...
 
 export const OurMissions = () => {

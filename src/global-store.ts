@@ -136,6 +136,7 @@ interface SessionActions {
 
 	// Computed
 	hasGoal: () => boolean;
+	hasClarification: () => boolean;
 	completedMissionsCount: () => number;
 	pendingMissionsCount: () => number;
 	progressPercentage: () => number;
@@ -150,6 +151,7 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 			// Initial State - Goal & Personalization
 			goal: null,
 			headline: null,
+			clarification: null,
 			personalised: null,
 			missions: [],
 			recommendedCaseStudies: [],
@@ -272,6 +274,7 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 
 			// Computed
 			hasGoal: () => get().goal !== null,
+			hasClarification: () => get().personalised?.status !== "CLARIFIED",
 			completedMissionsCount: () =>
 				get().missions.filter((m) => m.status === "completed").length,
 			pendingMissionsCount: () =>
@@ -284,7 +287,8 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 				).length;
 				return (completed / missions.length) * 100;
 			},
-			canShowPersonalized: () => get().personalised !== null,
+			canShowPersonalized: () =>
+				get().personalised?.status !== "CLARIFIED",
 			getCurrentMission: () => {
 				const { currentMissionId, missions } = get();
 				return missions.find((m) => m.id === currentMissionId) || null;

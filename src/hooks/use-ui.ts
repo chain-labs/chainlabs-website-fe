@@ -20,7 +20,7 @@ export const useUI = () => {
 	return {
 		isFocused: store.isFocused,
 		isRecording: store.isRecording,
-		showPersonalized: store.personalised !== null,
+		showPersonalized: store.personalised?.status === "CLARIFIED",
 		sidebarOpen: store.sidebarOpen,
 		theme: store.theme,
 		animations: store.animations,

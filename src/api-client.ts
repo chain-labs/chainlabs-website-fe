@@ -211,31 +211,31 @@ class ApiClient {
 	// 	return response;
 	// }
 
-	// async completeMission(missionId: string, answer: string) {
-	// 	type CompleteMissionResponse = {
-	// 		points_awarded: number;
-	// 		points_total: number;
-	// 		call_unlocked: boolean;
-	// 		next_mission: {
-	// 			id: string;
-	// 			title: string;
-	// 			points: number;
-	// 			status: string;
-	// 		};
-	// 	};
-	// 	const response: CompleteMissionResponse =
-	// 		await this.makeAuthenticatedRequest(
-	// 			`${API_BASE_URL}/api/mission/complete`,
-	// 			{
-	// 				method: "POST",
-	// 				body: JSON.stringify({
-	// 					mission_id: missionId,
-	// 					artifact: { answer },
-	// 				}),
-	// 			}
-	// 		);
-	// 	return response;
-	// }
+	async completeMission(missionId: string, answer: string) {
+		type CompleteMissionResponse = {
+			points_awarded: number;
+			points_total: number;
+			call_unlocked: boolean;
+			next_mission: {
+				id: string;
+				title: string;
+				points: number;
+				status: string;
+			};
+		};
+		const response: CompleteMissionResponse =
+			await this.makeAuthenticatedRequest(
+				`${API_BASE_URL}/api/mission/complete`,
+				{
+					method: "POST",
+					body: JSON.stringify({
+						mission_id: missionId,
+						artifact: { answer },
+					}),
+				}
+			);
+		return response;
+	}
 
 	// async checkUnlockStatus() {
 	// 	type UnlockStatusResponse = {
