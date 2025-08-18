@@ -30,7 +30,10 @@ export const ProcessSection = () => {
 				className="text-center mb-16"
 			>
 				<h2 className="text-center text-4xl font-bold text-foreground lg:text-5xl mb-4">
-					Our Process
+					Our{" "}
+					<span className="bg-gradient-to-r from-primary via-primary to-primary/80 bg-clip-text text-transparent">
+						Process
+					</span>{" "}
 				</h2>
 				<p className="mx-auto text-base sm:text-lg text-muted-foreground max-w-2xl">
 					A clear, collaborative path from discovery to

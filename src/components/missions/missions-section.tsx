@@ -221,7 +221,7 @@ const MissionCard = React.memo(
 									</span>
 								</div>
 							</div>
-						</div>\
+						</div>
 
 						{/* Divider */}
 						<div className="mt-5 h-px bg-gradient-to-r from-transparent via-border/60 to-transparent" />

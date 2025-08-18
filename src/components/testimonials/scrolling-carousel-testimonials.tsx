@@ -305,7 +305,11 @@ const ScrollingCarouselTestimonials = () => {
 					className="text-center"
 				>
 					<h2 className="text-center text-4xl font-bold text-text-primary lg:text-5xl mb-4">
-						What Our Clients Say
+						What Our{" "}
+						<span className="bg-gradient-to-r from-primary via-primary to-primary/80 bg-clip-text text-transparent">
+							Clients
+						</span>{" "}
+						Say
 					</h2>
 					<p className="text-lg text-text-secondary max-w-2xl">
 						Discover how we've helped businesses transform their
