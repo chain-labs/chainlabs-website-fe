@@ -16,6 +16,7 @@ import { ProcessSection } from "@/components/process/process-section";
 import { OurMissions } from "@/components/missions/missions-section";
 import InitialLoadingScreen from "@/components/ui/initial-loading-screen";
 import { useChat } from "@/hooks/use-chat";
+import PersonaliseHeroSection from "@/components/personalise/personalise-hero-section";
 
 export default function Home() {
 	const [showSplash, setShowSplash] = useState(true);
@@ -57,6 +58,7 @@ export default function Home() {
 			<div className="w-full">
 				{showPersonalized ? (
 					<div className="flex flex-col items-center justify-center pt-8">
+						<PersonaliseHeroSection />
 						<ProcessSection />
 						<ScrollingCarouselTestimonials />
 						<ResponsiveGridCasestudies />

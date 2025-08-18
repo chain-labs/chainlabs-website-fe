@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useCallback, KeyboardEvent } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence, useAnimate } from "motion/react";
 import { Sparkles, Globe, Zap, Blocks, Code2 } from "lucide-react";
 import ChatBubble from "./chat-bubble";
 import ThinkingIndicator from "./think-indicator";
@@ -142,6 +142,7 @@ const ChainLabsHero = () => {
 	]);
 
 	// Original hero/chat UI
+
 	return (
 		<section className="relative min-h-screen w-full flex flex-col overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
 			{/* Background Elements */}
@@ -156,14 +157,12 @@ const ChainLabsHero = () => {
 
 				{/* Secondary accent orbs */}
 				<AnimatePresence>
-					{isThinking && (
-						<Orb
-							hue={20}
-							hoverIntensity={0.35}
-							rotateOnHover
-							forceHoverState
-						/>
-					)}
+					<Orb
+						hue={20}
+						hoverIntensity={isThinking ? 0.35 : 0}
+						rotateOnHover
+						forceHoverState
+					/>
 				</AnimatePresence>
 
 				<GradientBars />

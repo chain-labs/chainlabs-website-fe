@@ -185,14 +185,23 @@ const MissionCard = React.memo(
 
 					<div className="relative p-5">
 						<div className="flex items-start justify-between gap-4">
-							<div className="flex items-center gap-4">
+							<div className="grid items-center gap-4">
 								<div className="grid place-items-center rounded-xl size-11 bg-primary/12 ring-1 ring-primary/25 text-primary">
-									<IconComponent className="size-5" />
+									<IconComponent
+										className="size-5"
+										aria-hidden="true"
+										focusable="false"
+									/>
 								</div>
 								<div>
 									<h3 className="text-base font-semibold text-foreground leading-tight">
-										{mission.title}
+										{mission.title ?? "Untitled mission"}
 									</h3>
+									{mission.description ? (
+										<p className="mt-1 text-sm text-muted-foreground">
+											{mission.description}
+										</p>
+									) : null}
 									<div className="mt-2">
 										<StatusBadge status={visualStatus} />
 									</div>
@@ -203,13 +212,16 @@ const MissionCard = React.memo(
 								<div className="text-xs text-muted-foreground">
 									Points
 								</div>
-								<div className="mt-1 inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-primary ring-1 ring-primary/20">
+								<div
+									className="mt-1 inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-primary ring-1 ring-primary/20"
+									aria-label="Points for this mission"
+								>
 									<span className="text-sm font-bold">
-										{mission.points}
+										{Number(mission.points ?? 0)}
 									</span>
 								</div>
 							</div>
-						</div>
+						</div>\
 
 						{/* Divider */}
 						<div className="mt-5 h-px bg-gradient-to-r from-transparent via-border/60 to-transparent" />
@@ -447,43 +459,48 @@ export const OurMissions = () => {
 					whileInView={{ opacity: 1, y: 0 }}
 					viewport={{ once: true }}
 					transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
-					className="mt-12 md:mt-16 text-center"
+					className="mt-12 md:mt-16 text-center max-w-fit mx-auto"
 				>
-					<div className="inline-flex flex-col sm:flex-row sm:items-center gap-4 rounded-2xl border border-primary/25 bg-gradient-to-r from-primary/12 to-primary/5 px-7 py-5 shadow-lg backdrop-blur">
-						<div className="inline-flex items-center gap-3">
+					<div className="flex w-full flex-col sm:flex-row sm:items-center gap-4 rounded-2xl border border-primary/25 bg-gradient-to-r from-primary/12 to-primary/5 px-5 sm:px-7 py-4 sm:py-5 shadow-lg backdrop-blur">
+						<div className="flex w-full items-center gap-3 sm:gap-4">
 							<Star
-								className="size-6 text-primary drop-shadow"
+								className="size-5 sm:size-6 text-primary drop-shadow shrink-0"
 								fill={
-									store.personalisation.points_total >=
-									totalPoints
+									store.personalisation.points_total >= totalPoints
 										? "currentColor"
 										: "none"
 								}
 							/>
-							<div className="text-left">
+							<div className="min-w-0 flex-1 text-left">
 								<div className="text-sm text-muted-foreground font-medium">
 									Points Earned to Unlock Call
 								</div>
-								<div className="flex justify-center items-center gap-2">
-									<div className="text-2xl font-extrabold text-primary">
+								<div className="mt-1 sm:mt-0 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+									<div className="text-2xl font-extrabold text-primary leading-tight whitespace-nowrap">
 										{store.personalisation.points_total}
 										<span className="ml-1 text-foreground/60 text-base font-semibold">
 											/ {totalPoints}
 										</span>
 									</div>
 									<div className="w-full sm:w-56">
-										<div className="h-2 rounded-full bg-muted/40 overflow-hidden">
+										<div
+											className="h-2 rounded-full bg-muted/40 overflow-hidden"
+											role="progressbar"
+											aria-label="Points progress to unlock call"
+											aria-valuemin={0}
+											aria-valuemax={totalPoints}
+											aria-valuenow={store.personalisation.points_total}
+										>
 											<div
 												className="h-full rounded-full bg-primary/80"
 												style={{
 													width: `${
-														(store.personalisation
-															.points_total /
-															Math.max(
-																totalPoints,
-																1
-															)) *
-														100
+														Math.min(
+															100,
+															(store.personalisation.points_total /
+																Math.max(totalPoints, 1)) *
+																100
+														)
 													}%`,
 												}}
 											/>

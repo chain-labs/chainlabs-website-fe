@@ -155,17 +155,6 @@ const BookCallSection = () => {
 						</motion.p>
 					</motion.div>
 
-					{/* Features Grid */}
-					<motion.div
-						initial={{ opacity: 0, y: 30 }}
-						whileInView={{ opacity: 1, y: 0 }}
-						viewport={{ once: true }}
-						transition={{ duration: 0.8, delay: 0.5 }}
-						className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16"
-					>
-						{/* ...existing code... */}
-					</motion.div>
-
 					{/* Bottom CTA */}
 					<motion.div
 						initial={{ opacity: 0, y: 30 }}
@@ -174,17 +163,17 @@ const BookCallSection = () => {
 						transition={{ duration: 0.8, delay: 1 }}
 						className="text-center"
 					>
-						<div className="max-w-2xl mx-auto p-8 rounded-3xl bg-gradient-to-br from-surface/80 to-surface-muted/80 backdrop-blur-sm border border-border/50">
-							<div className="flex items-center justify-center gap-2 mb-4">
-								<Calendar className="w-5 h-5 text-primary" />
-								<span className="text-sm font-medium text-muted-foreground">
+						<div className="w-full max-w-2xl mx-auto p-5 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-surface/80 to-surface-muted/80 backdrop-blur-sm border border-border/50">
+							<div className="flex items-center justify-center gap-1.5 sm:gap-2 mb-3 sm:mb-4">
+								<Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+								<span className="text-xs sm:text-sm font-medium text-muted-foreground">
 									Available Monday - Friday, 9 AM - 6 PM EST
 								</span>
 							</div>
-							<h3 className="text-xl font-semibold text-foreground mb-3">
+							<h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2.5 sm:mb-3">
 								Not sure which option is right for you?
 							</h3>
-							<p className="text-muted-foreground mb-6">
+							<p className="text-sm sm:text-base text-muted-foreground mb-5 sm:mb-6">
 								Start with a quick chat and we'll recommend the
 								best next steps for your specific needs.
 							</p>
@@ -199,10 +188,10 @@ const BookCallSection = () => {
 								size="lg"
 								disabled={!callUnlocked}
 								aria-disabled={!callUnlocked}
-								className="border-primary/30 hover:bg-primary hover:text-white hover:border-primary cursor-pointer"
+								className="w-full sm:w-auto justify-center border-primary/30 hover:bg-primary hover:text-white hover:border-primary cursor-pointer"
 							>
 								Schedule Quick Chat
-								<ArrowRight className="w-4 h-4 ml-2" />
+								<ArrowRight className="w-4 h-4 ml-1.5 sm:ml-2" />
 							</Button>
 						</div>
 					</motion.div>

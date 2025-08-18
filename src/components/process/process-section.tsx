@@ -4,100 +4,39 @@ import React from "react";
 import { motion } from "motion/react";
 import { useGlobalStore } from "@/global-store";
 import { Sparkles } from "lucide-react";
+import { Process } from "@/types/store";
 
 // ...existing code...
 export const ProcessSection = () => {
 	const store = useGlobalStore().personalised;
 	if (store === null) return;
 
-	const container = {
-		hidden: {},
-		show: {
-			transition: { staggerChildren: 0.08, delayChildren: 0.1 },
+	const Process: Process[] = [
+		...store.personalisation.process,
+		{
+			name: "Happy Completion 🎉",
+			description:
+				"We celebrate your results, reflect on wins, and align on next steps with a smile.",
 		},
-	};
-
-	const item = {
-		hidden: { opacity: 0, y: 12, scale: 0.98 },
-		show: {
-			opacity: 1,
-			y: 0,
-			scale: 1,
-			transition: { duration: 0.5, ease: "easeOut" },
-		},
-	};
+	];
 
 	return (
-		<section className="relative py-24">
+		<section className="relative py-24 w-full max-w-7xl">
 			{/* Header */}
 			<motion.div
-				initial={{ opacity: 0, y: 30 }}
+				initial={{ opacity: 0, y: 20 }}
 				whileInView={{ opacity: 1, y: 0 }}
-				viewport={{ once: true }}
-				transition={{ duration: 0.8 }}
-				className="relative text-center mb-16"
+				transition={{ duration: 0.6 }}
+				className="text-center mb-16"
 			>
-				{/* Premium pill */}
-				<div className="relative inline-flex mb-8">
-					<div className="relative rounded-full p-[1.5px] bg-gradient-to-r from-primary/30 via-primary/60 to-primary/30">
-						<div className="inline-flex items-center gap-2 rounded-full bg-background/70 backdrop-blur px-5 py-2 border border-primary/20 text-primary text-sm font-medium">
-							<Sparkles className="w-4 h-4" />
-							<span>Free AI Strategy Session</span>
-						</div>
-					</div>
-				</div>
-
-				<motion.h2
-					initial={{ opacity: 0, y: 20 }}
-					whileInView={{ opacity: 1, y: 0 }}
-					viewport={{ once: true }}
-					transition={{ duration: 0.8, delay: 0.2 }}
-					className="text-4xl md:text-5xl font-bold leading-tight bg-gradient-to-br from-foreground via-primary to-foreground/70 bg-clip-text text-transparent"
-				>
-					{store.personalisation.hero.title}
-				</motion.h2>
-
-				<motion.p
-					initial={{ opacity: 0, y: 16 }}
-					whileInView={{ opacity: 1, y: 0 }}
-					viewport={{ once: true }}
-					transition={{ duration: 0.8, delay: 0.35 }}
-					className="text-lg  text-muted-foreground/90 max-w-3xl mx-auto leading-relaxed mt-6"
-				>
-					{store.personalisation.hero.description}
-				</motion.p>
-				<motion.div
-					initial={{ scaleX: 0, opacity: 0 }}
-					whileInView={{ scaleX: 1, opacity: 1 }}
-					viewport={{ once: true }}
-					transition={{ duration: 0.7, delay: 0.35, ease: "easeOut" }}
-					style={{ originX: 0.5 }}
-					className="mx-auto mt-4 h-px w-24 bg-gradient-to-r from-transparent via-primary/60 to-transparent"
-				/>
-
-				{/* Floating sparkles */}
-				<motion.div
-					aria-hidden
-					className="absolute -top-2 left-1/2 -translate-x-[8rem] text-primary/60"
-					initial={{ opacity: 0, y: 6 }}
-					whileInView={{ opacity: 1, y: 0 }}
-					viewport={{ once: true }}
-					transition={{ delay: 0.45, duration: 0.6 }}
-				>
-					<Sparkles className="h-5 w-5" />
-				</motion.div>
-				<motion.div
-					aria-hidden
-					className="absolute top-1 right-1/2 translate-x-[9rem] text-primary/60"
-					initial={{ opacity: 0, y: 6 }}
-					whileInView={{ opacity: 1, y: 0 }}
-					viewport={{ once: true }}
-					transition={{ delay: 0.55, duration: 0.6 }}
-				>
-					<Sparkles className="h-5 w-5" />
-				</motion.div>
+				<h2 className="text-center text-4xl font-bold text-foreground lg:text-5xl mb-4">
+					Our Process
+				</h2>
+				<p className="mx-auto text-base sm:text-lg text-muted-foreground max-w-2xl">
+					A clear, collaborative path from discovery to
+					delivery—tailored to your goals.
+				</p>
 			</motion.div>
-
 			{/* Subtle radial ambiance */}
 			<div
 				className="pointer-events-none absolute inset-0 -z-10"
@@ -107,16 +46,18 @@ export const ProcessSection = () => {
 				}}
 			/>
 
-			<div className="container mx-auto px-6 max-w-6xl">
+			<div className="container mx-auto px-6 max-w-7xl">
 				{/* Grid */}
 				<motion.div
 					initial="hidden"
 					whileInView="show"
 					viewport={{ once: true, amount: 0.15 }}
-					variants={container}
-					className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+					className="grid gap-6"
+					style={{
+						gridTemplateColumns: `repeat(auto-fit, minmax(300px, 1fr))`,
+					}}
 				>
-					{store.personalisation.process.map((step, idx) => (
+					{Process.map((step, idx) => (
 						<motion.article
 							key={`personalised-${idx}`}
 							whileHover={{ y: -3, scale: 1.01 }}
