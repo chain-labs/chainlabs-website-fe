@@ -333,7 +333,7 @@ const AIChatBubble = () => {
 
                         {/* Input */}
                         <footer className="p-4 border-t border-border bg-card rounded-b-lg flex-shrink-0">
-                            <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+                            <form onSubmit={handleSendMessage} className="flex items-end gap-2">
                                 <div className="flex-1 items-end relative">
                                     <Textarea
                                         value={inputValue + voiceInputValue}
@@ -347,7 +347,7 @@ const AIChatBubble = () => {
                                         autoCapitalize="sentences"
                                         autoCorrect="on"
                                         inputMode="text"
-                                        className="flex-1 bg-input pr-12 min-h-[48px] max-h-[40vh] overflow-y-auto"
+                                        className="flex-1 bg-input min-h-[48px] max-h-[40vh] max-w-full overflow-y-auto resize-none"
                                         aria-label="Chat input"
                                     />
                                     {/* Voice input indicator */}
