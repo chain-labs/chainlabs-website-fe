@@ -134,22 +134,43 @@ export function useMissions(options: UseMissionsOptions = { autoInit: true }) {
 					// Update mission status -> completed; append next_mission if provided
 					if (personalised) {
 						const current = personalised.personalisation.missions;
-						const updated = current.map((m) =>
-							m.id === missionId
-								? { ...m, status: "completed" }
-								: m
-						);
+						const updated: Mission[] = current.map((m) => ({
+							id: m.id,
+							title: m.title,
+							description: m.description,
+							points: m.points,
+							status:
+								m.id === missionId
+									? "completed"
+									: m.status === "completed"
+									? "completed"
+									: "pending",
+						}));
 
 						const next = res.next_mission;
+						const nextNormalized: Mission | null = next
+							? {
+									id: next.id,
+									title: next.title,
+									description: next.description,
+									points: next.points,
+									status:
+										next.status === "completed"
+											? "completed"
+											: "pending",
+							  }
+							: null;
+
 						const hasNext =
-							next && !updated.some((m) => m.id === next.id);
+							!!nextNormalized &&
+							!updated.some((m) => m.id === nextNormalized.id);
 
 						setPersonalised({
 							...personalised,
 							personalisation: {
 								...personalised.personalisation,
 								missions: hasNext
-									? [...updated, next as Mission]
+									? [...updated, nextNormalized!]
 									: updated,
 							},
 						});
