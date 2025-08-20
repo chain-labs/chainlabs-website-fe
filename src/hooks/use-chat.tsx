@@ -1,19 +1,30 @@
 import { useCallback, useEffect, useState } from "react";
 import { useGlobalStore } from "@/global-store";
 import { apiClient } from "@/api-client";
+import { useUI } from "./use-ui";
 
 const PLACE_HOLDERS = {
-	GOAL: "Describe your goal, your business",
-	CLARIFICATION: "Please clarify your request",
-	DEFAULT: "I'm here to help you with anything you need.",
+	GOAL: "Briefly describe your business and the goal you want to achieve.",
+	CLARIFICATION: "Please clarify your request with a bit more detail.",
+	DEFAULT: "Type a question or describe what you need.",
+};
+
+const THINKING_PLACEHOLDER = {
+	GOAL: "Thinking about your goal...",
+	CLARIFICATION: "Rendering ...",
+	DEFAULT: "Thinking about your request...",
 };
 
 export const useChat = () => {
 	const store = useGlobalStore();
+	const { showPersonalized } = useUI();
 	const [isThisLatestAssistantMessage, setIsThisLatestAssistantMessage] =
 		useState(false);
 	const [placeHolder, setPlaceHolder] = useState(
 		store.hasGoal() ? PLACE_HOLDERS.GOAL : PLACE_HOLDERS.DEFAULT
+	);
+	const [thinkingPlaceholder, setThinkingPlaceholder] = useState(
+		THINKING_PLACEHOLDER.DEFAULT
 	);
 
 	const getPersonalizedContent = useCallback(async () => {
@@ -41,7 +52,43 @@ export const useChat = () => {
 			store.setIsThinking(true);
 
 			try {
-				if (store.hasGoal()) {
+				if (showPersonalized) {
+					const response = await apiClient.chatWithAssistant(
+						content,
+						{
+							page: "",
+							section: "",
+							metadata: { additionalProp1: null },
+						}
+					);
+					store.setIsThinking(false);
+					store.addChatMessage({
+						role: "assistant",
+						message: response.reply,
+						timestamp: new Date().toISOString(),
+					});
+					const target = document.getElementById(
+						response.navigate.metadata.missionId
+					);
+					if (target) {
+						if ("scrollMarginTop" in target.style) {
+							target.style.scrollMarginTop = "100px";
+							target.scrollIntoView({
+								behavior: "smooth",
+								block: "start",
+							});
+						} else {
+							const y = Math.max(
+								0,
+								target.getBoundingClientRect().top +
+									window.pageYOffset -
+									100
+							);
+							window.scrollTo({ top: y, behavior: "smooth" });
+						}
+					}
+				} else if (store.hasGoal()) {
+					setThinkingPlaceholder(THINKING_PLACEHOLDER.GOAL);
 					const response = await apiClient.clarifyGoal(content);
 					store.setIsThinking(false);
 					store.addChatMessage({
@@ -50,6 +97,7 @@ export const useChat = () => {
 						timestamp: new Date().toISOString(),
 					});
 				} else {
+					setThinkingPlaceholder(THINKING_PLACEHOLDER.CLARIFICATION);
 					const response = await apiClient.submitGoal(content);
 					store.setIsThinking(false);
 					store.addChatMessage({
@@ -84,6 +132,7 @@ export const useChat = () => {
 		clearMessages: store.clearChatHistory,
 		setCurrentContext: store.setCurrentContext,
 		placeHolder,
-		getPersonalizedContent
+		thinkingPlaceholder,
+		getPersonalizedContent,
 	};
 };

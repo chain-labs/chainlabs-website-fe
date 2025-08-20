@@ -1,4 +1,4 @@
-import { CaseStudy, Hero, History, Message, Process } from "./store";
+import { CaseStudy, ChatHistory, Hero, History, Message, Mission, Process } from "./store";
 
 export type ErrorResponse = {
 	detail: {
@@ -48,5 +48,24 @@ export type PersonalisedResponse = {
 		fallbackToGenericData: boolean;
 		points_total: 0;
 		call_unlocked: false;
+	};
+};
+
+export type ChatResponse = {
+	reply: string;
+	history: ChatHistory[];
+	followUpMissions: string[];
+	updatedProgress: {
+		pointsTotal: number;
+		missions: Mission[];
+		callUnlocked: false;
+	};
+	suggestedRead: [];
+	navigate: {
+		page: string;
+		section: string;
+		metadata: {
+			missionId: string;
+		};
 	};
 };

@@ -8,7 +8,7 @@ export default function PersonaliseHeroSection() {
 	const store = useGlobalStore().personalised;
 	if (store === null) return null;
 	return (
-		<section className="relative py-24 min-h-screen flex justify-center items-center">
+		<section className="relative py-24 min-h-screen flex justify-center items-center mx-auto max-w-sm px-4 font-sans antialiased md:max-w-6xl md:px-8 lg:px-12">
 			{/* Header */}
 			<motion.div
 				initial={{ opacity: 0, y: 30 }}

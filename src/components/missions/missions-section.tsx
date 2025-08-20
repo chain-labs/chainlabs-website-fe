@@ -163,6 +163,7 @@ const MissionCard = React.memo(
 				}}
 				className="group relative max-w-7xl"
 				role="listitem"
+				id={mission.id}
 			>
 				{/* Top accent line */}
 				<div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
@@ -407,7 +408,7 @@ export const OurMissions = () => {
 	const totalPoints = 50;
 
 	return (
-		<section className="relative py-24 overflow-hidden">
+		<section className="relative py-24 overflow-hidden" id="missions">
 			{/* Background glow */}
 			<div
 				aria-hidden
@@ -466,7 +467,8 @@ export const OurMissions = () => {
 							<Star
 								className="size-5 sm:size-6 text-primary drop-shadow shrink-0"
 								fill={
-									store.personalisation.points_total >= totalPoints
+									store.personalisation.points_total >=
+									totalPoints
 										? "currentColor"
 										: "none"
 								}
@@ -489,19 +491,24 @@ export const OurMissions = () => {
 											aria-label="Points progress to unlock call"
 											aria-valuemin={0}
 											aria-valuemax={totalPoints}
-											aria-valuenow={store.personalisation.points_total}
+											aria-valuenow={
+												store.personalisation
+													.points_total
+											}
 										>
 											<div
 												className="h-full rounded-full bg-primary/80"
 												style={{
-													width: `${
-														Math.min(
-															100,
-															(store.personalisation.points_total /
-																Math.max(totalPoints, 1)) *
-																100
-														)
-													}%`,
+													width: `${Math.min(
+														100,
+														(store.personalisation
+															.points_total /
+															Math.max(
+																totalPoints,
+																1
+															)) *
+															100
+													)}%`,
 												}}
 											/>
 										</div>

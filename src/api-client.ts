@@ -1,4 +1,9 @@
-import { ClarificationResponse, GoalResponse, PersonalisedResponse } from "./types";
+import {
+	ChatResponse,
+	ClarificationResponse,
+	GoalResponse,
+	PersonalisedResponse,
+} from "./types";
 import { Mission } from "./types/store";
 
 const API_BASE_URL =
@@ -276,77 +281,25 @@ class ApiClient {
 	// }
 
 	// Chat endpoint
-	// async chatWithAssistant(
-	// 	message: string,
-	// 	context: {
-	// 		page: string;
-	// 		section: string;
-	// 		metadata: {
-	// 			additionalProp1: any;
-	// 		};
-	// 	}
-	// ): Promise<{
-	// 	role: "user" | "assistant";
-	// 	message: string;
-	// 	timestamp: string;
-	// }> {
-	// 	type ChatResponse = {
-	// 		reply: string;
-	// 		history: [
-	// 			{
-	// 				role: "user" | "assistant";
-	// 				message: string;
-	// 				timestamp: string;
-	// 			}
-	// 		];
-	// 		followUpMissions: [
-	// 			{
-	// 				id: string;
-	// 				title: string;
-	// 				points: number;
-	// 				status: string;
-	// 			}
-	// 		];
-	// 		updatedProgress: {
-	// 			pointsTotal: number;
-	// 			missions: [
-	// 				{
-	// 					id: string;
-	// 					status: string;
-	// 					points: number;
-	// 				}
-	// 			];
-	// 			callUnlocked: true;
-	// 		};
-	// 		suggestedRead: [
-	// 			{
-	// 				id: string;
-	// 				title: string;
-	// 				summary: string;
-	// 			}
-	// 		];
-	// 		navigate: {
-	// 			page: string;
-	// 			section: string;
-	// 			metadata: {
-	// 				additionalProp1: {};
-	// 			};
-	// 		};
-	// 	};
-	// 	const response: ChatResponse = await this.makeAuthenticatedRequest(
-	// 		`${API_BASE_URL}/api/chat`,
-	// 		{
-	// 			method: "POST",
-	// 			body: JSON.stringify({ message, context }),
-	// 		}
-	// 	);
-	// 	const lastMessage = response.history[response.history.length - 1];
-	// 	return {
-	// 		role: lastMessage.role,
-	// 		message: lastMessage.message,
-	// 		timestamp: lastMessage.timestamp,
-	// 	};
-	// }
+	async chatWithAssistant(
+		message: string,
+		context: {
+			page: string;
+			section: string;
+			metadata: {
+				additionalProp1: any;
+			};
+		}
+	) {
+		const response: ChatResponse = await this.makeAuthenticatedRequest(
+			`${API_BASE_URL}/api/chat`,
+			{
+				method: "POST",
+				body: JSON.stringify({ message, context }),
+			}
+		);
+		return response;
+	}
 
 	// Utility method to check if user is authenticated
 	isAuthenticated(): boolean {

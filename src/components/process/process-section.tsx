@@ -21,7 +21,7 @@ export const ProcessSection = () => {
 	];
 
 	return (
-		<section className="relative py-24 w-full max-w-7xl">
+		<section className="relative py-24 w-full max-w-7xl" id="process">
 			{/* Header */}
 			<motion.div
 				initial={{ opacity: 0, y: 20 }}
@@ -62,6 +62,7 @@ export const ProcessSection = () => {
 				>
 					{Process.map((step, idx) => (
 						<motion.article
+							id={`process-step-${idx}`}
 							key={`personalised-${idx}`}
 							whileHover={{ y: -3, scale: 1.01 }}
 							whileTap={{ scale: 0.99 }}

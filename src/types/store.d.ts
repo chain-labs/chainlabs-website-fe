@@ -38,3 +38,11 @@ export type Message = {
 	name: string | null;
 	id: string | null;
 };
+export type ChatHistory = {
+	content: string;
+	additional_kwargs: {};
+	response_metadata: {};
+	type: "human" | "ai";
+	name: null;
+	id: null;
+};
