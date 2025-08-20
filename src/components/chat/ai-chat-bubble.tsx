@@ -438,26 +438,6 @@ const AIChatBubble = () => {
 									</motion.div>
 								)}
 							</AnimatePresence>
-
-							{/* Always show CTA at bottom when not thinking */}
-							{!isThinking && messages.length > 1 && (
-								<div className="flex justify-center mt-4 pt-4 border-t border-border">
-									<Button
-										variant="default"
-										size="lg"
-										className="gap-2 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg hover:shadow-xl transition-all"
-										onClick={() =>
-											window.open(
-												"https://cal.com/",
-												"_blank"
-											)
-										}
-									>
-										<Calendar className="w-5 h-5" />
-										Book a Strategy Call
-									</Button>
-								</div>
-							)}
 						</div>
 
 						{/* Input */}

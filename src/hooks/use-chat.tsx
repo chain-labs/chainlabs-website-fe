@@ -21,10 +21,18 @@ export const useChat = () => {
 	const [isThisLatestAssistantMessage, setIsThisLatestAssistantMessage] =
 		useState(false);
 	const [placeHolder, setPlaceHolder] = useState(
-		store.hasGoal() ? PLACE_HOLDERS.GOAL : PLACE_HOLDERS.DEFAULT
+		showPersonalized
+			? PLACE_HOLDERS.DEFAULT
+			: store.hasGoal()
+			? PLACE_HOLDERS.CLARIFICATION
+			: PLACE_HOLDERS.GOAL
 	);
 	const [thinkingPlaceholder, setThinkingPlaceholder] = useState(
-		THINKING_PLACEHOLDER.DEFAULT
+		showPersonalized
+			? THINKING_PLACEHOLDER.DEFAULT
+			: store.hasGoal()
+			? THINKING_PLACEHOLDER.CLARIFICATION
+			: THINKING_PLACEHOLDER.GOAL
 	);
 
 	const getPersonalizedContent = useCallback(async () => {
@@ -70,6 +78,10 @@ export const useChat = () => {
 					const target = document.getElementById(
 						response.navigate.metadata.missionId
 					);
+					const targetSection = document.getElementById(
+						response.navigate.section
+					);
+
 					if (target) {
 						if ("scrollMarginTop" in target.style) {
 							target.style.scrollMarginTop = "100px";
@@ -86,16 +98,37 @@ export const useChat = () => {
 							);
 							window.scrollTo({ top: y, behavior: "smooth" });
 						}
+					} else if (targetSection) {
+						if ("scrollMarginTop" in targetSection.style) {
+							targetSection.style.scrollMarginTop = "100px";
+							targetSection.scrollIntoView({
+								behavior: "smooth",
+								block: "start",
+							});
+						} else {
+							const y = Math.max(
+								0,
+								targetSection.getBoundingClientRect().top +
+									window.pageYOffset -
+									100
+							);
+							window.scrollTo({ top: y, behavior: "smooth" });
+						}
 					}
+					getPersonalizedContent();
 				} else if (store.hasGoal()) {
 					setThinkingPlaceholder(THINKING_PLACEHOLDER.GOAL);
 					const response = await apiClient.clarifyGoal(content);
 					store.setIsThinking(false);
 					store.addChatMessage({
 						role: "assistant",
-						message: response.why,
+						message: `Thank you for clarifying your goal. I've reviewed your objective and generated personalized content tailored to it. Here's my assessment: ${response.why}`,
 						timestamp: new Date().toISOString(),
 					});
+					store.setIsThinking(false);
+					setTimeout(() => {
+						getPersonalizedContent();
+					}, 5000);
 				} else {
 					setThinkingPlaceholder(THINKING_PLACEHOLDER.CLARIFICATION);
 					const response = await apiClient.submitGoal(content);
@@ -113,7 +146,6 @@ export const useChat = () => {
 				);
 			} finally {
 				store.setIsThinking(false);
-				getPersonalizedContent();
 			}
 		},
 		[store]

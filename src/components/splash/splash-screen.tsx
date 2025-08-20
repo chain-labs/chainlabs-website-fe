@@ -16,7 +16,7 @@ export const SplashScreen = ({ onComplete, exitWhen }: SplashScreenProps) => {
 
 	const bars = 20;
 
-	const DURATION = 5000;
+	const DURATION = 2000;
 
 	// Track when the default duration has elapsed (used when exitWhen is undefined)
 	const [timerDone, setTimerDone] = useState(false);
@@ -94,9 +94,9 @@ export const SplashScreen = ({ onComplete, exitWhen }: SplashScreenProps) => {
 			<AnimatePresence>
 				{isVisible && (
 					<motion.div
-						initial={{ scale: 0, opacity: 0 }}
-						animate={{ scale: 1, opacity: 1 }}
-						exit={{ scale: 0, opacity: 0 }}
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						exit={{ opacity: 0 }}
 						transition={{ duration: 0.5 }}
 						className="absolute inset-0 flex items-center justify-center origin-center"
 					>
@@ -260,67 +260,139 @@ export const SplashScreen = ({ onComplete, exitWhen }: SplashScreenProps) => {
 			</div>
 
 			{/* Bottom Progress Bar */}
-			<div className="absolute bottom-0 left-0 right-0">
-				<div className="mx-8 mb-8">
+			<AnimatePresence>
+				{isVisible && (
 					<motion.div
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						transition={{ duration: 0.6, delay: 1 }}
-						className="h-px bg-gradient-to-r from-transparent via-[#334155]/40 to-transparent relative overflow-hidden"
+						className="absolute bottom-0 left-0 right-0"
+						initial={{ opacity: 1, y: 8 }}
+						animate={{ opacity: 1, y: 0 }}
+						exit={{ opacity: 1, y: 8 }}
+						transition={{ duration: 0.5, ease: "easeInOut" }}
 					>
-						<motion.div
-							className="absolute inset-0 bg-gradient-to-r from-[#00D4AA]/0 via-[#00D4AA] to-[#00D4AA]/0"
-							style={{
-								width: `${progress}%`,
-								filter: "blur(1px)",
-							}}
-							transition={{ duration: 0.1, ease: "easeOut" }}
-						/>
-						<motion.div
-							className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00D4AA] to-transparent"
-							style={{ width: `${progress}%` }}
-							transition={{ duration: 0.1, ease: "easeOut" }}
-						>
+						<div className="mx-8 mb-8">
 							<motion.div
-								className="absolute right-0 top-0 w-8 h-full bg-gradient-to-r from-transparent to-white/30"
-								animate={{
-									x: [-10, 10],
-									opacity: [0, 1, 0],
-								}}
-								transition={{
-									duration: 1.2,
-									repeat: Infinity,
-									ease: "linear",
-								}}
-							/>
-						</motion.div>
+								initial={{ opacity: 0 }}
+								animate={{ opacity: 1 }}
+								exit={{ opacity: 0 }}
+								transition={{ duration: 0.6, delay: 1 }}
+								className="h-px bg-gradient-to-r from-transparent via-[#334155]/40 to-transparent relative overflow-hidden"
+							>
+								<motion.div
+									className="absolute inset-0 bg-gradient-to-r from-[#00D4AA]/0 via-[#00D4AA] to-[#00D4AA]/0"
+									style={{
+										// width: `${progress}%`,
+										filter: "blur(1px)",
+									}}
+									initial={{ opacity: 0, width: 0 }}
+									animate={{ opacity: 1, width: "100%" }}
+									exit={{ opacity: 0, width: 0 }}
+									transition={{
+										duration: 0.6,
+										ease: "easeOut",
+									}}
+								/>
+								<motion.div
+									className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00D4AA] to-transparent"
+									style={{ width: `${progress}%` }}
+									initial={{ opacity: 0 }}
+									animate={{ opacity: 1 }}
+									exit={{ opacity: 0 }}
+									transition={{
+										duration: 0.1,
+										ease: "easeOut",
+									}}
+								>
+									<motion.div
+										className="absolute right-0 top-0 w-8 h-full bg-gradient-to-r from-transparent to-white/30"
+										animate={{
+											x: [-10, 10],
+											opacity: [0, 1, 0],
+										}}
+										exit={{ opacity: 0 }}
+										transition={{
+											duration: 1.2,
+											repeat: Infinity,
+											ease: "linear",
+										}}
+									/>
+								</motion.div>
+							</motion.div>
+						</div>
 					</motion.div>
-				</div>
-			</div>
+				)}
+			</AnimatePresence>
 
 			{/* Floating particles */}
 			<div className="absolute inset-0 overflow-hidden pointer-events-none">
-				{Array.from({ length: 8 }, (_, i) => (
-					<motion.div
-						key={i}
-						className="absolute w-1 h-1 bg-[#00D4AA]/20 rounded-full"
-						style={{
-							left: `${20 + i * 10}%`,
-							top: `${30 + i * 5}%`,
-						}}
-						animate={{
-							y: [-10, 10, -10],
-							opacity: [0.2, 0.6, 0.2],
-							scale: [0.8, 1.2, 0.8],
-						}}
-						transition={{
-							duration: 3 + i * 0.3,
-							repeat: Infinity,
-							ease: "easeInOut",
-							delay: i * 0.4,
-						}}
-					/>
-				))}
+				<AnimatePresence>
+					{isVisible &&
+						Array.from({ length: 16 }, (_, i) => {
+							const size = 2 + (i % 4); // 2px–5px
+							const delay = i * 0.15;
+							const duration = 4 + (i % 5) * 0.6;
+							const xAmp = 8 + (i % 3) * 6; // horizontal drift
+							const yAmp = 10 + (i % 4) * 6; // vertical drift
+							const left = `${10 + ((i * 6.5) % 80)}%`;
+							const top = `${15 + ((i * 7) % 70)}%`;
+
+							return (
+								<motion.div
+									key={i}
+									className="absolute"
+									style={{ left, top }}
+									initial={{ opacity: 0, scale: 0.6, y: 8 }}
+									animate={{
+										x: [-xAmp, 0, xAmp, 0, -xAmp],
+										y: [-yAmp, 0, yAmp, 0, -yAmp],
+										opacity: [0.2, 0.8, 0.4, 0.7, 0.2],
+										scale: [0.85, 1.15, 0.95, 1.1, 0.85],
+										rotate: [0, 180, 360],
+									}}
+									exit={{ opacity: 0, scale: 0.6, y: 12 }}
+									transition={{
+										duration,
+										repeat: Infinity,
+										ease: "easeInOut",
+										delay,
+									}}
+								>
+									{/* core dot */}
+									<motion.span
+										className="block rounded-full bg-[#00D4AA]/40"
+										style={{
+											width: size,
+											height: size,
+											filter: "blur(0.3px)",
+										}}
+										animate={{
+											boxShadow: [
+												"0 0 0px 0 rgba(0,212,170,0.2)",
+												"0 0 8px 1px rgba(0,212,170,0.45)",
+												"0 0 0px 0 rgba(0,212,170,0.2)",
+											],
+										}}
+										transition={{
+											duration: duration / 2,
+											repeat: Infinity,
+											ease: "easeInOut",
+											delay: delay / 2,
+										}}
+									/>
+									{/* soft glow halo */}
+									<motion.span
+										className="absolute inset-0 rounded-full bg-[#00D4AA]/20 blur-sm"
+										animate={{ opacity: [0.1, 0.4, 0.15] }}
+										transition={{
+											duration: duration * 0.8,
+											repeat: Infinity,
+											ease: "easeInOut",
+											delay: delay / 3,
+										}}
+									/>
+								</motion.div>
+							);
+						})}
+				</AnimatePresence>
 			</div>
 		</motion.div>
 	);
