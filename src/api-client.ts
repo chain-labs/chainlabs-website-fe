@@ -108,6 +108,22 @@ class ApiClient {
 		return body;
 	}
 
+	// Reset session
+	async resetSession() {
+		try {
+			await this.makeAuthenticatedRequest(
+				`${API_BASE_URL}/api/auth/reset`,
+				{
+					method: "POST",
+				}
+			);
+		} catch (error) {
+			console.error("Failed to reset session:", error);
+			throw error;
+		}
+		return true;
+	}
+
 	// Ensure we have a session before making API calls
 	async ensureSession() {
 		if (!this.isAuthenticated()) {

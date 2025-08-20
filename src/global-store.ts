@@ -151,7 +151,6 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 			// Initial State - Goal & Personalization
 			goal: null,
 			headline: null,
-			clarification: null,
 			personalised: null,
 			missions: [],
 			recommendedCaseStudies: [],
@@ -330,34 +329,53 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 				}),
 			resetSession: () =>
 				set({
+					// Initial State - Goal & Personalization
 					goal: null,
 					headline: null,
 					personalised: null,
 					missions: [],
 					recommendedCaseStudies: [],
+
+					// Initial State - Progress
 					pointsTotal: 0,
-					callUnlocked: false,
+
+					// Initial State - Chat
 					chatHistory: [],
 					isThinking: false,
 					currentContext: null,
+
+					// Initial State - UI
 					inputValue: "",
 					voiceInputValue: "",
 					isFocused: false,
 					isRecording: false,
 					showPersonalized: false,
 					sidebarOpen: true,
+
+					// Initial State - App
 					hasCompletedOnboarding: false,
+					theme: "dark",
+					animations: true,
+
+					// Initial Flags
 					goalSubmitted: false,
 					clarificationSubmitted: false,
 					personalizationGenerated: false,
-					currentMissionId: null,
-					lastError: null,
+					callUnlocked: false,
+
+					// Session/async flags
 					hasSession: false,
 					isEnsuringSession: false,
 					isSubmittingGoal: false,
 					isClarifying: false,
 					isFetchingProgress: false,
 					isCheckingUnlock: false,
+
+					// Missions flow
+					currentMissionId: null,
+
+					// Errors
+					lastError: null,
 				}),
 		}),
 		{

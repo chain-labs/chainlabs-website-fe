@@ -11,9 +11,11 @@ import {
 	Twitter,
 	Mail,
 	MapPin,
+	RotateCcw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useGlobalStore } from "@/global-store";
+import { apiClient } from "@/api-client";
 
 interface FooterProps {
 	showPersonalized: boolean;
@@ -23,6 +25,24 @@ interface FooterProps {
 export const Footer = ({ showPersonalized, className }: FooterProps) => {
 	const callUnlocked =
 		useGlobalStore().personalised?.personalisation.call_unlocked;
+
+	const resetSession = useGlobalStore((s) => s.resetSession); // added
+	const [isResetting, setIsResetting] = React.useState(false); // added
+
+	const handleReset = async () => {
+		// added
+		if (isResetting) return;
+		setIsResetting(true);
+		try {
+			await apiClient.resetSession().catch(() => {});
+			apiClient.clearAuth();
+			resetSession();
+			await apiClient.initializeSession().catch(() => {});
+		} finally {
+			setIsResetting(false);
+		}
+	};
+
 	const socialLinks = [
 		{ name: "GitHub", icon: Github, href: "#" },
 		{ name: "LinkedIn", icon: Linkedin, href: "#" },
@@ -166,15 +186,15 @@ export const Footer = ({ showPersonalized, className }: FooterProps) => {
 				</div>
 
 				{/* Bottom Section */}
-				<div className="border-t border-border/30 py-8">
-					<div className="flex flex-col md:flex-row items-center justify-between gap-6">
+				<div className="border-t border-border/30 py-6 sm:py-8">
+					<div className="flex flex-col lg:flex-row items-center justify-between gap-4 sm:gap-6">
 						{/* Social Links */}
 						<motion.div
 							initial={{ opacity: 0, y: 10 }}
 							whileInView={{ opacity: 1, y: 0 }}
 							viewport={{ once: true }}
 							transition={{ duration: 0.6 }}
-							className="flex items-center space-x-4"
+							className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 w-full lg:w-auto"
 						>
 							{socialLinks.map((link, index) => (
 								<motion.a
@@ -203,7 +223,7 @@ export const Footer = ({ showPersonalized, className }: FooterProps) => {
 							whileInView={{ opacity: 1, y: 0 }}
 							viewport={{ once: true }}
 							transition={{ duration: 0.6, delay: 0.3 }}
-							className="flex items-center space-x-4"
+							className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-center w-full lg:w-auto"
 						>
 							<a
 								href="/privacy-policy.pdf"
@@ -211,13 +231,9 @@ export const Footer = ({ showPersonalized, className }: FooterProps) => {
 								rel="noopener noreferrer"
 								className="flex items-center space-x-2 text-muted-foreground hover:text-primary transition-colors duration-300"
 							>
-								<span className="text-sm">
-									Privacy & Policy
-								</span>
+								<span className="text-sm">Privacy & Policy</span>
 							</a>
-							<p className="flex items-center space-x-2 text-muted-foreground hover:text-primary transition-colors duration-300">
-								·
-							</p>
+							<span className="hidden sm:inline text-muted-foreground">·</span>
 							<a
 								href="/ai-disclosure.pdf"
 								target="_blank"
@@ -226,6 +242,20 @@ export const Footer = ({ showPersonalized, className }: FooterProps) => {
 							>
 								<span className="text-sm">AI Disclosure</span>
 							</a>
+							<span className="hidden sm:inline text-muted-foreground">·</span>
+							<button
+								type="button"
+								onClick={handleReset}
+								disabled={isResetting}
+								title="Reset your session"
+								aria-busy={isResetting}
+								className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-destructive transition-colors duration-300 disabled:opacity-60"
+							>
+								<RotateCcw className="h-4 w-4" />
+								<span className="text-sm">
+									{isResetting ? "Resetting..." : "Reset session"}
+								</span>
+							</button>
 						</motion.div>
 
 						{/* Copyright */}
@@ -234,10 +264,9 @@ export const Footer = ({ showPersonalized, className }: FooterProps) => {
 							whileInView={{ opacity: 1, y: 0 }}
 							viewport={{ once: true }}
 							transition={{ duration: 0.6, delay: 0.2 }}
-							className="text-center text-sm text-muted-foreground"
+							className="text-center text-sm text-muted-foreground w-full lg:w-auto"
 						>
-							&copy; {new Date().getFullYear()} Chain Labs. All
-							rights reserved.
+							&copy; {new Date().getFullYear()} Chain Labs. All rights reserved.
 						</motion.div>
 					</div>
 				</div>
