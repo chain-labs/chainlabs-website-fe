@@ -21,6 +21,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { useGlobalStore } from "@/global-store";
 
+import Cal, { getCalApi } from "@calcom/embed-react";
+
 const BookCallSection = () => {
 	const callUnlocked =
 		useGlobalStore().personalised?.personalisation.call_unlocked;
@@ -92,6 +94,36 @@ const BookCallSection = () => {
 		window.open(calendarLink, "_blank");
 	};
 
+	useEffect(() => {
+		(async function () {
+			const cal = await getCalApi({ namespace: "15min" });
+			cal("ui", {
+				cssVarsPerTheme: {
+					light: { "cal-brand": "#5cfda2" },
+					dark: { "cal-brand": "#5cfda2" },
+				},
+				hideEventTypeDetails: true,
+				layout: "month_view",
+				
+			});
+
+			cal("on", {
+				action: "bookingSuccessful",
+				callback: (e) => {
+					// `data` is properties for the event.
+					// `type` is the name of the action(You can also call it type of the action.) This would be same as "ANY_ACTION_NAME" except when ANY_ACTION_NAME="*" which listens to all the events.
+					// `namespace` tells you the Cal namespace for which the event is fired/
+					const { data } = e.detail;
+					const { id, uid } = data.booking as {
+						id: string;
+						uid: string;
+					};
+					// https://app.cal.com/reschedule/pxi4NKNWRREcFxxrZda7RJ?rescheduledBy=pratham%40chainlabs.in
+				},
+			});
+		})();
+	}, []);
+
 	return (
 		<section className="relative py-24 overflow-visible">
 			{/* Confetti canvas overlay (manual start) */}
@@ -154,9 +186,8 @@ const BookCallSection = () => {
 							roadmap tailored to your business goals.
 						</motion.p>
 					</motion.div>
-
 					{/* Bottom CTA */}
-					<motion.div
+					{/* <motion.div
 						initial={{ opacity: 0, y: 30 }}
 						whileInView={{ opacity: 1, y: 0 }}
 						viewport={{ once: true }}
@@ -194,7 +225,19 @@ const BookCallSection = () => {
 								<ArrowRight className="w-4 h-4 ml-1.5 sm:ml-2" />
 							</Button>
 						</div>
-					</motion.div>
+					</motion.div> */}
+
+					{/* @ts-ignore */}
+					<Cal
+						namespace="15min"
+						calLink="pratham-chudasama-bzmppi/15min"
+						style={{
+							width: "100%",
+							height: "100%",
+						}}
+						className="dmklewldmew rounded-lg"
+						config={{ layout: "month_view", theme: "auto" }}
+					/>
 				</div>
 			</div>
 		</section>
