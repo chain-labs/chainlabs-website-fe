@@ -38,7 +38,19 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
 })(window,document,'script','dataLayer','GTM-5GH5MR95');`}</Script>
 				{/* End Google Tag Manager */}
-				{/* End Google Tag Manager */}
+				{/* Google tag (gtag.js) */}
+				<Script
+					async
+					src="https://www.googletagmanager.com/gtag/js?id=G-HFGE16BE8M"
+				></Script>
+				<Script>
+					{`window.dataLayer = window.dataLayer || [];
+					function gtag(){dataLayer.push(arguments);}
+					gtag('js', new Date());
+
+					gtag('config', 'G-HFGE16BE8M');`}
+				</Script>
+				{/* End Google tag (gtag.js) */}
 			</head>
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} antialiased`}
