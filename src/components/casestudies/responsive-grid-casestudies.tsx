@@ -6,6 +6,8 @@ import { useOutsideClick } from "@/lib/hooks/use-outside-click";
 import { useGlobalStore } from "@/global-store";
 import { CaseStudy } from "@/types/store";
 import ReactMarkdown from "react-markdown";
+import { Button } from "../ui/button";
+import Link from "next/link";
 
 export const CloseIcon = () => {
 	return (
@@ -85,6 +87,25 @@ const ResponsiveGridCasestudies = () => {
 
 	return (
 		<section className="py-8 sm:py-12 lg:py-16 max-w-7xl">
+			{/* Header */}
+			<motion.div
+				initial={{ opacity: 0, y: 18 }}
+				whileInView={{ opacity: 1, y: 0 }}
+				viewport={{ once: true }}
+				transition={{ duration: 0.6, ease: "easeOut" }}
+				className="text-center mb-12 md:mb-16"
+			>
+				<h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
+					Case{" "}
+					<span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+						Studies
+					</span>
+				</h2>
+				<p className="mt-3 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
+					Explore our success stories and see how we've helped clients
+					achieve their goals.
+				</p>
+			</motion.div>
 			<div className="mx-auto max-w-sm px-4 py-20 font-sans antialiased md:max-w-7xl">
 				{/* Modal Overlay */}
 				<AnimatePresence>
@@ -187,9 +208,7 @@ const ResponsiveGridCasestudies = () => {
 				</AnimatePresence>
 
 				{/* Cards Grid - Mobile first approach */}
-				<div
-					className={`grid gap-4 sm:gap-6 ${gridColsClass} w-full `}
-				>
+				<div className={`grid gap-4 sm:gap-6 ${gridColsClass} w-full `}>
 					{caseStudies.map((card, index) => {
 						return (
 							<motion.div
@@ -260,6 +279,43 @@ const ResponsiveGridCasestudies = () => {
 						);
 					})}
 				</div>
+			</div>
+			<div className="mt-12 flex justify-center">
+				<Button
+					asChild
+					size="lg"
+					variant="outline"
+					className="group relative h-11 rounded-full px-8 font-semibold tracking-tight border border-border/60 bg-background/60 backdrop-blur-sm supports-[backdrop-filter]:bg-background/40 hover:bg-accent/10 hover:text-foreground transition-colors shadow-sm hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:focus-visible:ring-offset-neutral-900 overflow-hidden"
+					aria-label="View more case studies"
+				>
+					<Link href="/case-studies">
+						<span className="flex items-center gap-2">
+							<span>View more case studies</span>
+							<svg
+								className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="2"
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								viewBox="0 0 24 24"
+							>
+								<path d="M5 12h14" />
+								<path d="M12 5l7 7-7 7" />
+							</svg>
+						</span>
+						{/* Soft animated sheen */}
+						<span
+							aria-hidden
+							className="pointer-events-none absolute inset-0 rounded-full bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 opacity-0 group-hover:opacity-100 transition-opacity"
+						/>
+						{/* Subtle ring accent */}
+						<span
+							aria-hidden
+							className="pointer-events-none absolute inset-0 rounded-full ring-1 ring-border/60 group-hover:ring-primary/40"
+						/>
+					</Link>
+				</Button>
 			</div>
 		</section>
 	);

@@ -17,6 +17,7 @@ import { Mission } from "@/types/store";
 import { useMissions } from "@/hooks/use-missions";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
+import { icons } from "lucide-react";
 
 type Status = Mission extends { status: infer S } ? S : string;
 
@@ -65,6 +66,39 @@ const prettyStatus = (status: Status) =>
 
 const iconPool = [Target, Rocket, Users, BarChart, Zap];
 
+// Map mission.icon -> Lucide icon, with fallbacks
+const iconMap: Record<string, React.ComponentType<any>> = {
+	target: Target,
+	rocket: Rocket,
+	users: Users,
+	barchart: BarChart,
+	"bar-chart": BarChart,
+	chart: BarChart,
+	zap: Zap,
+	star: Star,
+	check: CheckCircle,
+	clock: Clock,
+};
+
+// Helpers to resolve a Lucide icon from a string
+const normalizeKey = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+const toPascalCase = (s: string) =>
+	s
+		.replace(/[-_\s]+/g, " ")
+		.trim()
+		.split(" ")
+		.filter(Boolean)
+		.map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+		.join("");
+
+// Build a lookup once so we can match loosely (e.g. "bar-chart" => "BarChart")
+const NORMALIZED_ICON_NAME_LOOKUP: Record<string, string> = Object.keys(
+	icons
+).reduce((acc, name) => {
+	acc[normalizeKey(name)] = name;
+	return acc;
+}, {} as Record<string, string>);
+
 const StatusBadge = ({ status }: { status: Status }) => {
 	const meta = prettyStatus(status);
 	const Icon = meta.icon;
@@ -81,7 +115,29 @@ const StatusBadge = ({ status }: { status: Status }) => {
 const MissionCard = React.memo(
 	({ mission, index }: { mission: Mission; index: number }) => {
 		const containerRef = React.useRef<HTMLDivElement | null>(null);
-		const IconComponent = iconPool[index % iconPool.length];
+		const IconComponent = React.useMemo(() => {
+			const raw = String(mission.icon ?? "").trim();
+			if (!raw) return Target;
+
+			// 1) Direct PascalCase key (e.g. "BarChart3")
+			const pascal = toPascalCase(raw);
+			const direct = (icons as Record<string, React.ComponentType<any>>)[
+				pascal
+			];
+			if (direct) return direct;
+
+			// 2) Normalized lookup (e.g. "bar-chart-3", "barchart3", "bar chart 3")
+			const normalizedName =
+				NORMALIZED_ICON_NAME_LOOKUP[normalizeKey(raw)];
+			if (normalizedName) {
+				return (icons as Record<string, React.ComponentType<any>>)[
+					normalizedName
+				];
+			}
+
+			// Fallback
+			return Target;
+		}, [mission.icon]);
 
 		// Local UI state for this card's input
 		const [answer, setAnswer] = React.useState("");
@@ -96,10 +152,10 @@ const MissionCard = React.memo(
 		} = useMissions();
 
 		// Detect mission interaction type from id prefix
-		const id = String(mission.id);
-		const isClickMission =
-			id.startsWith("cs_mission_") || id.startsWith("view_process_");
-		const isInputMission = id.startsWith("input_") || !isClickMission;
+		const missionType = mission.missionType;
+		const hasPlaceholder = Boolean(mission.input?.placeholder?.trim());
+		const isInputMission =
+			missionType === "ADDITIONAL_INPUT" && hasPlaceholder;
 
 		const onMouseMove = (e: React.MouseEvent) => {
 			const el = containerRef.current;
@@ -143,11 +199,12 @@ const MissionCard = React.memo(
 
 		const handleClickComplete = async () => {
 			if (completed || submitting) return;
+
 			try {
-				// For click-only missions, a simple action marks completion
-				await submitAnswer(mission.id, "");
+				await submitAnswer(mission.id, "Completed the mission"); // Empty string for non-input missions
+				setAnswer("");
 			} catch {
-				// Error is handled by the hook
+				// Error state is set inside the hook; no-op here
 			}
 		};
 
@@ -161,19 +218,16 @@ const MissionCard = React.memo(
 					delay: index * 0.08,
 					ease: "easeOut",
 				}}
-				className="group relative max-w-7xl"
+				className="group relative max-w-[400px] h-full"
 				role="listitem"
 				id={mission.id}
 			>
-				{/* Top accent line */}
-				<div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-
 				<motion.div
 					ref={containerRef}
 					onMouseMove={onMouseMove}
 					whileHover={{ y: -2 }}
 					transition={{ type: "spring", stiffness: 350, damping: 30 }}
-					className="relative overflow-hidden rounded-2xl border border-border/40 bg-card/60 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-card/60 transition-all duration-300 hover:shadow-2xl hover:border-border/60"
+					className="relative h-full overflow-hidden rounded-2xl border border-border/40 bg-card/60 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-card/60 transition-all duration-300 hover:shadow-2xl hover:border-border/60"
 				>
 					{/* Hover glow following cursor */}
 					<div
@@ -283,7 +337,8 @@ const MissionCard = React.memo(
 										placeholder={
 											completed
 												? "This mission is completed."
-												: "Share your thoughts, links, or notes…"
+												: mission.input?.placeholder ||
+												  "Your answer..."
 										}
 										disabled={completed || submitting}
 										maxLength={280}
@@ -295,7 +350,7 @@ const MissionCard = React.memo(
 												? `mission-error-${mission.id}`
 												: ""
 										}`}
-										className="w-full rounded-2xl bg-transparent  py-3 min-h-24 resize-y text-base leading-relaxed placeholder:text-muted-foreground border-0 focus-visible:ring-0 focus-visible:ring-offset-0 disabled:cursor-not-allowed"
+										className="w-full rounded-2xl bg-transparent py-3 min-h-24 resize-y text-base leading-relaxed placeholder:text-muted-foreground border-0 focus-visible:ring-0 focus-visible:ring-offset-0 disabled:cursor-not-allowed"
 									/>
 								</div>
 
@@ -314,8 +369,9 @@ const MissionCard = React.memo(
 												id={`mission-help-${mission.id}`}
 												className="text-muted-foreground"
 											>
-												This will help us to understand
-												you more
+												{completed
+													? "Step completed"
+													: "This will help us to understand you more"}
 											</span>
 										)}
 									</div>
@@ -359,37 +415,83 @@ const MissionCard = React.memo(
 								</div>
 							</form>
 						) : (
-							<div className="mt-5 flex items-center justify-between gap-3">
-								<div className="min-h-5 text-xs">
-									{error ? (
-										<span
-											id={`mission-error-${mission.id}`}
-											className="text-red-500"
-											aria-live="polite"
-										>
-											{error}
-										</span>
-									) : (
-										<span
-											className="text-muted-foreground"
-											id={`mission-help-${mission.id}`}
-										>
-											Click to complete this step
-										</span>
-									)}
-								</div>
-								<Button
-									type="button"
-									size="sm"
-									onClick={handleClickComplete}
-									disabled={completed || submitting}
+							<div className="mt-5 space-y-4">
+								<div
+									className={`relative w-full rounded-2xl border px-3 py-3 overflow-hidden transition-colors ${
+										error
+											? "border-red-500/60"
+											: "border-border/40 hover:border-border/60"
+									} bg-gradient-to-br from-black/5 via-black/0 to-primary/5 backdrop-blur-xl ${
+										completed ? "opacity-70" : ""
+									}`}
+									aria-hidden="true"
 								>
-									{completed
-										? "Completed"
-										: submitting
-										? "Submitting..."
-										: "Complete"}
-								</Button>
+									{/* Decorative gradient glow */}
+									<div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity">
+										<div className="absolute -inset-px bg-[radial-gradient(600px_at_var(--x,70%)_var(--y,30%),color-mix(in_oklab,var(--color-primary)_18%,transparent),transparent_60%)]" />
+									</div>
+
+									<div className="flex items-start gap-3">
+										{/* <div className="mt-0.5 flex size-8 items-center justify-center rounded-lg bg-primary/10 ring-1 ring-primary/25 text-primary">
+											<CheckCircle className="size-4" />
+										</div> */}
+										<div className="min-w-0 space-y-1.5">
+											<p className="text-sm font-medium text-foreground">
+												Informational Step
+											</p>
+											<p className="text-sm leading-relaxed text-muted-foreground">
+												Review this step then confirm to
+												earn <br />
+												<span className="font-semibold text-primary">
+													{Number(
+														mission.points ?? 0
+													)}{" "}
+													points
+												</span>
+												.
+											</p>
+										</div>
+									</div>
+								</div>
+
+								<div className="flex items-center justify-between gap-4">
+									<div className="min-h-5 text-xs">
+										{error ? (
+											<span
+												id={`mission-error-${mission.id}`}
+												className="text-red-500"
+												aria-live="polite"
+											>
+												{error}
+											</span>
+										) : (
+											<span
+												className="text-muted-foreground"
+												id={`mission-help-${mission.id}`}
+											>
+												{completed
+													? "Step completed"
+													: "Click confirm to complete this step"}
+											</span>
+										)}
+									</div>
+
+									<Button
+										type="submit"
+										size="sm"
+										disabled={
+											completed ||
+											submitting ||
+											!answer.trim()
+										}
+									>
+										{completed
+											? "Completed"
+											: submitting
+											? "Submitting..."
+											: "Submit"}
+									</Button>
+								</div>
 							</div>
 						)}
 					</div>
@@ -440,27 +542,13 @@ export const OurMissions = () => {
 					</p>
 				</motion.div>
 
-				{/* Mission List */}
-				<div
-					className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
-					role="list"
-				>
-					{store.personalisation.missions.map((mission, index) => (
-						<MissionCard
-							key={mission.id}
-							mission={mission}
-							index={index}
-						/>
-					))}
-				</div>
-
 				{/* Total Points */}
 				<motion.div
 					initial={{ opacity: 0, y: 18 }}
 					whileInView={{ opacity: 1, y: 0 }}
 					viewport={{ once: true }}
 					transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
-					className="mt-12 md:mt-16 text-center max-w-fit mx-auto"
+					className="my-12 md:mt-16 text-center mx-auto w-fit"
 				>
 					<div className="flex w-full flex-col sm:flex-row sm:items-center gap-4 rounded-2xl border border-primary/25 bg-gradient-to-r from-primary/12 to-primary/5 px-5 sm:px-7 py-4 sm:py-5 shadow-lg backdrop-blur">
 						<div className="flex w-full items-center gap-3 sm:gap-4">
@@ -496,9 +584,9 @@ export const OurMissions = () => {
 													.points_total
 											}
 										>
-											<div
-												className="h-full rounded-full bg-primary/80"
-												style={{
+											<motion.div
+												initial={{ width: 0 }}
+												whileInView={{
 													width: `${Math.min(
 														100,
 														(store.personalisation
@@ -510,6 +598,12 @@ export const OurMissions = () => {
 															100
 													)}%`,
 												}}
+												viewport={{ once: true }}
+												transition={{
+													duration: 0.7,
+													ease: "easeOut",
+												}}
+												className={`h-full rounded-full bg-primary/80`}
 											/>
 										</div>
 									</div>
@@ -518,6 +612,17 @@ export const OurMissions = () => {
 						</div>
 					</div>
 				</motion.div>
+
+				{/* Mission List */}
+				<div className="flex flex-wrap items-center justify-center gap-4" role="list">
+					{store.personalisation.missions.map((mission, index) => (
+						<MissionCard
+							key={mission.id}
+							mission={mission}
+							index={index}
+						/>
+					))}
+				</div>
 			</div>
 		</section>
 	);

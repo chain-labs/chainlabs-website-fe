@@ -14,6 +14,7 @@ export type CompleteMissionResult = {
 	next_mission?: {
 		id: string;
 		title: string;
+		description: string; // updated to match usage below
 		points: number;
 		status: string;
 	} | null;
@@ -96,9 +97,15 @@ export function useMissions(options: UseMissionsOptions = { autoInit: true }) {
 			answer?: string
 		): Promise<CompleteMissionResult> => {
 			const id = String(missionId);
+
+			// Use mission data instead of id prefixes
+			const mission = getMissionById(id);
+			const missionType = mission?.missionType;
+			const isInputMission = missionType === "ADDITIONAL_INPUT";
 			const isClickMission =
-				id.startsWith("cs_mission_") || id.startsWith("view_process_");
-			const isInputMission = id.startsWith("input_") || !isClickMission;
+				missionType === "READ_CASE_STUDY" ||
+				missionType === "VIEW_PROCESS";
+			const isRequired = mission?.input?.required ?? true;
 
 			const trimmed = (answer ?? "").trim();
 
@@ -108,8 +115,8 @@ export function useMissions(options: UseMissionsOptions = { autoInit: true }) {
 				throw err;
 			}
 
-			// For input missions require non-empty; for click missions allow empty payload
-			if (isInputMission && !trimmed) {
+			// For input missions, require non-empty only if required
+			if (isInputMission && isRequired && !trimmed) {
 				const err = new Error("Answer cannot be empty");
 				setError(missionId, err.message);
 				throw err;
@@ -120,7 +127,8 @@ export function useMissions(options: UseMissionsOptions = { autoInit: true }) {
 
 			let triedReauth = false;
 
-			const payload = isClickMission ? "" : trimmed;
+			// Click missions send empty payload; input missions send trimmed (can be empty if optional)
+			const payload = isClickMission ? "Completed the mission" : trimmed;
 
 			const doSubmit = async (): Promise<CompleteMissionResult> => {
 				try {
@@ -145,6 +153,12 @@ export function useMissions(options: UseMissionsOptions = { autoInit: true }) {
 									: m.status === "completed"
 									? "completed"
 									: "pending",
+							// keep other fields as-is if needed by your UI
+							icon: (m as any).icon,
+							input: (m as any).input,
+							missionType: (m as any).missionType,
+							options: (m as any).options,
+							artifact: (m as any).artifact,
 						}));
 
 						const next = res.next_mission;
@@ -158,6 +172,22 @@ export function useMissions(options: UseMissionsOptions = { autoInit: true }) {
 										next.status === "completed"
 											? "completed"
 											: "pending",
+									// defaults for newly appended missions
+									icon: (mission as any)?.icon ?? "",
+									input: (mission as any)?.input ?? {
+										required: true,
+										type: "text",
+										placeholder: "",
+									},
+									missionType:
+										(mission as any)?.missionType ??
+										"READ_CASE_STUDY",
+									options: (mission as any)?.options ?? {
+										targetCaseStudyId: "N/A",
+									},
+									artifact: (mission as any)?.artifact ?? {
+										answer: "",
+									},
 							  }
 							: null;
 
@@ -198,7 +228,13 @@ export function useMissions(options: UseMissionsOptions = { autoInit: true }) {
 
 			return doSubmit();
 		},
-		[ensureSession, isSubmitting, personalised, setPersonalised]
+		[
+			ensureSession,
+			isSubmitting,
+			personalised,
+			setPersonalised,
+			getMissionById,
+		]
 	);
 
 	return {

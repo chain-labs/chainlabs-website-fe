@@ -122,13 +122,13 @@ export const useChat = () => {
 					store.setIsThinking(false);
 					store.addChatMessage({
 						role: "assistant",
-						message: `Thank you for clarifying your goal. I've reviewed your objective and generated personalized content tailored to it. Here's my assessment: ${response.why}`,
+						message: "🤖 Tool call: I've processed your clarification and rendered a personalized version of the site based on your needs.",
 						timestamp: new Date().toISOString(),
 					});
 					store.setIsThinking(false);
 					setTimeout(() => {
 						getPersonalizedContent();
-					}, 5000);
+					}, 3000);
 				} else {
 					setThinkingPlaceholder(THINKING_PLACEHOLDER.CLARIFICATION);
 					const response = await apiClient.submitGoal(content);

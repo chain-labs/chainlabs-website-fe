@@ -14,6 +14,19 @@ export type Mission = {
 	description: string;
 	points: number;
 	status: "pending" | "completed";
+	icon: string;
+	input: {
+		required: boolean;
+		type: "text";
+		placeholder: string;
+	};
+	missionType: "ADDITIONAL_INPUT" | "READ_CASE_STUDY" | "VIEW_PROCESS";
+	options: {
+		targetCaseStudyId: "N/A" | string;
+	};
+	artifact: {
+		answer: string;
+	};
 };
 
 export type CaseStudy = {

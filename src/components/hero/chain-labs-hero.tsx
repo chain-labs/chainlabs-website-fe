@@ -156,14 +156,12 @@ const ChainLabsHero = () => {
 				/> */}
 
 				{/* Secondary accent orbs */}
-				<AnimatePresence>
-					<Orb
-						hue={20}
-						hoverIntensity={isThinking ? 0.35 : 0}
-						rotateOnHover
-						forceHoverState
-					/>
-				</AnimatePresence>
+				<Orb
+					hue={20}
+					hoverIntensity={isThinking ? 0.35 : 0}
+					rotateOnHover
+					forceHoverState
+				/>
 
 				<GradientBars />
 

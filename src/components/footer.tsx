@@ -16,6 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useGlobalStore } from "@/global-store";
 import { apiClient } from "@/api-client";
+import Link from "next/link";
 
 interface FooterProps {
 	showPersonalized: boolean;
@@ -38,6 +39,7 @@ export const Footer = ({ showPersonalized, className }: FooterProps) => {
 			apiClient.clearAuth();
 			resetSession();
 			await apiClient.initializeSession().catch(() => {});
+			window.scrollTo({ top: 0, behavior: "smooth" });
 		} finally {
 			setIsResetting(false);
 		}
@@ -152,26 +154,23 @@ export const Footer = ({ showPersonalized, className }: FooterProps) => {
 								className="w-fit"
 							>
 								{callUnlocked ? (
-									<Button
-										className="group relative overflow-hidden bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
-										size="lg"
+									<Link
+										href="#book-a-call"
+										className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive shadow-xs h-10 rounded-md px-6 has-[>svg]:px-4 group relative overflow-hidden bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
 									>
 										<Phone className="mr-2 h-4 w-4" />
 										Book a Call
-										<MoveUpRight className="ml-2 h-4 w-4 transform transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
-									</Button>
+										<MoveUpRight className="ml-2 h-4 w-4" />
+									</Link>
 								) : (
 									<div className="relative">
 										<Button
-											className="group relative overflow-hidden bg-primary/60 text-primary-foreground/70 blur-[1px] cursor-not-allowed pointer-events-none"
+											className="group relative overflow-hidden bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
 											size="lg"
-											disabled
-											aria-disabled="true"
-											title="Complete the missions to unlock"
 										>
 											<Phone className="mr-2 h-4 w-4" />
 											Book a Call
-											<MoveUpRight className="ml-2 h-4 w-4" />
+											<MoveUpRight className="ml-2 h-4 w-4 transform transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
 										</Button>
 										<div className="absolute inset-0 grid place-items-center pointer-events-none">
 											<span className="rounded-md bg-background/80 px-3 py-1 text-xs text-muted-foreground border border-border/50 shadow-sm text-center">
@@ -223,37 +222,40 @@ export const Footer = ({ showPersonalized, className }: FooterProps) => {
 							whileInView={{ opacity: 1, y: 0 }}
 							viewport={{ once: true }}
 							transition={{ duration: 0.6, delay: 0.3 }}
-							className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-center w-full lg:w-auto"
+							className="grid grid-cols-3 gap-x-4 gap-y-2 text-center w-full lg:w-auto items-center"
+							style={{ minWidth: 340 }} // optional: ensures fixed width for layout stability
 						>
 							<a
 								href="/privacy-policy.pdf"
 								target="_blank"
 								rel="noopener noreferrer"
-								className="flex items-center space-x-2 text-muted-foreground hover:text-primary transition-colors duration-300"
+								className="flex items-center justify-center space-x-2 text-muted-foreground hover:text-primary transition-colors duration-300"
 							>
-								<span className="text-sm">Privacy & Policy</span>
+								<span className="text-sm">
+									Privacy & Policy
+								</span>
 							</a>
-							<span className="hidden sm:inline text-muted-foreground">·</span>
 							<a
 								href="/ai-disclosure.pdf"
 								target="_blank"
 								rel="noopener noreferrer"
-								className="flex items-center space-x-2 text-muted-foreground hover:text-primary transition-colors duration-300"
+								className="flex items-center justify-center space-x-2 text-muted-foreground hover:text-primary transition-colors duration-300"
 							>
 								<span className="text-sm">AI Disclosure</span>
 							</a>
-							<span className="hidden sm:inline text-muted-foreground">·</span>
 							<button
 								type="button"
 								onClick={handleReset}
 								disabled={isResetting}
 								title="Reset your session"
 								aria-busy={isResetting}
-								className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-destructive transition-colors duration-300 disabled:opacity-60"
+								className="inline-flex items-center justify-center gap-1.5 text-muted-foreground hover:text-destructive transition-colors duration-300 disabled:opacity-60"
 							>
 								<RotateCcw className="h-4 w-4" />
 								<span className="text-sm">
-									{isResetting ? "Resetting..." : "Reset session"}
+									{isResetting
+										? "Resetting..."
+										: "Reset session"}
 								</span>
 							</button>
 						</motion.div>
@@ -266,7 +268,8 @@ export const Footer = ({ showPersonalized, className }: FooterProps) => {
 							transition={{ duration: 0.6, delay: 0.2 }}
 							className="text-center text-sm text-muted-foreground w-full lg:w-auto"
 						>
-							&copy; {new Date().getFullYear()} Chain Labs. All rights reserved.
+							&copy; {new Date().getFullYear()} Chain Labs. All
+							rights reserved.
 						</motion.div>
 					</div>
 				</div>

@@ -119,31 +119,6 @@ const InputContainer = React.memo(
 						aria-label="Describe your business and website needs"
 					/>
 
-					{/* Mic button - top right (desktop only) */}
-					{!isMobile && (
-						<div className="absolute top-4 right-4">
-							<button
-								type="button"
-								onClick={onToggleRecording}
-								className={cn(
-									"relative flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300",
-									"text-primary hover:bg-primary/10 hover:scale-105",
-									isRecording && "bg-primary/20 scale-105"
-								)}
-								aria-label={
-									isRecording
-										? "Stop recording"
-										: "Start recording"
-								}
-							>
-								{isRecording && !removeVoiceInput && (
-									<span className="absolute h-full w-full animate-ping rounded-full bg-primary opacity-60" />
-								)}
-								<Mic className="h-4 w-4 relative z-10" />
-							</button>
-						</div>
-					)}
-
 					{/* Bottom section */}
 					<div
 						className={cn(
@@ -205,49 +180,79 @@ const InputContainer = React.memo(
 							</button>
 						)}
 
-						{/* Submit button */}
-						<AnimatePresence>
-							{hasInputValue && (
-								<motion.div
-									initial={{ opacity: 0, scale: 0.8, y: 10 }}
-									animate={{ opacity: 1, scale: 1, y: 0 }}
-									exit={{ opacity: 0, scale: 0.8, y: 10 }}
-									transition={{
-										duration: 0.2,
-										ease: "easeOut",
-									}}
+						<div className="flex justify-center items-center gap-4">
+							{/* Mic button - top right (desktop only) */}
+							{!isMobile && (
+								<button
+									type="button"
+									onClick={onToggleRecording}
+									className={cn(
+										"relative flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300",
+										"text-primary hover:bg-primary/10 hover:scale-105",
+										isRecording && "bg-primary/20 scale-105"
+									)}
+									aria-label={
+										isRecording
+											? "Stop recording"
+											: "Start recording"
+									}
 								>
-									<Button
-										type="submit"
-										size="sm"
-										ref={submitButtonRef}
-										className={cn(
-											"bg-primary hover:bg-primary/90 text-primary-foreground",
-											"shadow-sm hover:shadow-md transition-all duration-200",
-											"flex items-center gap-2 rounded-lg touch-manipulation",
-											// Mobile responsive sizing
-											isMobile ? "h-9 px-3" : "h-9 px-4",
-											disabled &&
-												"opacity-50 cursor-not-allowed pointer-events-none"
-										)}
-										disabled={disabled}
-									>
-										<Send
-											className={cn(
-												isMobile
-													? "h-3.5 w-3.5"
-													: "h-4 w-4"
-											)}
-										/>
-										{!isMobile && (
-											<span className="text-xs font-medium">
-												Send
-											</span>
-										)}
-									</Button>
-								</motion.div>
+									{isRecording && !removeVoiceInput && (
+										<span className="absolute h-full w-full animate-ping rounded-full bg-primary opacity-60" />
+									)}
+									<Mic className="h-4 w-4 relative z-10" />
+								</button>
 							)}
-						</AnimatePresence>
+							{/* Submit button */}
+							<AnimatePresence>
+								{hasInputValue && (
+									<motion.div
+										initial={{
+											opacity: 0,
+											scale: 0.8,
+											y: 10,
+										}}
+										animate={{ opacity: 1, scale: 1, y: 0 }}
+										exit={{ opacity: 0, scale: 0.8, y: 10 }}
+										transition={{
+											duration: 0.2,
+											ease: "easeOut",
+										}}
+									>
+										<Button
+											type="submit"
+											size="sm"
+											ref={submitButtonRef}
+											className={cn(
+												"bg-primary hover:bg-primary/90 text-primary-foreground",
+												"shadow-sm hover:shadow-md transition-all duration-200",
+												"flex items-center gap-2 rounded-lg touch-manipulation",
+												// Mobile responsive sizing
+												isMobile
+													? "h-9 px-3"
+													: "h-9 px-4",
+												disabled &&
+													"opacity-50 cursor-not-allowed pointer-events-none"
+											)}
+											disabled={disabled}
+										>
+											<Send
+												className={cn(
+													isMobile
+														? "h-3.5 w-3.5"
+														: "h-4 w-4"
+												)}
+											/>
+											{!isMobile && (
+												<span className="text-xs font-medium">
+													Send
+												</span>
+											)}
+										</Button>
+									</motion.div>
+								)}
+							</AnimatePresence>
+						</div>
 					</div>
 				</div>
 			</div>

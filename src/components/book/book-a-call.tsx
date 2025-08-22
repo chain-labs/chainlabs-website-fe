@@ -125,7 +125,7 @@ const BookCallSection = () => {
 	}, []);
 
 	return (
-		<section className="relative py-24 overflow-visible">
+		<section className="relative py-24 overflow-visible" id="book-a-call">
 			{/* Confetti canvas overlay (manual start) */}
 			<Confetti
 				ref={confettiRef}
