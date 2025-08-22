@@ -21,23 +21,29 @@ export const ProcessSection = () => {
 	];
 
 	return (
-		<section className="relative py-24 w-full max-w-7xl" id="process">
+		<section className="relative py-8 sm:py-12 lg:py-16 w-full max-w-7xl min-h-screen flex flex-col justify-center items-center" id="process">
 			{/* Header */}
 			<motion.div
-				initial={{ opacity: 0, y: 20 }}
+				initial={{ opacity: 0, y: 22 }}
 				whileInView={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.6 }}
-				className="text-center mb-16"
+				viewport={{ once: true, amount: 0.3 }}
+				transition={{ duration: 0.6, ease: "easeOut" }}
+				className="text-center mb-14"
 			>
-				<h2 className="text-center text-4xl font-bold text-foreground lg:text-5xl mb-4">
-					Our{" "}
-					<span className="bg-gradient-to-r from-primary via-primary to-primary/80 bg-clip-text text-transparent">
-						Process
-					</span>{" "}
+				<p className="mb-3 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1 text-xs font-medium tracking-wider text-primary ring-1 ring-primary/25">
+					<span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+					Process
+				</p>
+				<h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">
+					Our Proven {" "}
+					<span className="bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
+						AI Delivery Framework
+					</span>
 				</h2>
-				<p className="mx-auto text-base sm:text-lg text-muted-foreground max-w-2xl">
-					A clear, collaborative path from discovery to
-					delivery—tailored to your goals.
+				<p className="mt-4 max-w-2xl mx-auto text-base sm:text-lg text-muted-foreground leading-relaxed">
+					A transparent 6‑step path from opportunity discovery to
+					scalable deployment— engineered to de‑risk your AI
+					investment and accelerate time‑to‑value.
 				</p>
 			</motion.div>
 			{/* Subtle radial ambiance */}

@@ -296,24 +296,28 @@ const testimonials = [
 
 const ScrollingCarouselTestimonials = () => {
 	return (
-		<section className="py-16 bg-background">
+		<section className="relative py-8 sm:py-12 lg:py-16 w-full max-w-7xl min-h-screen flex flex-col justify-center items-center">
 			<div className="container flex flex-col items-center gap-8 mb-8">
 				<motion.div
-					initial={{ opacity: 0, y: 20 }}
+					initial={{ opacity: 0, y: 22 }}
 					whileInView={{ opacity: 1, y: 0 }}
 					transition={{ duration: 0.6 }}
-					className="text-center"
+					className="text-center max-w-3xl"
 				>
-					<h2 className="text-center text-4xl font-bold text-text-primary lg:text-5xl mb-4">
-						What Our{" "}
-						<span className="bg-gradient-to-r from-primary via-primary to-primary/80 bg-clip-text text-transparent">
-							Clients
-						</span>{" "}
-						Say
+					<p className="mb-3 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1 text-xs font-medium tracking-wider text-primary ring-1 ring-primary/25">
+						<span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+						Testimonials
+					</p>
+					<h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">
+						What{" "}
+						<span className="bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
+							Leaders Are Saying
+						</span>
 					</h2>
-					<p className="text-lg text-text-secondary max-w-2xl">
-						Discover how we've helped businesses transform their
-						operations with AI and blockchain solutions
+					<p className="mt-4 text-base sm:text-lg text-muted-foreground leading-relaxed">
+						Strategic, measurable outcomes—directly from the teams
+						we partner with to turn AI ambition into operating
+						advantages.
 					</p>
 				</motion.div>
 			</div>

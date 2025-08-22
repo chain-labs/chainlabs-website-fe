@@ -510,7 +510,7 @@ export const OurMissions = () => {
 	const totalPoints = 50;
 
 	return (
-		<section className="relative py-24 overflow-hidden" id="missions">
+		<section className="relative py-8 sm:py-12 lg:py-16 w-full max-w-7xl min-h-screen flex flex-col justify-center items-center" id="missions">
 			{/* Background glow */}
 			<div
 				aria-hidden
@@ -530,15 +530,20 @@ export const OurMissions = () => {
 					transition={{ duration: 0.6, ease: "easeOut" }}
 					className="text-center mb-12 md:mb-16"
 				>
-					<h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
-						Your{" "}
-						<span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-							Missions
+					<p className="mb-3 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1 text-xs font-medium tracking-wider text-primary ring-1 ring-primary/25">
+						<span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+						Readiness Missions
+					</p>
+					<h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">
+						Accelerate Your{" "}
+						<span className="bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
+							AI Readiness
 						</span>
 					</h2>
-					<p className="mt-3 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
-						Track your AI transformation and earn rewards for every
-						milestone.
+					<p className="mt-4 max-w-2xl mx-auto text-base sm:text-lg text-muted-foreground leading-relaxed">
+						Complete quick, focused missions to personalize
+						recommendations and unlock tailored next steps toward
+						tangible AI outcomes.
 					</p>
 				</motion.div>
 
@@ -614,7 +619,10 @@ export const OurMissions = () => {
 				</motion.div>
 
 				{/* Mission List */}
-				<div className="flex flex-wrap items-center justify-center gap-4" role="list">
+				<div
+					className="flex flex-wrap items-center justify-center gap-4"
+					role="list"
+				>
 					{store.personalisation.missions.map((mission, index) => (
 						<MissionCard
 							key={mission.id}

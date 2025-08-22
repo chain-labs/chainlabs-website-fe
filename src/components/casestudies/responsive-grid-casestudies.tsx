@@ -8,6 +8,7 @@ import { CaseStudy } from "@/types/store";
 import ReactMarkdown from "react-markdown";
 import { Button } from "../ui/button";
 import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 
 export const CloseIcon = () => {
 	return (
@@ -86,7 +87,7 @@ const ResponsiveGridCasestudies = () => {
 			: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
 
 	return (
-		<section className="py-8 sm:py-12 lg:py-16 max-w-7xl">
+		<section className="relative py-8 sm:py-12 lg:py-16 w-full max-w-7xl min-h-screen flex flex-col justify-center items-center">
 			{/* Header */}
 			<motion.div
 				initial={{ opacity: 0, y: 18 }}
@@ -95,18 +96,29 @@ const ResponsiveGridCasestudies = () => {
 				transition={{ duration: 0.6, ease: "easeOut" }}
 				className="text-center mb-12 md:mb-16"
 			>
-				<h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
-					Case{" "}
-					<span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-						Studies
+				<p className="mb-3 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1 text-xs font-medium tracking-wider text-primary ring-1 ring-primary/25">
+					<span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+					Case Studies
+				</p>
+				<h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">
+					Real‑World{" "}
+					<span className="relative inline-block">
+						<span className="bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
+							Impact
+						</span>
+						<span
+							aria-hidden
+							className="pointer-events-none absolute inset-x-1 -bottom-1 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent"
+						/>
 					</span>
 				</h2>
-				<p className="mt-3 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
-					Explore our success stories and see how we've helped clients
-					achieve their goals.
+				<p className="mt-4 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+					Snapshot outcomes: faster operations, new revenue streams,
+					and elevated customer experiences delivered through applied
+					AI.
 				</p>
 			</motion.div>
-			<div className="mx-auto max-w-sm px-4 py-20 font-sans antialiased md:max-w-7xl">
+			<div className="mx-auto max-w-sm px-4 py-10 font-sans antialiased md:max-w-7xl">
 				{/* Modal Overlay */}
 				<AnimatePresence>
 					{active && typeof active === "object" && (
@@ -281,41 +293,13 @@ const ResponsiveGridCasestudies = () => {
 				</div>
 			</div>
 			<div className="mt-12 flex justify-center">
-				<Button
-					asChild
-					size="lg"
-					variant="outline"
-					className="group relative h-11 rounded-full px-8 font-semibold tracking-tight border border-border/60 bg-background/60 backdrop-blur-sm supports-[backdrop-filter]:bg-background/40 hover:bg-accent/10 hover:text-foreground transition-colors shadow-sm hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:focus-visible:ring-offset-neutral-900 overflow-hidden"
+				<Link
+					href="/case-studies"
 					aria-label="View more case studies"
+					className="text-sm font-medium text-muted-foreground hover:text-foreground underline-offset-4 underline transition-colors flex justify-center items-center gap-[1ch]"
 				>
-					<Link href="/case-studies">
-						<span className="flex items-center gap-2">
-							<span>View more case studies</span>
-							<svg
-								className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5"
-								fill="none"
-								stroke="currentColor"
-								strokeWidth="2"
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								viewBox="0 0 24 24"
-							>
-								<path d="M5 12h14" />
-								<path d="M12 5l7 7-7 7" />
-							</svg>
-						</span>
-						{/* Soft animated sheen */}
-						<span
-							aria-hidden
-							className="pointer-events-none absolute inset-0 rounded-full bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 opacity-0 group-hover:opacity-100 transition-opacity"
-						/>
-						{/* Subtle ring accent */}
-						<span
-							aria-hidden
-							className="pointer-events-none absolute inset-0 rounded-full ring-1 ring-border/60 group-hover:ring-primary/40"
-						/>
-					</Link>
-				</Button>
+					View more case studies <ArrowUpRight />
+				</Link>
 			</div>
 		</section>
 	);

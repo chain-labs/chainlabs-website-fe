@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { useGlobalStore } from "@/global-store";
 
 import Cal, { getCalApi } from "@calcom/embed-react";
+import { cn } from "@/lib/utils";
 
 const BookCallSection = () => {
 	const callUnlocked =
@@ -104,7 +105,6 @@ const BookCallSection = () => {
 				},
 				hideEventTypeDetails: true,
 				layout: "month_view",
-				
 			});
 
 			cal("on", {
@@ -125,7 +125,7 @@ const BookCallSection = () => {
 	}, []);
 
 	return (
-		<section className="relative py-24 overflow-visible" id="book-a-call">
+		<section className="relative py-8 sm:py-12 lg:py-16 w-full max-w-7xl min-h-screen flex flex-col justify-center items-center" id="book-a-call">
 			{/* Confetti canvas overlay (manual start) */}
 			<Confetti
 				ref={confettiRef}
@@ -133,7 +133,7 @@ const BookCallSection = () => {
 				className="pointer-events-none fixed inset-0 w-full h-full z-[60]"
 			/>
 
-			<div className="container max-w-7xl mx-auto px-4 relative z-10">
+			<div className="container max-w-7xl w-full mx-auto px-4 relative z-10">
 				{/* Locked overlay */}
 				{!callUnlocked && (
 					<div className="absolute inset-0 z-20 flex items-center justify-center">
@@ -146,48 +146,67 @@ const BookCallSection = () => {
 
 				{/* Wrap content to blur and disable when locked */}
 				<div
-					className={
+					className={cn(
 						!callUnlocked
 							? "pointer-events-none select-none blur-sm opacity-60"
-							: ""
-					}
+							: "",
+						"w-full"
+					)}
 				>
 					{/* Header */}
 					<motion.div
-						initial={{ opacity: 0, y: 30 }}
+						initial={{ opacity: 0, y: 18 }}
 						whileInView={{ opacity: 1, y: 0 }}
 						viewport={{ once: true }}
-						transition={{ duration: 0.8 }}
-						className="text-center mb-16"
+						transition={{ duration: 0.6, ease: "easeOut" }}
+						className="text-center max-w-4xl mx-auto mb-18"
 					>
-						<motion.h2
-							initial={{ opacity: 0, y: 20 }}
-							whileInView={{ opacity: 1, y: 0 }}
-							viewport={{ once: true }}
-							transition={{ duration: 0.8, delay: 0.3 }}
-							className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight"
-						>
-							Ready to{" "}
-							<span className="bg-gradient-to-r from-primary via-primary to-primary/80 bg-clip-text text-transparent">
-								Transform
-							</span>{" "}
-							Your Business?
+						<p className="mb-3 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1 text-xs font-medium tracking-wider text-primary ring-1 ring-primary/25">
+							<span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+							Get Started
+						</p>
+						<motion.h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">
+							Book Your{" "}
+							<span className="bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
+								AI Strategy Session
+							</span>
 						</motion.h2>
-
 						<motion.p
 							initial={{ opacity: 0, y: 20 }}
 							whileInView={{ opacity: 1, y: 0 }}
 							viewport={{ once: true }}
 							transition={{ duration: 0.8, delay: 0.4 }}
-							className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed"
+							className="mt-4 text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed"
 						>
-							Book a free consultation with our AI experts. No
-							sales pitch, just valuable insights and a custom
-							roadmap tailored to your business goals.
+							A 15‑minute diagnostic to surface quick wins,
+							clarify feasibility, and map an actionable pilot—no
+							sales fluff, just value.
 						</motion.p>
 					</motion.div>
-					{/* Bottom CTA */}
-					{/* <motion.div
+
+					{/* @ts-ignore */}
+					<Cal
+						namespace="15min"
+						calLink="pratham-chudasama-bzmppi/15min"
+						style={{
+							width: "100%",
+							height: "100%",
+						}}
+						config={{ layout: "month_view", theme: "auto" }}
+					/>
+				</div>
+			</div>
+		</section>
+	);
+};
+
+export { BookCallSection };
+
+{
+	/* Bottom CTA */
+}
+{
+	/* <motion.div
 						initial={{ opacity: 0, y: 30 }}
 						whileInView={{ opacity: 1, y: 0 }}
 						viewport={{ once: true }}
@@ -225,23 +244,5 @@ const BookCallSection = () => {
 								<ArrowRight className="w-4 h-4 ml-1.5 sm:ml-2" />
 							</Button>
 						</div>
-					</motion.div> */}
-
-					{/* @ts-ignore */}
-					<Cal
-						namespace="15min"
-						calLink="pratham-chudasama-bzmppi/15min"
-						style={{
-							width: "100%",
-							height: "100%",
-						}}
-						className="dmklewldmew rounded-lg"
-						config={{ layout: "month_view", theme: "auto" }}
-					/>
-				</div>
-			</div>
-		</section>
-	);
-};
-
-export { BookCallSection };
+					</motion.div> */
+}
