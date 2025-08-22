@@ -12,6 +12,8 @@ import {
 	Mail,
 	MapPin,
 	RotateCcw,
+	Cpu,
+	Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useGlobalStore } from "@/global-store";
@@ -186,7 +188,7 @@ export const Footer = ({ showPersonalized, className }: FooterProps) => {
 
 				{/* Bottom Section */}
 				<div className="border-t border-border/30 py-6 sm:py-8">
-					<div className="flex flex-col lg:flex-row items-center justify-between gap-4 sm:gap-6">
+					<div className="flex flex-col lg:flex-row items-center justify-between gap-6 sm:gap-6">
 						{/* Social Links */}
 						<motion.div
 							initial={{ opacity: 0, y: 10 }}
@@ -222,7 +224,7 @@ export const Footer = ({ showPersonalized, className }: FooterProps) => {
 							whileInView={{ opacity: 1, y: 0 }}
 							viewport={{ once: true }}
 							transition={{ duration: 0.6, delay: 0.3 }}
-							className="grid grid-cols-3 gap-x-4 gap-y-2 text-center w-full lg:w-auto items-center"
+							className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr_auto_1fr]  gap-x-4 gap-y-2 text-center w-full lg:w-auto items-center"
 							style={{ minWidth: 340 }} // optional: ensures fixed width for layout stability
 						>
 							<a
@@ -231,18 +233,22 @@ export const Footer = ({ showPersonalized, className }: FooterProps) => {
 								rel="noopener noreferrer"
 								className="flex items-center justify-center space-x-2 text-muted-foreground hover:text-primary transition-colors duration-300"
 							>
+								<Shield className="h-4 w-4" />
 								<span className="text-sm">
 									Privacy & Policy
 								</span>
 							</a>
+							<p className="hidden sm:block text-muted-foreground">|</p>
 							<a
 								href="/ai-disclosure.pdf"
 								target="_blank"
 								rel="noopener noreferrer"
 								className="flex items-center justify-center space-x-2 text-muted-foreground hover:text-primary transition-colors duration-300"
 							>
+								<Cpu className="h-4 w-4" />
 								<span className="text-sm">AI Disclosure</span>
 							</a>
+							<p className="hidden sm:block text-muted-foreground">|</p>
 							<button
 								type="button"
 								onClick={handleReset}
