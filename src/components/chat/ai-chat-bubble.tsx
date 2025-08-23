@@ -58,6 +58,22 @@ const AIChatBubble = () => {
 		placeHolder,
 	} = useChat();
 
+	// Track last seen assistant message timestamp
+	const [lastSeenAiTimestamp, setLastSeenAiTimestamp] = useState<
+		string | null
+	>(null);
+
+	// Determine if there are unseen AI replies (only matters when closed)
+	const unreadAi =
+		!isOpen &&
+		messages.some(
+			(m) =>
+				m.role === "assistant" &&
+				(!lastSeenAiTimestamp ||
+					new Date(m.timestamp).getTime() >
+						new Date(lastSeenAiTimestamp).getTime())
+		);
+
 	// UI + recording controls (shared with hero)
 	const { showPersonalized, isRecording, toggleRecording, stopRecording } =
 		useUI();
@@ -91,6 +107,17 @@ const AIChatBubble = () => {
 	useEffect(() => {
 		autoResize();
 	}, [inputValue, voiceInputValue, isMobile]);
+
+	// Mark all current AI messages as seen whenever the chat is open and messages change
+	useEffect(() => {
+		if (!isOpen) return;
+		const latestAi = [...messages]
+			.filter((m) => m.role === "assistant")
+			.at(-1);
+		if (latestAi?.timestamp) {
+			setLastSeenAiTimestamp(latestAi.timestamp);
+		}
+	}, [messages, isOpen]);
 
 	// Click outside to close (and Esc to close)
 	useEffect(() => {
@@ -593,7 +620,7 @@ const AIChatBubble = () => {
 						</AnimatePresence>
 
 						{/* Notification dot if there are unread messages */}
-						{!isOpen && hasMessages && (
+						{!isOpen && unreadAi && (
 							<motion.div
 								className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-background"
 								initial={{ scale: 0 }}
