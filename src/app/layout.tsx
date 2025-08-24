@@ -28,6 +28,7 @@ export default function RootLayout({
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<head>
+				<link rel="icon" href="/assets/logo.svg" />
 				{/* Google Tag Manager */}
 				<Script id="gtm" strategy="afterInteractive">
 					{`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
