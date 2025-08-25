@@ -479,17 +479,14 @@ const MissionCard = React.memo(
 									<Button
 										type="submit"
 										size="sm"
-										disabled={
-											completed ||
-											submitting ||
-											!answer.trim()
-										}
+										onClick={handleClickComplete}
+										disabled={completed || submitting}
 									>
 										{completed
 											? "Completed"
 											: submitting
 											? "Submitting..."
-											: "Submit"}
+											: "Confirm"}
 									</Button>
 								</div>
 							</div>
@@ -510,7 +507,10 @@ export const OurMissions = () => {
 	const totalPoints = 50;
 
 	return (
-		<section className="relative py-8 sm:py-12 lg:py-16 w-full max-w-7xl min-h-screen flex flex-col justify-center items-center" id="missions">
+		<section
+			className="relative py-8 sm:py-12 lg:py-16 w-full max-w-7xl min-h-screen flex flex-col justify-center items-center"
+			id="missions"
+		>
 			{/* Background glow */}
 			<div
 				aria-hidden
