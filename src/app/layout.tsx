@@ -89,6 +89,16 @@ export default function RootLayout({
 					></iframe>
 				</noscript>
 				{/* End Google Tag Manager (noscript) */}
+				{/* clarity tag */}
+				<Script>
+					{`
+						const clarity = window.clarity || function() {
+							(this._q = this._q || []).push(arguments);
+						};
+						const sessionId = localStorage.getItem("sessionId");
+						clarity("set", "sessionId", sessionId);
+						`}
+				</Script>
 			</body>
 		</html>
 	);
