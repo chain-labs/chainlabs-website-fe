@@ -1,4 +1,12 @@
-import { CaseStudy, ChatHistory, Hero, History, Message, Mission, Process } from "./store";
+import {
+	CaseStudy,
+	ChatHistory,
+	Hero,
+	History,
+	Message,
+	Mission,
+	Process,
+} from "./store";
 
 export type ErrorResponse = {
 	detail: {
@@ -48,6 +56,12 @@ export type PersonalisedResponse = {
 		fallbackToGenericData: boolean;
 		points_total: 0;
 		call_unlocked: false;
+		call_record: [
+			{
+				id: string;
+				uid: string;
+			}
+		];
 	};
 };
 

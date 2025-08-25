@@ -317,6 +317,14 @@ class ApiClient {
 		return response;
 	}
 
+	async sendCallLink({ id, uid }: { id: string; uid: string }) {
+		await this.makeAuthenticatedRequest(`${API_BASE_URL}/api/call/link`, {
+			method: "POST",
+			body: JSON.stringify({ id, uid }),
+		});
+		return true;
+	}
+
 	// Utility method to check if user is authenticated
 	isAuthenticated(): boolean {
 		if (!this.isBrowser()) return false;
