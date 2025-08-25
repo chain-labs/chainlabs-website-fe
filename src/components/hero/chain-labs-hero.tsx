@@ -14,6 +14,7 @@ import SpeechRecognition, {
 } from "react-speech-recognition";
 import Orb from "@/components/ui/orb";
 import { GradientBars } from "../ui/gradient-bars";
+import Link from "next/link";
 
 const ChainLabsHero = () => {
 	const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -349,6 +350,17 @@ const ChainLabsHero = () => {
 								</form>
 							</motion.div>
 						</AnimatePresence>
+
+						{/* Use Generic site */}
+						<div className="mt-12 flex justify-center">
+							<Link
+								href="/generic-site"
+								aria-label="View more case studies"
+								className="text-sm font-medium text-muted-foreground hover:text-foreground underline-offset-4 underline transition-colors flex justify-center items-center gap-[1ch]"
+							>
+								View Generic Site
+							</Link>
+						</div>
 					</div>
 				</div>
 

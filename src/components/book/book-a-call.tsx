@@ -6,23 +6,15 @@ import { Confetti } from "@/components/ui/confetti";
 import type { ConfettiRef } from "@/components/ui/confetti";
 // ...existing code...
 import {
-	Calendar,
-	ArrowRight,
 	Sparkles,
-	MessageSquare,
-	Phone,
 	Video,
 	Clock,
-	Zap,
 	Users,
 	CheckCircle,
 	CalendarDays,
-	LinkIcon,
-	ExternalLink,
 	RefreshCw,
 	// ...existing code...
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useGlobalStore } from "@/global-store";
 
 import Cal, { getCalApi } from "@calcom/embed-react";
