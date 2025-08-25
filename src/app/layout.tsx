@@ -99,6 +99,7 @@ export default function RootLayout({
 						clarity("set", "sessionId", sessionId);
 						`}
 				</Script>
+				{/* End clarity tag */}
 			</body>
 		</html>
 	);

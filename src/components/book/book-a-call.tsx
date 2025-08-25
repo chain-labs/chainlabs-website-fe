@@ -553,7 +553,6 @@ const BookCallSection = () => {
 							</div>
 						</motion.div>
 					) : (
-						// @ts-expect-error
 						<Cal
 							namespace="15min"
 							calLink="pratham-chudasama-bzmppi/15min"
