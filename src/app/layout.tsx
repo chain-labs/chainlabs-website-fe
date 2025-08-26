@@ -94,7 +94,8 @@ export default function RootLayout({
 						const clarity = window.clarity || function() {
 							(this._q = this._q || []).push(arguments);
 							};
-							const sessionId = localStorage.getItem("sessionId");
+							const sessionId = JSON.parse(localStorage.getItem("chainlabs-session-store")).state.personalised.sid;
+							console.log('Clarity session ID:', sessionId);
 							clarity("set", "sessionId", sessionId);
 							`}
 				</Script>
