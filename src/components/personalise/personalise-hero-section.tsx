@@ -5,6 +5,7 @@ import { Sparkles } from "lucide-react";
 import { motion } from "motion/react";
 import LightRays from "../ui/light-rays";
 import { useEffect } from "react";
+import { VoiceAssistantUI } from "../ui/vapi-ui";
 
 export default function PersonaliseHeroSection() {
 	const store = useGlobalStore().personalised;
@@ -211,6 +212,7 @@ export default function PersonaliseHeroSection() {
 						<Sparkles className="h-5 w-5" />
 					</motion.div>
 				</motion.div>
+				<VoiceAssistantUI />
 			</div>
 		</section>
 	);
