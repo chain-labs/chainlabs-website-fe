@@ -59,9 +59,8 @@ export default function RootLayout({
 				</Script>
 				{/* End amplitude - google analytics */}
 				{/* amplitude - session replay */}
-				<Script src="https://cdn.amplitude.com/libs/analytics-browser-2.11.1-min.js.gz"></Script>
-				<Script src="https://cdn.amplitude.com/libs/plugin-session-replay-browser-1.8.0-min.js.gz"></Script>
-				<Script>{`window.amplitude.add(window.sessionReplay.plugin({sampleRate: 1}));window.amplitude.init('f455e270b57f7a26880f05be5449e42c', {"autocapture":{"elementInteractions":true}});`}</Script>
+				{/* <Script src="https://cdn.amplitude.com/libs/analytics-browser-2.11.1-min.js.gz"></Script> */}
+				{/* <Script src="https://cdn.amplitude.com/libs/plugin-session-replay-browser-1.8.0-min.js.gz"></Script> */}
 				{/* End amplitude - session replay */}
 			</head>
 			<body
@@ -94,12 +93,13 @@ export default function RootLayout({
 					{`
 						const clarity = window.clarity || function() {
 							(this._q = this._q || []).push(arguments);
-						};
-						const sessionId = localStorage.getItem("sessionId");
-						clarity("set", "sessionId", sessionId);
-						`}
+							};
+							const sessionId = localStorage.getItem("sessionId");
+							clarity("set", "sessionId", sessionId);
+							`}
 				</Script>
 				{/* End clarity tag */}
+				{/* <Script>{`window.amplitude.add(window.sessionReplay.plugin({sampleRate: 1}));window.amplitude.init('f455e270b57f7a26880f05be5449e42c', {"autocapture":{"elementInteractions":true}});`}</Script> */}
 			</body>
 		</html>
 	);
