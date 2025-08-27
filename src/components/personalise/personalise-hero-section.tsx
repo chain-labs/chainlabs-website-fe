@@ -123,7 +123,7 @@ export default function PersonaliseHeroSection() {
 	}, []);
 
 	return (
-		<section className="relative px-4 font-sans antialiased z-0 w-full">
+		<section className="relative px-4 font-sans antialiased z-0 w-full" id="hero">
 			<div className="absolute inset-0 -z-10 overflow-hidden">
 				<LightRays
 					raysOrigin="top-center"

@@ -21,7 +21,7 @@ export const ProcessSection = () => {
 	];
 
 	return (
-		<section className="relative py-8 sm:py-12 lg:py-16 w-full max-w-7xl min-h-screen flex flex-col justify-center items-center" id="process">
+		<section className="relative py-8 sm:py-12 lg:py-16 w-full max-w-7xl min-h-screen flex flex-col justify-center items-center" id="processes">
 			{/* Header */}
 			<motion.div
 				initial={{ opacity: 0, y: 22 }}

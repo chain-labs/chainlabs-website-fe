@@ -87,7 +87,7 @@ const ResponsiveGridCasestudies = () => {
 			: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
 
 	return (
-		<section className="relative py-8 sm:py-12 lg:py-16 w-full max-w-7xl min-h-screen flex flex-col justify-center items-center">
+		<section className="relative py-8 sm:py-12 lg:py-16 w-full max-w-7xl min-h-screen flex flex-col justify-center items-center" id="case-studies">
 			{/* Header */}
 			<motion.div
 				initial={{ opacity: 0, y: 18 }}

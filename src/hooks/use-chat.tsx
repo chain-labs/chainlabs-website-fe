@@ -76,10 +76,14 @@ export const useChat = () => {
 						timestamp: new Date().toISOString(),
 					});
 					const target = document.getElementById(
-						response.navigate.metadata.missionId
+						response.navigate.metadata.missionId !== "N/A"
+							? response.navigate.metadata.missionId
+							: response.navigate.metadata.caseStudyId !== "N/A"
+							? response.navigate.metadata.caseStudyId
+							: ""
 					);
 					const targetSection = document.getElementById(
-						response.navigate.section
+						response.navigate.sectionId
 					);
 
 					if (target) {
@@ -118,11 +122,12 @@ export const useChat = () => {
 					getPersonalizedContent();
 				} else if (store.hasGoal()) {
 					setThinkingPlaceholder(THINKING_PLACEHOLDER.GOAL);
-					const response = await apiClient.clarifyGoal(content);
+					await apiClient.clarifyGoal(content);
 					store.setIsThinking(false);
 					store.addChatMessage({
 						role: "assistant",
-						message: "🤖 Tool call: I've processed your clarification and rendered a personalized version of the site based on your needs.",
+						message:
+							"🤖 Tool call: I've processed your clarification and rendered a personalized version of the site based on your needs.",
 						timestamp: new Date().toISOString(),
 					});
 					store.setIsThinking(false);

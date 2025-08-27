@@ -77,9 +77,10 @@ export type ChatResponse = {
 	suggestedRead: [];
 	navigate: {
 		page: string;
-		section: string;
+		sectionId: string;
 		metadata: {
 			missionId: string;
+			caseStudyId: string;
 		};
 	};
 };
