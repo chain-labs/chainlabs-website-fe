@@ -29,10 +29,16 @@ interface UseVapiReturn {
 	transcripts: TranscriptChunk[];
 	start: () => Promise<void>;
 	stop: () => Promise<void>;
-	toggle: () => void;
+	toggle: (ctx?: StartContext) => void;
 	mute: (muted: boolean) => void;
 	muted: boolean;
 	durationMs: number;
+}
+
+interface StartContext {
+	personalizationText?: string;
+	sections?: Record<string, string[]>; // id -> synonym list
+	templateVariables?: Record<string, any>;
 }
 
 const START_EVENTS = [
@@ -280,22 +286,79 @@ export function useVapi(): UseVapiReturn {
 		micTracksRef.current.forEach((t) => (t.enabled = !m));
 	};
 
-	const start = useCallback(async () => {
-		if (!ready || !vapiRef.current) return;
-		setError(null);
-		setPhase("connecting");
-		try {
-			await captureUserTracks();
-			await vapiRef.current.start?.(assistantId);
-			setTimeout(() => {
-				setPhase((p) => (p === "connecting" ? "live" : p));
-				if (muted) applyMute(true);
-			}, 1800);
-		} catch (e: any) {
-			setError(e?.message || "Start failed");
-			setPhase("error");
-		}
-	}, [assistantId, ready, muted]);
+	const start = useCallback(
+		async (ctx?: StartContext) => {
+			if (!ready || !vapiRef.current) return;
+			setError(null);
+			setPhase("connecting");
+			try {
+				await captureUserTracks();
+
+				const systemPromptPieces: string[] = [];
+				if (ctx?.personalizationText) {
+					systemPromptPieces.push(
+						`User personalization:\n${ctx.personalizationText}`
+					);
+				}
+				if (ctx?.sections) {
+					systemPromptPieces.push(
+						"Available website sections (user may ask to navigate): " +
+							Object.keys(ctx.sections)
+								.map((id) => `"${id}"`)
+								.join(", ")
+					);
+					systemPromptPieces.push(
+						"When user asks to see/scroll/go to any section (or a synonym), just acknowledge briefly (e.g. 'Sure, showing testimonials now.') — the UI will handle scrolling."
+					);
+				}
+				const systemPrompt = systemPromptPieces.join("\n\n");
+
+				// Prefer starting with overrides if SDK supports object form:
+				// (If SDK only accepts assistantId, keep current call then send a message afterwards)
+				await vapiRef.current.start?.({
+					assistantId,
+					assistantOverrides:
+						systemPrompt || ctx?.templateVariables
+							? {
+									model: systemPrompt
+										? {
+												messages: [
+													{
+														role: "system",
+														content: systemPrompt,
+													},
+												],
+										  }
+										: undefined,
+									templateVariables:
+										ctx?.templateVariables || undefined,
+							  }
+							: undefined,
+				});
+
+				setTimeout(() => {
+					setPhase((p) => (p === "connecting" ? "live" : p));
+				}, 1200);
+
+				// Fallback if start(object) not supported: send system message post-start
+				if (
+					systemPrompt &&
+					typeof vapiRef.current.send === "function"
+				) {
+					try {
+						vapiRef.current.send({
+							role: "system",
+							text: systemPrompt,
+						});
+					} catch {}
+				}
+			} catch (e: any) {
+				setError(e?.message || "Start failed");
+				setPhase("error");
+			}
+		},
+		[assistantId, ready]
+	);
 
 	const stop = useCallback(async () => {
 		if (!vapiRef.current) return;
@@ -309,19 +372,22 @@ export function useVapi(): UseVapiReturn {
 		}
 	}, []);
 
-	const toggle = useCallback(() => {
-		if (
-			phase === "connecting" ||
-			phase === "live" ||
-			phase === "listening" ||
-			phase === "speaking" ||
-			phase === "thinking"
-		) {
-			stop();
-		} else {
-			start();
-		}
-	}, [phase, start, stop]);
+	const toggle = useCallback(
+		(ctx?: StartContext) => {
+			if (
+				phase === "connecting" ||
+				phase === "live" ||
+				phase === "listening" ||
+				phase === "speaking" ||
+				phase === "thinking"
+			) {
+				stop();
+			} else {
+				start(ctx);
+			}
+		},
+		[phase, start, stop]
+	);
 
 	const mute = useCallback((m: boolean) => {
 		setMuted(m);
@@ -342,9 +408,9 @@ export function useVapi(): UseVapiReturn {
 		audioLevel,
 		error,
 		transcripts,
-		start,
+		start, // now accepts optional context
 		stop,
-		toggle,
+		toggle, // now accepts optional context
 		mute,
 		muted,
 		durationMs,
