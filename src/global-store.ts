@@ -41,7 +41,6 @@ interface SessionState {
 	voiceInputValue: string;
 	isFocused: boolean;
 	isRecording: boolean;
-	showPersonalized: boolean;
 	sidebarOpen: boolean;
 
 	// App State
@@ -49,13 +48,8 @@ interface SessionState {
 	theme: "light" | "dark";
 	animations: boolean;
 
-	// Flags
-	goalSubmitted: boolean;
-	clarificationSubmitted: boolean;
-	personalizationGenerated: boolean;
 	callUnlocked: boolean;
 
-	// Session/async flags
 	hasSession?: boolean;
 	isEnsuringSession?: boolean;
 	isSubmittingGoal?: boolean;
@@ -63,11 +57,12 @@ interface SessionState {
 	isFetchingProgress?: boolean;
 	isCheckingUnlock?: boolean;
 
-	// Missions flow
 	currentMissionId: string | null;
-
-	// Errors
 	lastError: string | null;
+
+	caseStudyTimeSpent: Record<string, number>;
+	processSectionTimeSpent: Record<string, number>;
+	vapiTimeSpent: number;
 }
 
 interface SessionActions {
@@ -105,7 +100,7 @@ interface SessionActions {
 	setIsRecording: (recording: boolean) => void;
 	toggleRecording: () => void;
 	stopRecording: () => void;
-	setShowPersonalized: (show: boolean) => void;
+	// Removed: setShowPersonalized (no backing state)
 	setSidebarOpen: (open: boolean) => void;
 	toggleSidebar: () => void;
 
@@ -136,65 +131,50 @@ interface SessionActions {
 
 	// Computed
 	hasGoal: () => boolean;
-	hasClarification: () => boolean;
-	completedMissionsCount: () => number;
-	pendingMissionsCount: () => number;
-	progressPercentage: () => number;
-	canShowPersonalized: () => boolean;
-	getCurrentMission: () => Mission | null;
-	getNextPendingMission: () => Mission | null;
+	isClarified: () => boolean;
+
+	// Time Tracking
+	getCaseStudyTimeSpent: () => Record<string, number>;
+	getProcessSectionTimeSpent: () => Record<string, number>;
+	getVapiTimeSpent: () => number;
+	addCaseStudyTime: (id: string, seconds: number) => void;
+	addProcessSectionTime: (id: string, seconds: number) => void;
+	addVapiTime: (seconds: number) => void;
 }
 
 export const useGlobalStore = create<SessionState & SessionActions>()(
 	persist(
 		(set, get) => ({
-			// Initial State - Goal & Personalization
+			// Initial State
 			goal: null,
 			headline: null,
 			personalised: null,
 			missions: [],
 			recommendedCaseStudies: [],
-
-			// Initial State - Progress
 			pointsTotal: 0,
-
-			// Initial State - Chat
 			chatHistory: [],
 			isThinking: false,
 			currentContext: null,
-
-			// Initial State - UI
 			inputValue: "",
 			voiceInputValue: "",
 			isFocused: false,
 			isRecording: false,
-			showPersonalized: false,
 			sidebarOpen: true,
-
-			// Initial State - App
 			hasCompletedOnboarding: false,
 			theme: "dark",
 			animations: true,
-
-			// Initial Flags
-			goalSubmitted: false,
-			clarificationSubmitted: false,
-			personalizationGenerated: false,
 			callUnlocked: false,
-
-			// Session/async flags
 			hasSession: false,
 			isEnsuringSession: false,
 			isSubmittingGoal: false,
 			isClarifying: false,
 			isFetchingProgress: false,
 			isCheckingUnlock: false,
-
-			// Missions flow
 			currentMissionId: null,
-
-			// Errors
 			lastError: null,
+			caseStudyTimeSpent: {},
+			processSectionTimeSpent: {},
+			vapiTimeSpent: 0,
 
 			// Actions - Goal & Personalization
 			setGoal: (goal) => set({ goal }),
@@ -247,8 +227,7 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 			toggleRecording: () =>
 				set((state) => ({ isRecording: !state.isRecording })),
 			stopRecording: () => set({ isRecording: false }),
-			setShowPersonalized: (showPersonalized) =>
-				set({ showPersonalized }),
+			// Removed setShowPersonalized
 			setSidebarOpen: (sidebarOpen) => set({ sidebarOpen }),
 			toggleSidebar: () =>
 				set((state) => ({ sidebarOpen: !state.sidebarOpen })),
@@ -273,7 +252,8 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 
 			// Computed
 			hasGoal: () => get().goal !== null,
-			hasClarification: () => get().personalised?.status !== "CLARIFIED",
+			// Single clear selector instead of two duplicates
+			isClarified: () => get().personalised?.status === "CLARIFIED",
 			completedMissionsCount: () =>
 				get().missions.filter((m) => m.status === "completed").length,
 			pendingMissionsCount: () =>
@@ -286,8 +266,6 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 				).length;
 				return (completed / missions.length) * 100;
 			},
-			canShowPersonalized: () =>
-				get().personalised?.status !== "CLARIFIED",
 			getCurrentMission: () => {
 				const { currentMissionId, missions } = get();
 				return missions.find((m) => m.id === currentMissionId) || null;
@@ -311,6 +289,33 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 			// Errors
 			setLastError: (lastError) => set({ lastError }),
 
+			// Time Tracking Getters
+			getCaseStudyTimeSpent: () => get().caseStudyTimeSpent,
+			getProcessSectionTimeSpent: () => get().processSectionTimeSpent,
+			getVapiTimeSpent: () => get().vapiTimeSpent,
+			addCaseStudyTime: (id, seconds) =>
+				set((state) => ({
+					caseStudyTimeSpent: {
+						...state.caseStudyTimeSpent,
+						[id]:
+							(state.caseStudyTimeSpent[id] || 0) +
+							Math.max(0, seconds),
+					},
+				})),
+			addProcessSectionTime: (id, seconds) =>
+				set((state) => ({
+					processSectionTimeSpent: {
+						...state.processSectionTimeSpent,
+						[id]:
+							(state.processSectionTimeSpent[id] || 0) +
+							Math.max(0, seconds),
+					},
+				})),
+			addVapiTime: (seconds) =>
+				set((state) => ({
+					vapiTimeSpent: state.vapiTimeSpent + Math.max(0, seconds),
+				})),
+
 			// Session Management
 			hydrateFromSession: (sessionData) =>
 				set({
@@ -325,57 +330,53 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 						})) || [],
 					pointsTotal: sessionData.points_total || 0,
 					callUnlocked: sessionData.call_unlocked || false,
-					showPersonalized: true,
+					chatHistory: sessionData.chat_history || [],
+					hasCompletedOnboarding:
+						sessionData.has_completed_onboarding || false,
+					theme: sessionData.theme || "dark",
+					animations:
+						sessionData.animations !== undefined
+							? sessionData.animations
+							: true,
+					sidebarOpen: false,
+					recommendedCaseStudies:
+						sessionData.recommended_case_studies || [],
+					caseStudyTimeSpent: sessionData.case_study_time_spent || 0,
+					processSectionTimeSpent:
+						sessionData.process_section_time_spent || 0,
+					vapiTimeSpent: sessionData.vapi_time_spent || 0,
 				}),
 			resetSession: () =>
 				set({
-					// Initial State - Goal & Personalization
 					goal: null,
 					headline: null,
 					personalised: null,
 					missions: [],
 					recommendedCaseStudies: [],
-
-					// Initial State - Progress
 					pointsTotal: 0,
-
-					// Initial State - Chat
 					chatHistory: [],
 					isThinking: false,
 					currentContext: null,
-
-					// Initial State - UI
 					inputValue: "",
 					voiceInputValue: "",
 					isFocused: false,
 					isRecording: false,
-					showPersonalized: false,
 					sidebarOpen: true,
-
-					// Initial State - App
 					hasCompletedOnboarding: false,
 					theme: "dark",
 					animations: true,
-
-					// Initial Flags
-					goalSubmitted: false,
-					clarificationSubmitted: false,
-					personalizationGenerated: false,
 					callUnlocked: false,
-
-					// Session/async flags
 					hasSession: false,
 					isEnsuringSession: false,
 					isSubmittingGoal: false,
 					isClarifying: false,
 					isFetchingProgress: false,
 					isCheckingUnlock: false,
-
-					// Missions flow
 					currentMissionId: null,
-
-					// Errors
 					lastError: null,
+					caseStudyTimeSpent: {},
+					processSectionTimeSpent: {},
+					vapiTimeSpent: 0,
 				}),
 		}),
 		{
@@ -392,8 +393,10 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 				theme: state.theme,
 				animations: state.animations,
 				sidebarOpen: state.sidebarOpen,
-				showPersonalized: state.showPersonalized,
 				personalised: state.personalised,
+				caseStudyTimeSpent: state.caseStudyTimeSpent,
+				processSectionTimeSpent: state.processSectionTimeSpent,
+				vapiTimeSpent: state.vapiTimeSpent,
 			}),
 		}
 	)

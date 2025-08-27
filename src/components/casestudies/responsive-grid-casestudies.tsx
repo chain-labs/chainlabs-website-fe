@@ -6,7 +6,6 @@ import { useOutsideClick } from "@/lib/hooks/use-outside-click";
 import { useGlobalStore } from "@/global-store";
 import { CaseStudy } from "@/types/store";
 import ReactMarkdown from "react-markdown";
-import { Button } from "../ui/button";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 
@@ -48,7 +47,15 @@ const ResponsiveGridCasestudies = () => {
 	const id = useId();
 	const ref = useRef<HTMLDivElement>(null);
 
-	const store = useGlobalStore().personalised;
+	const timerStartRef = useRef<number | null>(null);
+	const prevCaseStudyRef = useRef<CaseStudy | null>(null);
+
+	const caseStudies = useGlobalStore(
+		(s) => s.personalised?.personalisation.caseStudies
+	);
+	const addCaseStudyTime = useGlobalStore((s) => s.addCaseStudyTime);
+
+	if (!caseStudies || caseStudies.length === 0) return null;
 
 	useEffect(() => {
 		function onKeyDown(event: KeyboardEvent) {
@@ -57,6 +64,7 @@ const ResponsiveGridCasestudies = () => {
 			}
 		}
 
+		// Handle body scroll lock
 		if (active && typeof active === "object") {
 			document.body.style.overflow = "hidden";
 		} else {
@@ -67,15 +75,62 @@ const ResponsiveGridCasestudies = () => {
 		return () => window.removeEventListener("keydown", onKeyDown);
 	}, [active]);
 
+	// NEW: Listen for external openCaseStudy events (from missions)
+    useEffect(() => {
+        const handler = (e: Event) => {
+            try {
+                const detail = (e as CustomEvent).detail;
+                const id = detail?.caseStudyId;
+                if (!id) return;
+                const cs = caseStudies?.find((c) => c.id === id);
+                if (cs) setActive(cs);
+            } catch {}
+        };
+        window.addEventListener("openCaseStudy", handler as EventListener);
+        return () =>
+            window.removeEventListener(
+                "openCaseStudy",
+                handler as EventListener
+            );
+    }, [caseStudies]);
+
 	useOutsideClick(ref as React.RefObject<HTMLDivElement>, () =>
 		setActive(null)
 	);
 
-	if (store === null || store.personalisation.caseStudies.length === 0)
-		return null;
+	useEffect(() => {
+		// If a previous case study was open, record its time when closing or switching
+		const prev = prevCaseStudyRef.current;
+		if (
+			prev &&
+			(!active ||
+				(typeof active === "object" && active.id !== prev.id)) &&
+			timerStartRef.current
+		) {
+			const elapsedMs = Date.now() - timerStartRef.current;
+			const seconds = Math.floor(elapsedMs / 1000);
+			if (seconds > 0) addCaseStudyTime(prev.id, seconds);
+			timerStartRef.current = null;
+		}
 
-	// NEW: dynamic grid columns based on count (up to 4 cols on xl)
-	const caseStudies = store.personalisation.caseStudies;
+		// When a new case study opens
+		if (active && typeof active === "object") {
+			prevCaseStudyRef.current = active;
+			timerStartRef.current = Date.now();
+		}
+
+		return () => {
+			// On unmount: flush any active timing
+			if (timerStartRef.current && prevCaseStudyRef.current) {
+				const elapsedMs = Date.now() - timerStartRef.current;
+				const seconds = Math.floor(elapsedMs / 1000);
+				if (seconds > 0)
+					addCaseStudyTime(prevCaseStudyRef.current.id, seconds);
+			}
+		};
+	}, [active, addCaseStudyTime]);
+
+	// dynamic grid columns based on count (up to 4 cols on xl)
 	const total = caseStudies.length;
 	const gridColsClass =
 		total <= 1
@@ -87,7 +142,10 @@ const ResponsiveGridCasestudies = () => {
 			: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
 
 	return (
-		<section className="relative py-8 sm:py-12 lg:py-16 w-full max-w-7xl min-h-screen flex flex-col justify-center items-center" id="case-studies">
+		<section
+			className="relative py-8 sm:py-12 lg:py-16 w-full max-w-7xl min-h-screen flex flex-col justify-center items-center"
+			id="case-studies"
+		>
 			{/* Header */}
 			<motion.div
 				initial={{ opacity: 0, y: 18 }}

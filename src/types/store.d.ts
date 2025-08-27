@@ -20,7 +20,14 @@ export type Mission = {
 		type: "text";
 		placeholder: string;
 	};
-	missionType: "ADDITIONAL_INPUT" | "READ_CASE_STUDY" | "VIEW_PROCESS";
+	missionType:
+		| "ADDITIONAL_INPUT"
+		| "READ_CASE_STUDY"
+		| "VIEW_PROCESS"
+		| "VAPI_WEB_CALL"
+		| "GOAL_CLARIFICATION"
+		| "GOAL_INPUT"
+		| "CHAT";
 	options: {
 		targetCaseStudyId: "N/A" | string;
 	};
