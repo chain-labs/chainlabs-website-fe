@@ -320,7 +320,7 @@ class ApiClient {
 	async sendCallLink({ id, uid }: { id: string; uid: string }) {
 		await this.makeAuthenticatedRequest(`${API_BASE_URL}/api/call/link`, {
 			method: "POST",
-			body: JSON.stringify({ id, uid }),
+			body: JSON.stringify({ id: `${id}`, uid: `${uid}` }),
 		});
 		return true;
 	}
