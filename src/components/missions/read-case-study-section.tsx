@@ -1,6 +1,8 @@
 import { Mission } from "@/types/store";
 import { Button } from "../ui/button";
 import { useMissionComputed } from "./mission-card";
+import { useEffect, useRef } from "react";
+import { useInView } from "framer-motion";
 
 export default function ReadCaseStudySection(props: {
 	mission: Mission;
@@ -24,8 +26,25 @@ export default function ReadCaseStudySection(props: {
 	const remaining = Math.max(0, requiredSeconds - capped);
 	const ready = !completed && pct >= 1;
 
+	// --- Auto submit when in view & ready ---
+	const rootRef = useRef<HTMLDivElement | null>(null);
+	const inView = useInView(rootRef, { amount: 0.4 });
+	const autoSubmittedRef = useRef(false);
+	useEffect(() => {
+		if (
+			inView &&
+			ready &&
+			!completed &&
+			!submitting &&
+			!autoSubmittedRef.current
+		) {
+			autoSubmittedRef.current = true;
+			onConfirm(); // triggers submitAnswer upstream
+		}
+	}, [inView, ready, completed, submitting, onConfirm]);
+
 	return (
-		<div className="mt-5 space-y-4">
+		<div ref={rootRef} className="mt-5 space-y-4">
 			<div
 				className={`rounded-xl border bg-card/50 p-4 backdrop-blur-sm transition-colors border-border/40 ${
 					completed ? "opacity-70" : "hover:border-border/60"
