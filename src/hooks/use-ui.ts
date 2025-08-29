@@ -28,7 +28,7 @@ export const useUI = () => {
 		setIsRecording: store.setIsRecording,
 		toggleRecording: toggleRecording,
 		stopRecording: store.stopRecording,
-		setShowPersonalized: store.setShowPersonalized,
+		setShowPersonalized: store.personalised?.status === "CLARIFIED",
 		setSidebarOpen: store.setSidebarOpen,
 		toggleSidebar: store.toggleSidebar,
 		setTheme: store.setTheme,
