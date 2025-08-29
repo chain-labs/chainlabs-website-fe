@@ -325,7 +325,7 @@ const BookCallSection = () => {
 
 	return (
 		<section
-			className="relative py-8 sm:py-12 lg:py-16 w-full max-w-7xl min-h-screen flex flex-col justify-center items-center"
+			className="relative py-16 sm:py-24 lg:py-32 w-full max-w-7xl min-h-fit flex flex-col justify-center items-center"
 			id="book-a-call"
 		>
 			<Confetti
