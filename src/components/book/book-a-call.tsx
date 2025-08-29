@@ -4,7 +4,6 @@ import { motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { Confetti } from "@/components/ui/confetti";
 import type { ConfettiRef } from "@/components/ui/confetti";
-// ...existing code...
 import {
 	Sparkles,
 	Video,
@@ -13,7 +12,6 @@ import {
 	CheckCircle,
 	CalendarDays,
 	RefreshCw,
-	// ...existing code...
 } from "lucide-react";
 import { useGlobalStore } from "@/global-store";
 

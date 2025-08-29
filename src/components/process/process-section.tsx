@@ -6,7 +6,6 @@ import { useGlobalStore } from "@/global-store";
 import { Sparkles } from "lucide-react";
 import { Process } from "@/types/store";
 
-// ...existing code...
 export const ProcessSection = () => {
 	const store = useGlobalStore().personalised;
 	const addProcessSectionTime = useGlobalStore(
@@ -196,4 +195,3 @@ export const ProcessSection = () => {
 		</section>
 	);
 };
-// ...existing code...
