@@ -41,14 +41,14 @@ export default function RootLayout({
 				{/* Google tag (gtag.js) */}
 				<Script
 					async
-					src="https://www.googletagmanager.com/gtag/js?id=G-HFGE16BE8M"
+					src="https://www.googletagmanager.com/gtag/js?id=G-2TXCJ3VJ1B"
 				></Script>
 				<Script>
 					{`window.dataLayer = window.dataLayer || [];
 					function gtag(){dataLayer.push(arguments);}
 					gtag('js', new Date());
 
-					gtag('config', 'G-HFGE16BE8M');`}
+					gtag('config', 'G-2TXCJ3VJ1B');`}
 				</Script>
 				{/* End Google tag (gtag.js) */}
 				{/* amplitude - google analytics */}
