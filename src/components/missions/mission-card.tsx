@@ -215,7 +215,7 @@ const MissionCard = memo(
 
 		const [answer, setAnswer] = useState("");
 
-		const state = useMissionComputed(mission, answer);
+    const state = useMissionComputed(mission, answer);
 		const {
 			submitAnswer,
 			visualStatus,
@@ -225,7 +225,15 @@ const MissionCard = memo(
 			timedProgressPct,
 			completed,
 		} = state;
-		const visualMeta = prettyStatus(visualStatus);
+        const visualMeta = prettyStatus(visualStatus);
+        const statusColorStrip =
+            visualStatus === "completed"
+                ? "bg-emerald-500/60"
+                : visualStatus === "in-progress"
+                ? "bg-primary/70"
+                : "bg-amber-500/60";
+
+        const ariaLabel = `${mission.title ?? "Mission"} — ${visualMeta.label}. ${Number(mission.points ?? 0)} points`;
 
 		const handleConfirm = async () => {
 			if (completed) return;
@@ -278,36 +286,43 @@ const MissionCard = memo(
 		};
 
 		return (
-			<motion.div
-				initial={{ opacity: 0, y: 18 }}
-				whileInView={{ opacity: 1, y: 0 }}
-				viewport={{ once: true }}
-				transition={{
-					duration: 0.5,
-					delay: index * 0.08,
-					ease: "easeOut",
-				}}
-				className="group relative max-w-[400px] h-full"
-				role="listitem"
-				id={mission.id}
-			>
-				<motion.div
-					ref={containerRef}
-					onMouseMove={onMouseMove}
-					whileHover={{ y: -2 }}
-					transition={{ type: "spring", stiffness: 350, damping: 30 }}
-					className="relative h-full overflow-hidden rounded-2xl border border-border/40 bg-card/60 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-card/60 transition-all duration-300 hover:shadow-2xl hover:border-border/60"
-				>
-					<div
-						className="pointer-events-none absolute -inset-px opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-100"
-						style={{
-							background:
-								"radial-gradient(500px circle at var(--x,70%) var(--y,30%), color-mix(in oklab, var(--color-primary,#7c3aed) 28%, transparent), transparent 40%)",
-						}}
-					/>
-					<div className="relative p-5">
-						<div className="flex items-start justify-between gap-4">
-							<div className="grid items-center gap-4">
+            <motion.div
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{
+                    duration: 0.5,
+                    delay: index * 0.08,
+                    ease: "easeOut",
+                }}
+                className="group relative max-w-[400px] h-full"
+                role="listitem"
+                id={mission.id}
+                aria-label={ariaLabel}
+                aria-describedby={`mission-status-${mission.id}`}
+            >
+                <motion.div
+                    ref={containerRef}
+                    onMouseMove={onMouseMove}
+                    whileHover={{ y: -2 }}
+                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                    className="relative h-full overflow-hidden rounded-2xl border border-border/40 bg-card/60 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-card/60 transition-all duration-300 hover:shadow-2xl hover:border-border/60"
+                >
+                    {/* Status accent strip */}
+                    <div
+                        aria-hidden
+                        className={`absolute left-0 top-0 h-full w-1 ${statusColorStrip}`}
+                    />
+                    <div
+                        className="pointer-events-none absolute -inset-px opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-100"
+                        style={{
+                            background:
+                                "radial-gradient(500px circle at var(--x,70%) var(--y,30%), color-mix(in oklab, var(--color-primary,#7c3aed) 28%, transparent), transparent 40%)",
+                        }}
+                    />
+                    <div className="relative p-5">
+                        <div className="flex items-start justify-between gap-4">
+                            <div className="grid items-center gap-4">
 								<div className="grid place-items-center rounded-xl size-11 bg-primary/12 ring-1 ring-primary/25 text-primary">
 									<IconComponent
 										className="size-5"
@@ -323,11 +338,14 @@ const MissionCard = memo(
 											{mission.description}
 										</p>
 									)}
-									<div className="mt-2">
-										<StatusBadge status={visualStatus} />
-									</div>
-								</div>
-							</div>
+                                <div className="mt-2">
+                                    <span id={`mission-status-${mission.id}`} className="sr-only">
+                                        {visualMeta.label}
+                                    </span>
+                                    <StatusBadge status={visualStatus} />
+                                </div>
+                            </div>
+                        </div>
 							<div className="text-right">
 								<div className="text-xs text-muted-foreground">
 									Points
