@@ -31,8 +31,6 @@ const conversationStarters = [
 ];
 
 const AIChatBubble = () => {
-	const [isOpen, setIsOpen] = useState(false);
-
 	// Progress bar state
 	const [progress, setProgress] = useState(0);
 
@@ -56,6 +54,8 @@ const AIChatBubble = () => {
 		setInputValue,
 		setVoiceInputValue,
 		placeHolder,
+		aiChatBubbleIsOpen: isOpen,
+		setAiChatBubbleIsOpen: setIsOpen,
 	} = useChat();
 
 	// Track last seen assistant message timestamp
