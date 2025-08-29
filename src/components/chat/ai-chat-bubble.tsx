@@ -280,7 +280,7 @@ const AIChatBubble = () => {
 
 	// Auto-scroll to bottom
 	useEffect(() => {
-		if (scrollRef.current) {
+		if (scrollRef.current && isOpen) {
 			scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
 		}
 	}, [messages, isThinking, scrollRef]);
@@ -358,7 +358,7 @@ const AIChatBubble = () => {
 						</header>
 
 						{/* Progress bar */}
-						<AnimatePresence>
+						{/* <AnimatePresence>
 							{isThinking && (
 								<motion.div
 									initial={{ opacity: 0, height: 0 }}
@@ -381,7 +381,7 @@ const AIChatBubble = () => {
 									</div>
 								</motion.div>
 							)}
-						</AnimatePresence>
+						</AnimatePresence> */}
 
 						{/* Messages */}
 						<div
