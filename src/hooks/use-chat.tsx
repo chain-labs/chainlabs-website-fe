@@ -93,7 +93,7 @@ export const useChat = () => {
 							response.navigate.sectionId
 						);
 
-						if (target) {
+						if (target && aiChatBubbleIsOpen) {
 							if ("scrollMarginTop" in target.style) {
 								target.style.scrollMarginTop = "100px";
 								target.scrollIntoView({
@@ -109,7 +109,7 @@ export const useChat = () => {
 								);
 								window.scrollTo({ top: y, behavior: "smooth" });
 							}
-						} else if (targetSection) {
+						} else if (targetSection && aiChatBubbleIsOpen) {
 							if ("scrollMarginTop" in targetSection.style) {
 								targetSection.style.scrollMarginTop = "100px";
 								targetSection.scrollIntoView({

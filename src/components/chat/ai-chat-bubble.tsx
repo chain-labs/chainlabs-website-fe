@@ -283,7 +283,7 @@ const AIChatBubble = () => {
 		if (scrollRef.current && isOpen) {
 			scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
 		}
-	}, [messages, isThinking, scrollRef]);
+	}, [messages, isThinking, scrollRef, isOpen]);
 
 	const handleToggle = () => {
 		setIsOpen((prev) => !prev);
