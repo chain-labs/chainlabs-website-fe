@@ -41,6 +41,7 @@ export const Footer = ({ showPersonalized, className }: FooterProps) => {
 			apiClient.clearAuth();
 			resetSession();
 			await apiClient.initializeSession().catch(() => {});
+			window.location.href = "/";
 			window.scrollTo({ top: 0, behavior: "smooth" });
 		} finally {
 			setIsResetting(false);
@@ -238,7 +239,9 @@ export const Footer = ({ showPersonalized, className }: FooterProps) => {
 									Privacy & Policy
 								</span>
 							</a>
-							<p className="hidden sm:block text-muted-foreground">|</p>
+							<p className="hidden sm:block text-muted-foreground">
+								|
+							</p>
 							<a
 								href="/ai-disclosure.pdf"
 								target="_blank"
@@ -248,7 +251,9 @@ export const Footer = ({ showPersonalized, className }: FooterProps) => {
 								<Cpu className="h-4 w-4" />
 								<span className="text-sm">AI Disclosure</span>
 							</a>
-							<p className="hidden sm:block text-muted-foreground">|</p>
+							<p className="hidden sm:block text-muted-foreground">
+								|
+							</p>
 							<button
 								type="button"
 								onClick={handleReset}
