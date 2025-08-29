@@ -428,7 +428,7 @@ const AIChatBubble = () => {
 							)}
 
 							{/* Book a Call button while thinking */}
-							<AnimatePresence>
+							{/* <AnimatePresence>
 								{showBookCall && isThinking && (
 									<motion.div
 										initial={{
@@ -464,7 +464,7 @@ const AIChatBubble = () => {
 										</Button>
 									</motion.div>
 								)}
-							</AnimatePresence>
+							</AnimatePresence> */}
 						</div>
 
 						{/* Input */}
