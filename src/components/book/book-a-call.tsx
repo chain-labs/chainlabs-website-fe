@@ -21,6 +21,8 @@ import Cal, { getCalApi } from "@calcom/embed-react";
 import { cn } from "@/lib/utils";
 import { apiClient } from "@/api-client";
 
+const MEETING_LINK_ID = "pratham-chudasama-bzmppi/1min";
+
 type APIResponse = {
 	status: "success" | "error";
 	data: {
@@ -97,6 +99,7 @@ const BookCallSection = () => {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [now, setNow] = useState(() => Date.now());
+	const [showScheduler, setShowScheduler] = useState(false);
 
 	const confettiRef = useRef<ConfettiRef>(null);
 	const prevUnlockedRef = useRef<boolean>(callUnlocked);
@@ -168,7 +171,9 @@ const BookCallSection = () => {
 	// Cal embed configuration
 	useEffect(() => {
 		(async function () {
-			const cal = await getCalApi({ namespace: "15min" });
+			const cal = await getCalApi({
+				namespace: MEETING_LINK_ID.split("/")[1],
+			});
 			cal("ui", {
 				cssVarsPerTheme: {
 					light: { "cal-brand": "#5cfda2" },
@@ -186,6 +191,7 @@ const BookCallSection = () => {
 						uid: string;
 					};
 					await apiClient.sendCallLink({ id, uid });
+					setShowScheduler(false); // return to details after new booking
 				},
 			});
 		})();
@@ -217,6 +223,38 @@ const BookCallSection = () => {
 	const joinUrl = booking?.metadata?.videoCallUrl || "";
 	const participants = booking?.attendees?.length ?? 0;
 	const bookingUID = booking?.uid;
+
+	// New meeting phase booleans
+	const meetingCancelled = status === "CANCELLED" || status === "REJECTED";
+	const meetingStarted =
+		!!startDate &&
+		!!endDate &&
+		now >= startDate.getTime() &&
+		now < endDate.getTime() &&
+		!meetingCancelled;
+	const meetingEnded =
+		!!endDate && now >= endDate.getTime() && !meetingCancelled;
+	const meetingScheduled =
+		!!startDate &&
+		now < startDate.getTime() &&
+		!meetingCancelled &&
+		!meetingEnded &&
+		!meetingStarted;
+
+	// Auto-switch to scheduler if the current booking is no longer actionable
+	useEffect(() => {
+		if (
+			(meetingCancelled || meetingEnded) &&
+			hasBooking &&
+			!showScheduler
+		) {
+			setShowScheduler(true);
+		}
+	}, [meetingCancelled, meetingEnded, hasBooking, showScheduler]);
+
+	// Only show details when there is an active upcoming or in-progress meeting and not forcing scheduler
+	const showBookingDetails =
+		hasBooking && !showScheduler && !meetingCancelled && !meetingEnded;
 
 	const statusColors: Record<NonNullable<typeof status>, string> = {
 		ACCEPTED: "text-emerald-500 bg-emerald-500/10 ring-emerald-500/30",
@@ -358,204 +396,271 @@ const BookCallSection = () => {
 					</motion.div>
 
 					{hasBooking ? (
-						<motion.div
-							initial={{ opacity: 0, y: 24 }}
-							whileInView={{ opacity: 1, y: 0 }}
-							viewport={{ once: true }}
-							transition={{ duration: 0.6 }}
-							className="relative mx-auto w-full max-w-3xl"
-						>
-							<div className="rounded-2xl sm:rounded-3xl border border-border/60 bg-gradient-to-br from-surface/80 to-surface-muted/80 backdrop-blur-md p-6 sm:p-8 shadow-lg">
-								<div className="flex items-start gap-4">
-									<div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15 ring-1 ring-primary/30 text-primary">
-										<CheckCircle className="h-7 w-7" />
+						showBookingDetails ? (
+							<motion.div
+								initial={{ opacity: 0, y: 24 }}
+								whileInView={{ opacity: 1, y: 0 }}
+								viewport={{ once: true }}
+								transition={{ duration: 0.6 }}
+								className="relative mx-auto w-full max-w-3xl"
+							>
+								<div className="rounded-2xl sm:rounded-3xl border border-border/60 bg-gradient-to-br from-surface/80 to-surface-muted/80 backdrop-blur-md p-6 sm:p-8 shadow-lg">
+									<div className="flex items-start gap-4">
+										<div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15 ring-1 ring-primary/30 text-primary">
+											<CheckCircle className="h-7 w-7" />
+										</div>
+										<div className="flex-1">
+											<h3 className="text-xl font-semibold text-foreground flex items-center gap-3">
+												Strategy Call
+												{renderStatusBadge()}
+											</h3>
+											{countdownLabel && (
+												<p className="mt-2 text-xs font-medium text-primary/80">
+													{countdownLabel ===
+													"Live now"
+														? "Live now"
+														: countdownLabel ===
+														  "Completed"
+														? "Completed"
+														: `Scheduled`}
+												</p>
+											)}
+											{booking?.description && (
+												<p className="mt-2 text-xs text-muted-foreground">
+													{booking.description}
+												</p>
+											)}
+										</div>
 									</div>
-									<div className="flex-1">
-										<h3 className="text-xl font-semibold text-foreground flex items-center gap-3">
-											Strategy Call
-											{renderStatusBadge()}
-										</h3>
-										{countdownLabel && (
-											<p className="mt-2 text-xs font-medium text-primary/80">
-												{countdownLabel === "Live now"
-													? "Live now"
-													: countdownLabel ===
-													  "Completed"
-													? "Completed"
-													: `Scheduled`}
-											</p>
-										)}
-										{booking?.description && (
-											<p className="mt-2 text-xs text-muted-foreground">
-												{booking.description}
-											</p>
-										)}
-									</div>
-								</div>
 
-								{loading && (
-									<div className="mt-6 grid gap-5 sm:grid-cols-2">
-										{Array.from({ length: 2 }).map(
-											(_, i) => (
-												<div
-													key={i}
-													className="space-y-3"
-												>
-													<div className="h-3 w-24 rounded bg-muted/40 animate-pulse" />
-													<div className="h-10 rounded-lg bg-muted/30 animate-pulse" />
-													<div className="h-10 rounded-lg bg-muted/30 animate-pulse" />
-													<div className="h-10 rounded-lg bg-muted/30 animate-pulse" />
-												</div>
-											)
-										)}
-									</div>
-								)}
-
-								{!loading && error && (
-									<div className="mt-6 rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
-										Failed to load booking: {error}
-									</div>
-								)}
-
-								{!loading && !error && booking && (
-									<>
+									{loading && (
 										<div className="mt-6 grid gap-5 sm:grid-cols-2">
-											<div className="space-y-3">
-												<h4 className="text-sm font-medium tracking-wide text-muted-foreground uppercase">
-													Session
-												</h4>
-												<div className="flex items-center gap-3 rounded-lg border border-border/50 bg-background/60 p-3 text-sm">
-													<Clock className="h-4 w-4 text-primary" />
-													<span>
-														{startDate
-															? startDate.toLocaleString(
-																	undefined,
-																	{
-																		dateStyle:
-																			"medium",
-																		timeStyle:
-																			"short",
-																	}
-															  )
-															: "—"}
-													</span>
-												</div>
-												<div className="flex items-center gap-3 rounded-lg border border-border/50 bg-background/60 p-3 text-sm">
-													<CalendarDays className="h-4 w-4 text-primary" />
-													<span>
-														Duration:{" "}
-														{durationMins
-															? `${durationMins} min`
-															: "—"}
-													</span>
-												</div>
-												<div className="flex items-center gap-3 rounded-lg border border-border/50 bg-background/60 p-3 text-sm">
-													<Video className="h-4 w-4 text-primary" />
-													<span>
-														Type: {locationLabel}
-													</span>
-												</div>
-											</div>
-
-											<div className="space-y-3">
-												<h4 className="text-sm font-medium tracking-wide text-muted-foreground uppercase">
-													Meta
-												</h4>
-												<div className="flex items-center gap-3 rounded-lg border border-border/50 bg-background/60 p-3 text-sm">
-													<Sparkles className="h-4 w-4 text-primary" />
-													<span>
-														Status:{" "}
-														<span className="font-medium">
-															{status}
-														</span>
-													</span>
-												</div>
-												<div className="flex items-center gap-3 rounded-lg border border-border/50 bg-background/60 p-3 text-sm">
-													<Users className="h-4 w-4 text-primary" />
-													<span>
-														Participants:{" "}
-														{participants}
-													</span>
-												</div>
-												{cancellationInfo ? (
-													<div className="flex items-start gap-3 rounded-lg border border-border/50 bg-background/60 p-3 text-xs leading-relaxed text-rose-500">
-														<span className="font-medium">
-															Reason:
-														</span>
-														<span>
-															{cancellationInfo}
-														</span>
+											{Array.from({ length: 2 }).map(
+												(_, i) => (
+													<div
+														key={i}
+														className="space-y-3"
+													>
+														<div className="h-3 w-24 rounded bg-muted/40 animate-pulse" />
+														<div className="h-10 rounded-lg bg-muted/30 animate-pulse" />
+														<div className="h-10 rounded-lg bg-muted/30 animate-pulse" />
+														<div className="h-10 rounded-lg bg-muted/30 animate-pulse" />
 													</div>
-												) : (
+												)
+											)}
+										</div>
+									)}
+
+									{!loading && error && (
+										<div className="mt-6 rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+											Failed to load booking: {error}
+										</div>
+									)}
+
+									{!loading && !error && booking && (
+										<>
+											<div className="mt-6 grid gap-5 sm:grid-cols-2">
+												<div className="space-y-3">
+													<h4 className="text-sm font-medium tracking-wide text-muted-foreground uppercase">
+														Session
+													</h4>
 													<div className="flex items-center gap-3 rounded-lg border border-border/50 bg-background/60 p-3 text-sm">
 														<Clock className="h-4 w-4 text-primary" />
 														<span>
-															{countdownLabel
-																? countdownLabel ===
-																  "Live now"
-																	? "Live now"
-																	: countdownLabel ===
-																	  "Completed"
-																	? "Completed"
-																	: `Starts in ${countdownLabel}`
+															{startDate
+																? startDate.toLocaleString(
+																		undefined,
+																		{
+																			dateStyle:
+																				"medium",
+																			timeStyle:
+																				"short",
+																		}
+																  )
 																: "—"}
 														</span>
 													</div>
-												)}
-											</div>
-										</div>
+													<div className="flex items-center gap-3 rounded-lg border border-border/50 bg-background/60 p-3 text-sm">
+														<CalendarDays className="h-4 w-4 text-primary" />
+														<span>
+															Duration:{" "}
+															{durationMins
+																? `${durationMins} min`
+																: "—"}
+														</span>
+													</div>
+													<div className="flex items-center gap-3 rounded-lg border border-border/50 bg-background/60 p-3 text-sm">
+														<Video className="h-4 w-4 text-primary" />
+														<span>
+															Type:{" "}
+															{locationLabel}
+														</span>
+													</div>
+												</div>
 
-										{/* Actions (single location for meeting link) */}
-										<div className="mt-8 flex flex-wrap gap-3">
-											{status === "ACCEPTED" &&
-												joinUrl &&
-												startDate && (
+												<div className="space-y-3">
+													<h4 className="text-sm font-medium tracking-wide text-muted-foreground uppercase">
+														Meta
+													</h4>
+													<div className="flex items-center gap-3 rounded-lg border border-border/50 bg-background/60 p-3 text-sm">
+														<Sparkles className="h-4 w-4 text-primary" />
+														<span>
+															Status:{" "}
+															<span className="font-medium">
+																{status}
+															</span>
+														</span>
+													</div>
+													<div className="flex items-center gap-3 rounded-lg border border-border/50 bg-background/60 p-3 text-sm">
+														<Users className="h-4 w-4 text-primary" />
+														<span>
+															Participants:{" "}
+															{participants}
+														</span>
+													</div>
+													{cancellationInfo ? (
+														<div className="flex items-start gap-3 rounded-lg border border-border/50 bg-background/60 p-3 text-xs leading-relaxed text-rose-500">
+															<span className="font-medium">
+																Reason:
+															</span>
+															<span>
+																{
+																	cancellationInfo
+																}
+															</span>
+														</div>
+													) : (
+														<div className="flex items-center gap-3 rounded-lg border border-border/50 bg-background/60 p-3 text-sm">
+															<Clock className="h-4 w-4 text-primary" />
+															<span>
+																{countdownLabel
+																	? countdownLabel ===
+																	  "Live now"
+																		? "Live now"
+																		: countdownLabel ===
+																		  "Completed"
+																		? "Completed"
+																		: `Starts in ${countdownLabel}`
+																	: "—"}
+															</span>
+														</div>
+													)}
+												</div>
+											</div>
+
+											{/* Actions (single location for meeting link) */}
+											<div className="mt-8 flex flex-wrap gap-3">
+												{status === "ACCEPTED" &&
+													joinUrl &&
+													startDate && (
+														<a
+															href={joinUrl}
+															target="_blank"
+															rel="noopener noreferrer"
+															className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 transition"
+														>
+															<Video className="h-4 w-4" />
+															Join Call
+														</a>
+													)}
+												{meetingScheduled &&
+													bookingUID && (
+														<a
+															href={`https://app.cal.com/reschedule/${bookingUID}`}
+															target="_blank"
+															rel="noopener noreferrer"
+															className="inline-flex items-center justify-center gap-2 rounded-md border border-border/60 bg-background/70 px-5 py-2.5 text-sm font-medium hover:bg-accent/30 transition"
+														>
+															<RefreshCw className="h-4 w-4" />
+															Reschedule
+														</a>
+													)}
+
+												{(meetingStarted ||
+													meetingEnded ||
+													meetingCancelled) && (
 													<a
-														href={joinUrl}
+														href={`https://cal.com/${MEETING_LINK_ID}`}
 														target="_blank"
 														rel="noopener noreferrer"
 														className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 transition"
 													>
 														<Video className="h-4 w-4" />
-														Join Call
+														Book Another Call
 													</a>
 												)}
-											{bookingUID &&
-												status !== "CANCELLED" &&
-												status !== "REJECTED" && (
-													<a
-														href={`https://app.cal.com/reschedule/${bookingUID}`}
-														target="_blank"
-														rel="noopener noreferrer"
-														className="inline-flex items-center justify-center gap-2 rounded-md border border-border/60 bg-background/70 px-5 py-2.5 text-sm font-medium hover:bg-accent/30 transition"
-													>
-														<RefreshCw className="h-4 w-4" />
-														Reschedule
-													</a>
-												)}
-										</div>
+											</div>
 
-										<p className="mt-6 text-[13px] text-muted-foreground leading-relaxed">
-											{status === "CANCELLED" ||
-											status === "REJECTED"
-												? "This session is inactive. You may create a new booking if needed."
-												: "Need a different time? Use the reschedule link. A cancellation link is in your confirmation email."}
-										</p>
-									</>
+											<p className="mt-6 text-[13px] text-muted-foreground leading-relaxed">
+												{meetingCancelled
+													? "This session is inactive. You may book another call."
+													: meetingEnded
+													? "Session completed. Book another call if you’d like a follow-up."
+													: meetingStarted
+													? "Session is in progress. You can schedule another call for later."
+													: "Need a different time? Use the reschedule option before the session starts."}
+											</p>
+										</>
+									)}
+
+									{!loading &&
+										!error &&
+										status === "PENDING" && (
+											<p className="mt-4 text-xs text-amber-500">
+												Pending approval. You will
+												receive a confirmation email
+												once accepted.
+											</p>
+										)}
+								</div>
+							</motion.div>
+						) : (
+							<div className="w-full">
+								<div className="mb-6 flex items-center gap-3 justify-center">
+									<h3 className="text-lg font-semibold">
+										Book a New Strategy Session
+									</h3>
+									{hasBooking &&
+										!meetingCancelled &&
+										!meetingEnded && (
+											<button
+												type="button"
+												onClick={() =>
+													setShowScheduler(false)
+												}
+												className="text-xs px-2 py-1 rounded border border-border/50 hover:bg-accent/30 transition"
+											>
+												Back
+											</button>
+										)}
+								</div>
+								<Cal
+									namespace={MEETING_LINK_ID.split("/")[1]}
+									calLink={MEETING_LINK_ID}
+									style={{ width: "100%", height: "100%" }}
+									config={{
+										layout: "month_view",
+										theme: "auto",
+									}}
+								/>
+								{meetingCancelled && (
+									<p className="mt-4 text-xs text-muted-foreground text-center">
+										Previous session was cancelled. This
+										will create a new booking.
+									</p>
 								)}
-
-								{!loading && !error && status === "PENDING" && (
-									<p className="mt-4 text-xs text-amber-500">
-										Pending approval. You will receive a
-										confirmation email once accepted.
+								{meetingEnded && (
+									<p className="mt-4 text-xs text-muted-foreground text-center">
+										Previous session ended. Book a follow-up
+										below.
 									</p>
 								)}
 							</div>
-						</motion.div>
+						)
 					) : (
 						<Cal
-							namespace="15min"
-							calLink="pratham-chudasama-bzmppi/15min"
+							namespace={MEETING_LINK_ID.split("/")[1]}
+							calLink={MEETING_LINK_ID}
 							style={{ width: "100%", height: "100%" }}
 							config={{ layout: "month_view", theme: "auto" }}
 						/>
