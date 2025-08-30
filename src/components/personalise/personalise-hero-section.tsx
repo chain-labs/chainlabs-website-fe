@@ -215,8 +215,15 @@ export default function PersonaliseHeroSection() {
 						<Sparkles className="h-5 w-5" />
 					</motion.div>
 				</motion.div>
-				{/* <VoiceAssistantUI /> */}
-				<VapiSection />
+				<motion.div
+					initial={{ opacity: 0, y: 30 }}
+					whileInView={{ opacity: 1, y: 0 }}
+					viewport={{ once: true }}
+					transition={{ duration: 0.8 }}
+					className="relative text-center"
+				>
+					<VapiSection />
+				</motion.div>
 			</div>
 		</section>
 	);

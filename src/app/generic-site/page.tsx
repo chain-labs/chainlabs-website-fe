@@ -6,6 +6,7 @@ import { Header } from "@/components/header";
 import PersonaliseHeroSection from "@/components/personalise/personalise-hero-section";
 import { ScrollingCarouselTestimonials } from "@/components/testimonials/scrolling-carousel-testimonials";
 import { useChat } from "@/hooks/use-chat";
+import { ReactLenis } from "lenis/react";
 
 export default function GenericSite() {
 	const { getPersonalizedContent } = useChat();
@@ -15,6 +16,7 @@ export default function GenericSite() {
 	}, []);
 	return (
 		<main className="relative flex flex-col items-center justify-start overflow-x-hidden bg-background">
+			<ReactLenis root />
 			<Header isScrolled={true} showPersonalized={true} />
 
 			<div className="w-full">
