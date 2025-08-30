@@ -1,8 +1,11 @@
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
 import Vapi from "@vapi-ai/web";
-import { buildPersonalizationText } from "@/lib/vapi";
+import { buildPersonalizationText } from "@/components/vapi/vapi";
 import { useGlobalStore } from "@/global-store";
+import { Mic, PhoneOff, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "motion/react";
 
 const apiKey = process.env.NEXT_PUBLIC_VAPI_API_KEY || "";
 const assistantId = process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID || "";
@@ -10,9 +13,11 @@ const assistantId = process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID || "";
 export default function VapiSection() {
 	const [vapi, setVapi] = useState<Vapi | null>(null);
 	const [isConnected, setIsConnected] = useState(false);
+	const [isConnecting, setIsConnecting] = useState(false);
+	const [isEnding, setIsEnding] = useState(false);
 	const [isSpeaking, setIsSpeaking] = useState(false);
 	const [transcript, setTranscript] = useState<
-		Array<{ role: string; text: string }>
+		Array<{ role: string; text: string; ts: number }>
 	>([]);
 	const personalizedContent = buildPersonalizationText(
 		useGlobalStore((s) => s.personalised)
@@ -22,29 +27,29 @@ export default function VapiSection() {
 	const voiceSystemPrompt = useMemo(() => {
 		return `You are ChainLabs Voice Assistant — a helpful, friendly AI consultant for website visitors.
 
-Goals
-- Understand the user's business goals and constraints.
-- Offer clear, practical next steps tailored to their context.
-- Keep responses concise for voice: 1–3 short sentences or a 3-point list.
+				Goals
+				- Understand the user's business goals and constraints.
+				- Offer clear, practical next steps tailored to their context.
+				- Keep responses concise for voice: 1–3 short sentences or a 3-point list.
 
-Voice Guidelines
-- Speak clearly and naturally; avoid long monologues.
-- If user interrupts, adapt and finish the most relevant point.
-- Convert links, numbers, and jargon into listener-friendly descriptions.
+				Voice Guidelines
+				- Speak clearly and naturally; avoid long monologues.
+				- If user interrupts, adapt and finish the most relevant point.
+				- Convert links, numbers, and jargon into listener-friendly descriptions.
 
-When Navigating
-- If the user asks to view a section (e.g., testimonials), reply briefly like: "Sure — showing testimonials now." The UI handles scrolling/navigation.
+				When Navigating
+				- If the user asks to view a section (e.g., testimonials), reply briefly like: "Sure — showing testimonials now." The UI handles scrolling/navigation.
 
-If Uncertain
-- Be honest. Offer a short suggestion for how to proceed.
+				If Uncertain
+				- Be honest. Offer a short suggestion for how to proceed.
 
-Personalization Context
-${personalizedContent || "(No personalization provided)"}
+				Personalization Context
+				${personalizedContent || "(No personalization provided)"}
 
-Response Pattern
-- Brief acknowledgement → direct answer → 1–2 suggested next steps.
-- Prefer numbered lists when listing options.
-`;
+				Response Pattern
+				- Brief acknowledgement → direct answer → 1–2 suggested next steps.
+				- Prefer numbered lists when listing options.
+				`;
 	}, [personalizedContent]);
 	useEffect(() => {
 		const vapiInstance = new Vapi(apiKey);
@@ -53,11 +58,15 @@ Response Pattern
 		vapiInstance.on("call-start", () => {
 			console.log("Call started");
 			setIsConnected(true);
+			setIsConnecting(false);
+			setIsEnding(false);
 		});
 		vapiInstance.on("call-end", () => {
 			console.log("Call ended");
 			setIsConnected(false);
 			setIsSpeaking(false);
+			setIsConnecting(false);
+			setIsEnding(false);
 		});
 		vapiInstance.on("speech-start", () => {
 			console.log("Assistant started speaking");
@@ -74,12 +83,15 @@ Response Pattern
 					{
 						role: message.role,
 						text: message.transcript,
+						ts: Date.now(),
 					},
 				]);
 			}
 		});
 		vapiInstance.on("error", (error) => {
 			console.error("Vapi error:", error);
+			setIsConnecting(false);
+			setIsEnding(false);
 		});
 		return () => {
 			vapiInstance?.stop();
@@ -87,6 +99,11 @@ Response Pattern
 	}, [apiKey]);
 	const startCall = () => {
 		if (vapi) {
+			// Close AI chat bubble if open (avoid UI overlap)
+			try {
+				window.dispatchEvent(new Event("chainlabs:close-ai-chat"));
+			} catch {}
+			setIsConnecting(true);
 			vapi.start({
 				// Basic assistant configuration
 				model: {
@@ -125,170 +142,134 @@ Response Pattern
 	};
 	const endCall = () => {
 		if (vapi) {
+			setIsEnding(true);
 			vapi.stop();
 		}
 	};
+
+	// auto scroll bottom as new messages arrive
+	useEffect(() => {
+		const container = document.getElementById("transcript-container");
+		if (container) {
+			container.scrollTop = container.scrollHeight;
+		}
+	}, [transcript]);
+
+
 	return (
 		<div
-			style={{
-				position: "fixed",
-				bottom: "24px",
-				right: "24px",
-				zIndex: 1000,
-				fontFamily: "Arial, sans-serif",
-			}}
+			className={cn(
+				"z-50 font-sans",
+				isConnected && "fixed bottom-4 left-4 sm:bottom-6 sm:left-6"
+			)}
 		>
 			{!isConnected ? (
 				<button
 					onClick={startCall}
-					style={{
-						background: "#12A594",
-						color: "#fff",
-						border: "none",
-						borderRadius: "50px",
-						padding: "16px 24px",
-						fontSize: "16px",
-						fontWeight: "bold",
-						cursor: "pointer",
-						boxShadow: "0 4px 12px rgba(18, 165, 148, 0.3)",
-						transition: "all 0.3s ease",
-					}}
-					onMouseOver={(e) => {
-						e.currentTarget.style.transform = "translateY(-2px)";
-						e.currentTarget.style.boxShadow =
-							"0 6px 16px rgba(18, 165, 148, 0.4)";
-					}}
-					onMouseOut={(e) => {
-						e.currentTarget.style.transform = "translateY(0)";
-						e.currentTarget.style.boxShadow =
-							"0 4px 12px rgba(18, 165, 148, 0.3)";
-					}}
+					disabled={isConnecting}
+					className="inline-flex items-center gap-2 rounded-full bg-emerald-600 enabled:hover:bg-emerald-500 text-white px-5 py-3 shadow-lg transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+					aria-label="Talk to assistant"
 				>
-					🎤 Talk to Assistant
+					{isConnecting ? (
+						<Loader2 className="h-4 w-4 animate-spin" />
+					) : (
+						<Mic className="h-4 w-4" />
+					)}
+					<span className="font-semibold">
+						{isConnecting ? "Connecting..." : "Talk to Assistant"}
+					</span>
 				</button>
 			) : (
-				<div
-					style={{
-						background: "#fff",
-						borderRadius: "12px",
-						padding: "20px",
-						width: "320px",
-						boxShadow: "0 8px 32px rgba(0, 0, 0, 0.12)",
-						border: "1px solid #e1e5e9",
-					}}
-				>
-					<div
-						style={{
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "space-between",
-							marginBottom: "16px",
-						}}
-					>
-						<div
-							style={{
-								display: "flex",
-								alignItems: "center",
-								gap: "8px",
-							}}
-						>
-							<div
-								style={{
-									width: "12px",
-									height: "12px",
-									borderRadius: "50%",
-									background: isSpeaking
-										? "#ff4444"
-										: "#12A594",
-									animation: isSpeaking
-										? "pulse 1s infinite"
-										: "none",
-								}}
-							></div>
-							<span style={{ fontWeight: "bold", color: "#333" }}>
+				<div className="w-[calc(100vw-2rem)] max-w-sm sm:max-w-xs rounded-xl border border-neutral-200/70 bg-white shadow-xl p-4 dark:border-neutral-800 dark:bg-neutral-900">
+					<div className="flex items-center justify-between mb-3">
+						<div className="flex items-center gap-2">
+							<span
+								className={
+									"inline-block h-2.5 w-2.5 rounded-full " +
+									(isSpeaking
+										? "bg-rose-500 animate-pulse"
+										: "bg-emerald-500")
+								}
+								aria-hidden="true"
+							/>
+							<span className="text-sm font-medium text-neutral-800 dark:text-neutral-100">
 								{isSpeaking
-									? "Assistant Speaking..."
-									: "Listening..."}
+									? "Assistant speaking"
+									: "Listening"}
 							</span>
 						</div>
 						<button
 							onClick={endCall}
-							style={{
-								background: "#ff4444",
-								color: "#fff",
-								border: "none",
-								borderRadius: "6px",
-								padding: "6px 12px",
-								fontSize: "12px",
-								cursor: "pointer",
-							}}
+							disabled={isEnding}
+							className="inline-flex items-center gap-1 rounded-md bg-rose-600 enabled:hover:bg-rose-500 text-white text-xs px-2.5 py-1.5 font-medium shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
 						>
-							End Call
+							{isEnding ? (
+								<Loader2 className="h-3.5 w-3.5 animate-spin" />
+							) : (
+								<PhoneOff className="h-3.5 w-3.5" />
+							)}
+							End
 						</button>
 					</div>
 
-					<div
-						style={{
-							maxHeight: "200px",
-							overflowY: "auto",
-							marginBottom: "12px",
-							padding: "8px",
-							background: "#f8f9fa",
-							borderRadius: "8px",
-						}}
-					>
-						{transcript.length === 0 ? (
-							<p
-								style={{
-									color: "#666",
-									fontSize: "14px",
-									margin: 0,
-								}}
-							>
-								Conversation will appear here...
-							</p>
-						) : (
-							transcript.map((msg, i) => (
-								<div
-									key={i}
-									style={{
-										marginBottom: "8px",
-										textAlign:
-											msg.role === "user"
-												? "right"
-												: "left",
-									}}
+					<div id="transcript-container" className="rounded-md bg-neutral-50 dark:bg-neutral-800/60 p-3 min-h-14">
+						<AnimatePresence mode="wait">
+							{transcript.length === 0 ? (
+								<motion.p
+									key="empty"
+									className="text-xs text-neutral-500 m-0"
+									initial={{ opacity: 0 }}
+									animate={{ opacity: 1 }}
+									exit={{ opacity: 0 }}
+									transition={{ duration: 0.2 }}
 								>
-									<span
-										style={{
-											background:
-												msg.role === "user"
-													? "#12A594"
-													: "#333",
-											color: "#fff",
-											padding: "8px 12px",
-											borderRadius: "12px",
-											display: "inline-block",
-											fontSize: "14px",
-											maxWidth: "80%",
-										}}
-									>
-										{msg.text}
-									</span>
-								</div>
-							))
-						)}
+									Say something to get started…
+								</motion.p>
+							) : (
+								(() => {
+									const last = transcript[transcript.length - 1];
+									const isUser = last.role === "user";
+									return (
+										<motion.div
+											key={last.ts}
+											className={"flex " + (isUser ? "justify-end" : "justify-start")}
+											initial={{ opacity: 0, y: 8, scale: 0.98 }}
+											animate={{ opacity: 1, y: 0, scale: 1 }}
+											exit={{ opacity: 0, y: -8, scale: 0.98 }}
+											transition={{ duration: 0.25, ease: "easeOut" }}
+											layout
+										>
+											<div className="max-w-[85%]">
+												<motion.p
+													className="mb-1 text-[10px] uppercase tracking-wide text-neutral-500"
+													initial={{ opacity: 0 }}
+													animate={{ opacity: 1 }}
+													transition={{ duration: 0.15 }}
+												>
+													{isUser ? "You" : "Assistant"}
+												</motion.p>
+												<motion.span
+													className={
+														"inline-block rounded-xl px-3 py-2 text-xs leading-relaxed " +
+														(isUser
+															? "bg-emerald-600 text-white"
+															: "bg-neutral-900 text-white dark:bg-neutral-700")
+													}
+													initial={{ filter: "brightness(1.05)" }}
+													animate={{ filter: "brightness(1)" }}
+													transition={{ duration: 0.6 }}
+												>
+													{last.text}
+												</motion.span>
+											</div>
+										</motion.div>
+									);
+								})()
+							)}
+						</AnimatePresence>
 					</div>
 				</div>
 			)}
-
-			<style>{`
-        @keyframes pulse {
-          0% { opacity: 1; }
-          50% { opacity: 0.5; }
-          100% { opacity: 1; }
-        }
-      `}</style>
 		</div>
 	);
 }

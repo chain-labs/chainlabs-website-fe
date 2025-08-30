@@ -307,6 +307,18 @@ const AIChatBubble = () => {
 		await sendMessage(content);
 	};
 
+	// Allow external components (like VapiSection) to close the chat bubble
+	useEffect(() => {
+		const close = () => {
+			setIsOpen(false);
+			stopRecording();
+			SpeechRecognition.stopListening();
+			resetTranscript();
+		};
+		window.addEventListener("chainlabs:close-ai-chat", close as any);
+		return () => window.removeEventListener("chainlabs:close-ai-chat", close as any);
+	}, [setIsOpen, stopRecording, resetTranscript]);
+
 	const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
 		setInputValue(e.target.value);
 		// Stop voice capture when typing (mirrors hero behavior)
