@@ -1,15 +1,22 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { motion } from "motion/react";
 import { useGlobalStore } from "@/global-store";
 import { Sparkles } from "lucide-react";
 import { Process } from "@/types/store";
 
-// ...existing code...
 export const ProcessSection = () => {
 	const store = useGlobalStore().personalised;
-	if (store === null) return;
+	const addProcessSectionTime = useGlobalStore(
+		(s) => s.addProcessSectionTime
+	);
+	if (store === null || addProcessSectionTime === null) return;
+
+	// refs for timing
+	const visibleStepRef = useRef<string | null>(null);
+	const timerStartRef = useRef<number | null>(null);
+	const prevStepRef = useRef<string | null>(null);
 
 	const Process: Process[] = [
 		...store.personalisation.process,
@@ -20,8 +27,73 @@ export const ProcessSection = () => {
 		},
 	];
 
+	// intersection-based per-step time tracking
+	useEffect(() => {
+		const observer = new IntersectionObserver(
+			(entries) => {
+				// Find the entry with highest intersection currently visible
+				const visible = entries
+					.filter((e) => e.isIntersecting)
+					.sort(
+						(a, b) => b.intersectionRatio - a.intersectionRatio
+					)[0];
+
+				const newStepId = visible
+					? (visible.target as HTMLElement).dataset.processStepId ||
+					  null
+					: null;
+
+				// If step changed or none visible
+				if (newStepId !== visibleStepRef.current) {
+					// Flush previous
+					if (prevStepRef.current && timerStartRef.current) {
+						const elapsedMs = Date.now() - timerStartRef.current;
+						const seconds = Math.floor(elapsedMs / 1000);
+						if (seconds > 0)
+							addProcessSectionTime(prevStepRef.current, seconds);
+					}
+
+					// Start new timer if a step is visible
+					if (newStepId) {
+						prevStepRef.current = newStepId;
+						visibleStepRef.current = newStepId;
+						timerStartRef.current = Date.now();
+					} else {
+						// Nothing visible
+						prevStepRef.current = null;
+						visibleStepRef.current = null;
+						timerStartRef.current = null;
+					}
+				}
+			},
+			{
+				threshold: [0.25, 0.5, 0.75],
+				root: null,
+				rootMargin: "0px",
+			}
+		);
+
+		// Observe all step cards
+		const stepEls = document.querySelectorAll("[data-process-step-id]");
+		stepEls.forEach((el) => observer.observe(el));
+
+		return () => {
+			observer.disconnect();
+			// Final flush
+			if (prevStepRef.current && timerStartRef.current) {
+				const elapsedMs = Date.now() - timerStartRef.current;
+				const seconds = Math.floor(elapsedMs / 1000);
+				if (seconds > 0)
+					addProcessSectionTime(prevStepRef.current, seconds);
+			}
+		};
+	}, [addProcessSectionTime, Process.length]);
+
 	return (
-		<section className="relative py-8 sm:py-12 lg:py-16 w-full max-w-7xl min-h-screen flex flex-col justify-center items-center" id="process">
+		<section
+			className="relative py-16 sm:py-24 lg:py-32 w-full max-w-7xl min-h-fit flex flex-col justify-center items-center"
+			id="processes"
+		>
 			{/* Header */}
 			<motion.div
 				initial={{ opacity: 0, y: 22 }}
@@ -35,7 +107,7 @@ export const ProcessSection = () => {
 					Process
 				</p>
 				<h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">
-					Our Proven {" "}
+					Our Proven{" "}
 					<span className="bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
 						AI Delivery Framework
 					</span>
@@ -69,6 +141,7 @@ export const ProcessSection = () => {
 					{Process.map((step, idx) => (
 						<motion.article
 							id={`process-step-${idx}`}
+							data-process-step-id={`process-${idx}`}
 							key={`personalised-${idx}`}
 							whileHover={{ y: -3, scale: 1.01 }}
 							whileTap={{ scale: 0.99 }}
@@ -122,4 +195,3 @@ export const ProcessSection = () => {
 		</section>
 	);
 };
-// ...existing code...

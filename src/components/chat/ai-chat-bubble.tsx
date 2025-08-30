@@ -31,8 +31,6 @@ const conversationStarters = [
 ];
 
 const AIChatBubble = () => {
-	const [isOpen, setIsOpen] = useState(false);
-
 	// Progress bar state
 	const [progress, setProgress] = useState(0);
 
@@ -56,6 +54,8 @@ const AIChatBubble = () => {
 		setInputValue,
 		setVoiceInputValue,
 		placeHolder,
+		aiChatBubbleIsOpen: isOpen,
+		setAiChatBubbleIsOpen: setIsOpen,
 	} = useChat();
 
 	// Track last seen assistant message timestamp
@@ -280,10 +280,10 @@ const AIChatBubble = () => {
 
 	// Auto-scroll to bottom
 	useEffect(() => {
-		if (scrollRef.current) {
+		if (scrollRef.current && isOpen) {
 			scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
 		}
-	}, [messages, isThinking]);
+	}, [messages, isThinking, scrollRef, isOpen]);
 
 	const handleToggle = () => {
 		setIsOpen((prev) => !prev);
@@ -358,7 +358,7 @@ const AIChatBubble = () => {
 						</header>
 
 						{/* Progress bar */}
-						<AnimatePresence>
+						{/* <AnimatePresence>
 							{isThinking && (
 								<motion.div
 									initial={{ opacity: 0, height: 0 }}
@@ -381,7 +381,7 @@ const AIChatBubble = () => {
 									</div>
 								</motion.div>
 							)}
-						</AnimatePresence>
+						</AnimatePresence> */}
 
 						{/* Messages */}
 						<div
@@ -428,7 +428,7 @@ const AIChatBubble = () => {
 							)}
 
 							{/* Book a Call button while thinking */}
-							<AnimatePresence>
+							{/* <AnimatePresence>
 								{showBookCall && isThinking && (
 									<motion.div
 										initial={{
@@ -464,7 +464,7 @@ const AIChatBubble = () => {
 										</Button>
 									</motion.div>
 								)}
-							</AnimatePresence>
+							</AnimatePresence> */}
 						</div>
 
 						{/* Input */}

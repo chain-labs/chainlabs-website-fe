@@ -34,6 +34,7 @@ export const useChat = () => {
 			? THINKING_PLACEHOLDER.CLARIFICATION
 			: THINKING_PLACEHOLDER.GOAL
 	);
+	const [aiChatBubbleIsOpen, setAiChatBubbleIsOpen] = useState(false);
 
 	const getPersonalizedContent = useCallback(async () => {
 		const response = await apiClient.getPersonalizedContent();
@@ -47,6 +48,10 @@ export const useChat = () => {
 		store.setPersonalised(response);
 		store.setIsThinking(false);
 	}, [store]);
+
+	useEffect(() => {
+		if (!aiChatBubbleIsOpen) setIsThisLatestAssistantMessage(false);
+	}, [aiChatBubbleIsOpen]);
 
 	const sendMessage = useCallback(
 		async (content: string) => {
@@ -75,54 +80,62 @@ export const useChat = () => {
 						message: response.reply,
 						timestamp: new Date().toISOString(),
 					});
-					const target = document.getElementById(
-						response.navigate.metadata.missionId
-					);
-					const targetSection = document.getElementById(
-						response.navigate.section
-					);
+					if (aiChatBubbleIsOpen) {
+						const target = document.getElementById(
+							response.navigate.metadata.missionId !== "N/A"
+								? response.navigate.metadata.missionId
+								: response.navigate.metadata.caseStudyId !==
+								  "N/A"
+								? response.navigate.metadata.caseStudyId
+								: ""
+						);
+						const targetSection = document.getElementById(
+							response.navigate.sectionId
+						);
 
-					if (target) {
-						if ("scrollMarginTop" in target.style) {
-							target.style.scrollMarginTop = "100px";
-							target.scrollIntoView({
-								behavior: "smooth",
-								block: "start",
-							});
-						} else {
-							const y = Math.max(
-								0,
-								target.getBoundingClientRect().top +
-									window.pageYOffset -
-									100
-							);
-							window.scrollTo({ top: y, behavior: "smooth" });
-						}
-					} else if (targetSection) {
-						if ("scrollMarginTop" in targetSection.style) {
-							targetSection.style.scrollMarginTop = "100px";
-							targetSection.scrollIntoView({
-								behavior: "smooth",
-								block: "start",
-							});
-						} else {
-							const y = Math.max(
-								0,
-								targetSection.getBoundingClientRect().top +
-									window.pageYOffset -
-									100
-							);
-							window.scrollTo({ top: y, behavior: "smooth" });
+						if (target && aiChatBubbleIsOpen) {
+							if ("scrollMarginTop" in target.style) {
+								target.style.scrollMarginTop = "100px";
+								target.scrollIntoView({
+									behavior: "smooth",
+									block: "start",
+								});
+							} else {
+								const y = Math.max(
+									0,
+									target.getBoundingClientRect().top +
+										window.pageYOffset -
+										100
+								);
+								window.scrollTo({ top: y, behavior: "smooth" });
+							}
+						} else if (targetSection && aiChatBubbleIsOpen) {
+							if ("scrollMarginTop" in targetSection.style) {
+								targetSection.style.scrollMarginTop = "100px";
+								targetSection.scrollIntoView({
+									behavior: "smooth",
+									block: "start",
+								});
+							} else {
+								const y = Math.max(
+									0,
+									targetSection.getBoundingClientRect().top +
+										window.pageYOffset -
+										100
+								);
+								window.scrollTo({ top: y, behavior: "smooth" });
+							}
 						}
 					}
 					getPersonalizedContent();
 				} else if (store.hasGoal()) {
 					setThinkingPlaceholder(THINKING_PLACEHOLDER.GOAL);
-					const response = await apiClient.clarifyGoal(content);
+					await apiClient.clarifyGoal(content);
 					store.setIsThinking(false);
 					store.addChatMessage({
 						role: "assistant",
-						message: "🤖 Tool call: I've processed your clarification and rendered a personalized version of the site based on your needs.",
+						message:
+							"🤖 Tool call: I've processed your clarification and rendered a personalized version of the site based on your needs.",
 						timestamp: new Date().toISOString(),
 					});
 					store.setIsThinking(false);
@@ -166,5 +179,7 @@ export const useChat = () => {
 		placeHolder,
 		thinkingPlaceholder,
 		getPersonalizedContent,
+		aiChatBubbleIsOpen,
+		setAiChatBubbleIsOpen,
 	};
 };
