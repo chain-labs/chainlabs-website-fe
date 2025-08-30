@@ -1,14 +1,14 @@
 "use client";
 
 import { Mission } from "@/types/store";
-import { memo, useCallback, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useMemo, useRef, useState, useEffect } from "react";
 import { useMissions } from "@/hooks/use-missions";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
 import { CheckCircle, Clock, Target } from "lucide-react";
 import { icons } from "lucide-react";
 import { useGlobalStore } from "@/global-store";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import InputMissionSection from "./input-mission-section";
 import ReadCaseStudySection from "./read-case-study-section";
 import InfoMissionSection from "./info-mission-section";
@@ -90,16 +90,16 @@ function resolveIcon(raw?: string): React.ComponentType<any> {
 
 // ---------- UI bits ----------
 const StatusBadge = ({ status }: { status: Status }) => {
-	const meta = prettyStatus(status);
-	const Icon = meta.icon;
-	return (
-		<span
-			className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium ${meta.chip}`}
-		>
-			<Icon className="size-3.5" />
-			{meta.label}
-		</span>
-	);
+    const meta = prettyStatus(status);
+    const Icon = meta.icon;
+    return (
+        <span
+            className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium ${meta.chip}`}
+        >
+            <Icon className="size-3.5" />
+            {meta.label}
+        </span>
+    );
 };
 
 // ---------- Derived mission state hook ----------
@@ -206,26 +206,46 @@ export function useMissionComputed(mission: Mission, answer: string) {
 
 // ---------- Main ----------
 const MissionCard = memo(
-	({ mission, index }: { mission: Mission; index: number }) => {
-		const containerRef = useRef<HTMLDivElement | null>(null);
-		const IconComponent = useMemo(
-			() => resolveIcon(mission.icon),
-			[mission.icon]
-		);
+    ({ mission, index }: { mission: Mission; index: number }) => {
+        const containerRef = useRef<HTMLDivElement | null>(null);
+        const IconComponent = useMemo(
+            () => resolveIcon(mission.icon),
+            [mission.icon]
+        );
 
-		const [answer, setAnswer] = useState("");
+        const [answer, setAnswer] = useState("");
 
-		const state = useMissionComputed(mission, answer);
-		const {
-			submitAnswer,
-			visualStatus,
-			isInputMission,
-			isReadCaseStudyMission,
-			isViewProcessMission,
-			timedProgressPct,
-			completed,
-		} = state;
-		const visualMeta = prettyStatus(visualStatus);
+    const state = useMissionComputed(mission, answer);
+        const {
+            submitAnswer,
+            visualStatus,
+            isInputMission,
+            isReadCaseStudyMission,
+            isViewProcessMission,
+            timedProgressPct,
+            completed,
+        } = state;
+        const visualMeta = prettyStatus(visualStatus);
+        const statusColorStrip =
+            visualStatus === "completed"
+                ? "bg-emerald-500/60"
+                : visualStatus === "in-progress"
+                ? "bg-primary/70"
+                : "bg-amber-500/60";
+
+        const ariaLabel = `${mission.title ?? "Mission"} — ${visualMeta.label}. ${Number(mission.points ?? 0)} points`;
+
+        // Subtle but powerful completion moment
+        const prevCompletedRef = useRef(completed);
+        const [justCompleted, setJustCompleted] = useState(false);
+        useEffect(() => {
+            if (!prevCompletedRef.current && completed) {
+                setJustCompleted(true);
+                const t = setTimeout(() => setJustCompleted(false), 1200);
+                return () => clearTimeout(t);
+            }
+            prevCompletedRef.current = completed;
+        }, [completed]);
 
 		const handleConfirm = async () => {
 			if (completed) return;
@@ -278,36 +298,94 @@ const MissionCard = memo(
 		};
 
 		return (
-			<motion.div
-				initial={{ opacity: 0, y: 18 }}
-				whileInView={{ opacity: 1, y: 0 }}
-				viewport={{ once: true }}
-				transition={{
-					duration: 0.5,
-					delay: index * 0.08,
-					ease: "easeOut",
-				}}
-				className="group relative max-w-[400px] h-full"
-				role="listitem"
-				id={mission.id}
-			>
-				<motion.div
-					ref={containerRef}
-					onMouseMove={onMouseMove}
-					whileHover={{ y: -2 }}
-					transition={{ type: "spring", stiffness: 350, damping: 30 }}
-					className="relative h-full overflow-hidden rounded-2xl border border-border/40 bg-card/60 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-card/60 transition-all duration-300 hover:shadow-2xl hover:border-border/60"
-				>
-					<div
-						className="pointer-events-none absolute -inset-px opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-100"
-						style={{
-							background:
-								"radial-gradient(500px circle at var(--x,70%) var(--y,30%), color-mix(in oklab, var(--color-primary,#7c3aed) 28%, transparent), transparent 40%)",
-						}}
-					/>
-					<div className="relative p-5">
-						<div className="flex items-start justify-between gap-4">
-							<div className="grid items-center gap-4">
+            <motion.div
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{
+                    duration: 0.5,
+                    delay: index * 0.08,
+                    ease: "easeOut",
+                }}
+                className="group relative max-w-[400px] h-full"
+                role="listitem"
+                id={mission.id}
+                aria-label={ariaLabel}
+                aria-describedby={`mission-status-${mission.id}`}
+            >
+                <motion.div
+                    ref={containerRef}
+                    onMouseMove={onMouseMove}
+                    whileHover={{ y: -2 }}
+                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                    className="relative h-full overflow-hidden rounded-2xl border border-border/40 bg-card/60 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-card/60 transition-all duration-300 hover:shadow-2xl hover:border-border/60"
+                >
+                    {/* Completion sheen + glow overlay */}
+                    <AnimatePresence>
+                        {justCompleted && (
+                            <motion.div
+                                aria-hidden
+                                className="pointer-events-none absolute inset-0 z-20"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.25 }}
+                            >
+                                {/* Border glow */}
+                                <motion.div
+                                    className="absolute inset-0 rounded-2xl ring-2 ring-emerald-400/40"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: [0, 1, 0] }}
+                                    transition={{ duration: 0.9, times: [0, 0.35, 1] }}
+                                />
+                                {/* Sheen sweep */}
+                                <motion.div
+                                    className="absolute -inset-y-8 -left-1/3 w-1/3 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                                    initial={{ x: "-40%", rotate: 8, opacity: 0 }}
+                                    animate={{ x: "140%", opacity: [0, 1, 0.6, 0] }}
+                                    transition={{ duration: 0.8, ease: "easeOut" }}
+                                />
+                                {/* Center check pulse */}
+                                <motion.div
+                                    className="absolute inset-0 grid place-items-center"
+                                    initial={{ scale: 0.9, opacity: 0 }}
+                                    animate={{ scale: [0.9, 1, 1.02, 1], opacity: [0, 1, 1, 0] }}
+                                    transition={{ duration: 0.9, times: [0, 0.2, 0.55, 1] }}
+                                >
+                                    <div className="relative">
+                                        <motion.div
+                                            className="absolute -inset-3 rounded-full bg-emerald-400/15"
+                                            initial={{ scale: 0.7, opacity: 0 }}
+                                            animate={{ scale: [0.7, 1.2, 1.4], opacity: [0, 0.6, 0] }}
+                                            transition={{ duration: 0.9, times: [0, 0.5, 1] }}
+                                        />
+                                        <motion.div
+                                            className="absolute -inset-1 rounded-full ring-2 ring-emerald-400/50"
+                                            initial={{ scale: 0.7, opacity: 0 }}
+                                            animate={{ scale: [0.7, 1.05, 1.25], opacity: [0, 1, 0] }}
+                                            transition={{ duration: 0.9, times: [0, 0.4, 1] }}
+                                        />
+                                        <CheckCircle className="size-8 text-emerald-400 drop-shadow" />
+                                    </div>
+                                </motion.div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                    {/* Status accent strip */}
+                    <div
+                        aria-hidden
+                        className={`absolute left-0 top-0 h-full w-1 ${statusColorStrip}`}
+                    />
+                    <div
+                        className="pointer-events-none absolute -inset-px opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-100"
+                        style={{
+                            background:
+                                "radial-gradient(500px circle at var(--x,70%) var(--y,30%), color-mix(in oklab, var(--color-primary,#7c3aed) 28%, transparent), transparent 40%)",
+                        }}
+                    />
+                    <div className="relative p-5">
+                        <div className="flex items-start justify-between gap-4">
+                            <div className="grid items-center gap-4">
 								<div className="grid place-items-center rounded-xl size-11 bg-primary/12 ring-1 ring-primary/25 text-primary">
 									<IconComponent
 										className="size-5"
@@ -323,14 +401,27 @@ const MissionCard = memo(
 											{mission.description}
 										</p>
 									)}
-									<div className="mt-2">
-										<StatusBadge status={visualStatus} />
-									</div>
-								</div>
-							</div>
-							<div className="text-right">
-								<div className="text-xs text-muted-foreground">
-									Points
+                                <div className="mt-2">
+                                    <span id={`mission-status-${mission.id}`} className="sr-only">
+                                        {visualMeta.label}
+                                    </span>
+                                    <AnimatePresence mode="wait" initial={false}>
+                                        <motion.div
+                                            key={visualStatus}
+                                            initial={{ opacity: 0, y: 4 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -4 }}
+                                            transition={{ duration: 0.18, ease: "easeOut" }}
+                                        >
+                                            <StatusBadge status={visualStatus} />
+                                        </motion.div>
+                                    </AnimatePresence>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            <div className="text-xs text-muted-foreground">
+                                Points
 								</div>
 								<div
 									className="mt-1 inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-primary ring-1 ring-primary/20"

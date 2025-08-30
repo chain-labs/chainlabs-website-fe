@@ -1,18 +1,28 @@
 "use client";
 
-import React from "react";
+import React, { useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { Star } from "lucide-react";
 import { useGlobalStore } from "@/global-store";
 import MissionCard from "./mission-card";
+import { useMissions } from "@/hooks/use-missions";
 
 export const OurMissions = () => {
-	const store = useGlobalStore().personalised;
+    const store = useGlobalStore().personalised;
+    const { hasCompleted } = useMissions({ autoInit: false });
 
-	if (store === null || store.personalisation.missions.length === 0)
-		return null;
+    if (store === null || store.personalisation.missions.length === 0)
+        return null;
 
-	const totalPoints = 50;
+    const totalPoints = 50;
+    const [showCompleted, setShowCompleted] = useState(true);
+
+    const { incomplete, completed } = useMemo(() => {
+        const missions = store.personalisation.missions;
+        const completed = missions.filter((m) => hasCompleted(m.id));
+        const incomplete = missions.filter((m) => !hasCompleted(m.id));
+        return { incomplete, completed };
+    }, [store.personalisation.missions, hasCompleted]);
 
 	return (
 		<section
@@ -126,20 +136,73 @@ export const OurMissions = () => {
 					</div>
 				</motion.div>
 
-				{/* Mission List */}
-				<div
-					className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
-					role="list"
-				>
-					{store.personalisation.missions.map((mission, index) => (
-						<MissionCard
-							key={mission.id}
-							mission={mission}
-							index={index}
-						/>
-					))}
-				</div>
-			</div>
-		</section>
-	);
+                {/* Mission Lists (Incomplete first, then Completed) */}
+                <div className="space-y-10">
+                    {/* Incomplete */}
+                    <section aria-labelledby="missions-incomplete-heading">
+                        <div className="mb-3 flex items-center justify-between">
+                            <h3
+                                id="missions-incomplete-heading"
+                                className="text-lg font-semibold tracking-tight"
+                            >
+                                Incomplete Missions
+                                <span className="ml-2 text-sm text-muted-foreground">({incomplete.length})</span>
+                            </h3>
+                        </div>
+                        <div
+                            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+                            role="list"
+                        >
+                            {incomplete.map((mission, index) => (
+                                <MissionCard
+                                    key={mission.id}
+                                    mission={mission}
+                                    index={index}
+                                />
+                            ))}
+                        </div>
+                    </section>
+
+                    {/* Completed */}
+                    {completed.length > 0 && (
+                        <section aria-labelledby="missions-completed-heading">
+                            <div className="mb-3 flex items-center justify-between">
+                                <h3
+                                    id="missions-completed-heading"
+                                    className="text-lg font-semibold tracking-tight"
+                                >
+                                    Completed Missions
+                                    <span className="ml-2 text-sm text-muted-foreground">({completed.length})</span>
+                                </h3>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowCompleted((s) => !s)}
+                                    className="text-sm font-medium text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary/40 rounded-md px-2 py-1"
+                                    aria-controls="missions-completed-list"
+                                    aria-expanded={showCompleted}
+                                >
+                                    {showCompleted ? "Hide completed" : "Show completed"}
+                                </button>
+                            </div>
+                            {showCompleted && (
+                                <div
+                                    id="missions-completed-list"
+                                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+                                    role="list"
+                                >
+                                    {completed.map((mission, index) => (
+                                        <MissionCard
+                                            key={mission.id}
+                                            mission={mission}
+                                            index={index}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                        </section>
+                    )}
+                </div>
+            </div>
+        </section>
+    );
 };
