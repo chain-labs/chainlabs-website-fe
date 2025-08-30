@@ -2,7 +2,7 @@ import { Mission } from "@/types/store";
 import { Button } from "../ui/button";
 import { useMissionComputed } from "./mission-card";
 import { useEffect, useRef } from "react";
-import { useInView } from "framer-motion";
+import { useInView } from "motion/react";
 
 export default function ReadCaseStudySection(props: {
 	mission: Mission;
