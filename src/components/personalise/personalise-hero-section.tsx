@@ -6,6 +6,7 @@ import { motion } from "motion/react";
 import LightRays from "../ui/light-rays";
 import { useEffect } from "react";
 import { VoiceAssistantUI } from "../ui/vapi-ui";
+import VapiSection from "../vapi/vapi-section";
 
 export default function PersonaliseHeroSection() {
 	const store = useGlobalStore().personalised;
@@ -124,7 +125,10 @@ export default function PersonaliseHeroSection() {
 	}, []);
 
 	return (
-		<section className="relative px-4 font-sans antialiased z-0 w-full" id="hero">
+		<section
+			className="relative px-4 font-sans antialiased z-0 w-full"
+			id="hero"
+		>
 			<div className="absolute inset-0 -z-10 overflow-hidden">
 				<LightRays
 					raysOrigin="top-center"
@@ -139,7 +143,7 @@ export default function PersonaliseHeroSection() {
 					className="absolute w-screen h-auto"
 				/>
 			</div>
-			<div className="py-24 min-h-screen flex justify-center items-center mx-auto max-w-sm md:max-w-6xl md:px-8 lg:px-12">
+			<div className="py-24 min-h-screen flex flex-col justify-center items-center mx-auto max-w-sm md:max-w-6xl md:px-8 lg:px-12">
 				{/* Header */}
 				<motion.div
 					initial={{ opacity: 0, y: 30 }}
@@ -212,7 +216,8 @@ export default function PersonaliseHeroSection() {
 						<Sparkles className="h-5 w-5" />
 					</motion.div>
 				</motion.div>
-				<VoiceAssistantUI />
+				{/* <VoiceAssistantUI /> */}
+				<VapiSection />
 			</div>
 		</section>
 	);
