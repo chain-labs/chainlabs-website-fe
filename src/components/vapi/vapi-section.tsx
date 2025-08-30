@@ -88,6 +88,7 @@ Response Pattern
 	const startCall = () => {
 		if (vapi) {
 			vapi.start({
+				// Basic assistant configuration
 				model: {
 					provider: "openai",
 					model: "gpt-4o",
@@ -100,6 +101,25 @@ Response Pattern
 						},
 					],
 				},
+				// Voice configuration
+				voice: {
+					provider: "vapi",
+					voiceId: "Elliot",
+				},
+
+				// Transcriber configuration
+				transcriber: {
+					provider: "deepgram",
+					model: "nova-2",
+					language: "en-US",
+				},
+				// Call settings
+				firstMessage:
+					"Hi there! I am ChainLabs Voice Assistant. How can I assist you today?",
+				endCallMessage: "Thank you for the conversation. Goodbye!",
+				endCallPhrases: ["goodbye", "bye", "end call", "hang up"],
+				// Max call duration (in seconds) - 10 minutes
+				maxDurationSeconds: 600,
 			});
 		}
 	};
