@@ -1,6 +1,8 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Vapi from "@vapi-ai/web";
+import { buildPersonalizationText } from "@/lib/vapi";
+import { useGlobalStore } from "@/global-store";
 
 const apiKey = process.env.NEXT_PUBLIC_VAPI_API_KEY || "";
 const assistantId = process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID || "";
@@ -12,6 +14,38 @@ export default function VapiSection() {
 	const [transcript, setTranscript] = useState<
 		Array<{ role: string; text: string }>
 	>([]);
+	const personalizedContent = buildPersonalizationText(
+		useGlobalStore((s) => s.personalised)
+	);
+
+	// Compose an optimized voice-oriented system prompt using personalization
+	const voiceSystemPrompt = useMemo(() => {
+		return `You are ChainLabs Voice Assistant — a helpful, friendly AI consultant for website visitors.
+
+Goals
+- Understand the user's business goals and constraints.
+- Offer clear, practical next steps tailored to their context.
+- Keep responses concise for voice: 1–3 short sentences or a 3-point list.
+
+Voice Guidelines
+- Speak clearly and naturally; avoid long monologues.
+- If user interrupts, adapt and finish the most relevant point.
+- Convert links, numbers, and jargon into listener-friendly descriptions.
+
+When Navigating
+- If the user asks to view a section (e.g., testimonials), reply briefly like: "Sure — showing testimonials now." The UI handles scrolling/navigation.
+
+If Uncertain
+- Be honest. Offer a short suggestion for how to proceed.
+
+Personalization Context
+${personalizedContent || "(No personalization provided)"}
+
+Response Pattern
+- Brief acknowledgement → direct answer → 1–2 suggested next steps.
+- Prefer numbered lists when listing options.
+`;
+	}, [personalizedContent]);
 	useEffect(() => {
 		const vapiInstance = new Vapi(apiKey);
 		setVapi(vapiInstance);
@@ -53,7 +87,20 @@ export default function VapiSection() {
 	}, [apiKey]);
 	const startCall = () => {
 		if (vapi) {
-			vapi.start(assistantId);
+			vapi.start({
+				model: {
+					provider: "openai",
+					model: "gpt-4o",
+					maxTokens: 250,
+					temperature: 0.5,
+					messages: [
+						{
+							role: "system",
+							content: voiceSystemPrompt,
+						},
+					],
+				},
+			});
 		}
 	};
 	const endCall = () => {
