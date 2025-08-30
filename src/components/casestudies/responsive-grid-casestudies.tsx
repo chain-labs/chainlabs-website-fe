@@ -75,7 +75,7 @@ const ResponsiveGridCasestudies = () => {
 		return () => window.removeEventListener("keydown", onKeyDown);
 	}, [active]);
 
-	// NEW: Listen for external openCaseStudy events (from missions)
+	// Listen for external openCaseStudy events (from missions)
     useEffect(() => {
         const handler = (e: Event) => {
             try {

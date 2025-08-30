@@ -7,13 +7,22 @@ import PersonaliseHeroSection from "@/components/personalise/personalise-hero-se
 import { ScrollingCarouselTestimonials } from "@/components/testimonials/scrolling-carousel-testimonials";
 import { useChat } from "@/hooks/use-chat";
 import { ReactLenis } from "lenis/react";
+import { useUI } from "@/hooks/use-ui";
 
 export default function GenericSite() {
 	const { getPersonalizedContent } = useChat();
+	const { showPersonalized } = useUI();
 
 	useEffect(() => {
 		getPersonalizedContent();
 	}, []);
+
+	useEffect(() => {
+		if (showPersonalized) {
+			window.location.href = "/";
+		}
+	}, [showPersonalized]);
+
 	return (
 		<main className="relative flex flex-col items-center justify-start overflow-x-hidden bg-background">
 			<ReactLenis root />

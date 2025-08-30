@@ -97,6 +97,35 @@ export default function VapiSection() {
 			vapiInstance?.stop();
 		};
 	}, [apiKey]);
+
+	useEffect(() => {
+		const handler = () => {
+			try {
+				// Start a call when the event is fired (avoid if already connecting/connected)
+				if (!isConnected && !isConnecting) {
+					startCall();
+				}
+			} catch {}
+		};
+		window.addEventListener("callVapi", handler);
+		return () => window.removeEventListener("callVapi", handler);
+	}, [isConnected, isConnecting]);
+
+	// Track time spent on active Vapi call and store in session
+	useEffect(() => {
+		let interval: number | null = null;
+		if (isConnected) {
+			interval = window.setInterval(() => {
+				try {
+					useGlobalStore.getState().addVapiTime(1);
+				} catch {}
+			}, 1000);
+		}
+		return () => {
+			if (interval) window.clearInterval(interval);
+		};
+	}, [isConnected]);
+	
 	const startCall = () => {
 		if (vapi) {
 			// Close AI chat bubble if open (avoid UI overlap)
@@ -155,7 +184,6 @@ export default function VapiSection() {
 		}
 	}, [transcript]);
 
-
 	return (
 		<div
 			className={cn(
@@ -176,7 +204,9 @@ export default function VapiSection() {
 						<Mic className="h-4 w-4" />
 					)}
 					<span className="font-semibold">
-						{isConnecting ? "Connecting..." : "Talk to Assistant"}
+						{isConnecting
+							? "Connecting..."
+							: "Talk to Vapi Assistant"}
 					</span>
 				</button>
 			) : (
@@ -212,7 +242,10 @@ export default function VapiSection() {
 						</button>
 					</div>
 
-					<div id="transcript-container" className="rounded-md bg-neutral-50 dark:bg-neutral-800/60 p-3 min-h-14">
+					<div
+						id="transcript-container"
+						className="rounded-md bg-neutral-50 dark:bg-neutral-800/60 p-3 min-h-14"
+					>
 						<AnimatePresence mode="wait">
 							{transcript.length === 0 ? (
 								<motion.p
@@ -227,16 +260,37 @@ export default function VapiSection() {
 								</motion.p>
 							) : (
 								(() => {
-									const last = transcript[transcript.length - 1];
+									const last =
+										transcript[transcript.length - 1];
 									const isUser = last.role === "user";
 									return (
 										<motion.div
 											key={last.ts}
-											className={"flex " + (isUser ? "justify-end" : "justify-start")}
-											initial={{ opacity: 0, y: 8, scale: 0.98 }}
-											animate={{ opacity: 1, y: 0, scale: 1 }}
-											exit={{ opacity: 0, y: -8, scale: 0.98 }}
-											transition={{ duration: 0.25, ease: "easeOut" }}
+											className={
+												"flex " +
+												(isUser
+													? "justify-end"
+													: "justify-start")
+											}
+											initial={{
+												opacity: 0,
+												y: 8,
+												scale: 0.98,
+											}}
+											animate={{
+												opacity: 1,
+												y: 0,
+												scale: 1,
+											}}
+											exit={{
+												opacity: 0,
+												y: -8,
+												scale: 0.98,
+											}}
+											transition={{
+												duration: 0.25,
+												ease: "easeOut",
+											}}
 											layout
 										>
 											<div className="max-w-[85%]">
@@ -244,9 +298,13 @@ export default function VapiSection() {
 													className="mb-1 text-[10px] uppercase tracking-wide text-neutral-500"
 													initial={{ opacity: 0 }}
 													animate={{ opacity: 1 }}
-													transition={{ duration: 0.15 }}
+													transition={{
+														duration: 0.15,
+													}}
 												>
-													{isUser ? "You" : "Assistant"}
+													{isUser
+														? "You"
+														: "Assistant"}
 												</motion.p>
 												<motion.span
 													className={
@@ -255,9 +313,15 @@ export default function VapiSection() {
 															? "bg-emerald-600 text-white"
 															: "bg-neutral-900 text-white dark:bg-neutral-700")
 													}
-													initial={{ filter: "brightness(1.05)" }}
-													animate={{ filter: "brightness(1)" }}
-													transition={{ duration: 0.6 }}
+													initial={{
+														filter: "brightness(1.05)",
+													}}
+													animate={{
+														filter: "brightness(1)",
+													}}
+													transition={{
+														duration: 0.6,
+													}}
 												>
 													{last.text}
 												</motion.span>

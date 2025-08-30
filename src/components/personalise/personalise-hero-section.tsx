@@ -226,8 +226,9 @@ export default function PersonaliseHeroSection() {
 					<StarBorder
 						as="button"
 						className="custom-class"
-						color="cyan"
+						color="white"
 						speed="5s"
+						thickness={2}
 					>
 						<VapiSection />
 					</StarBorder>
