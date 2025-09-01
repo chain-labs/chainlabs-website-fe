@@ -76,23 +76,23 @@ const ResponsiveGridCasestudies = () => {
 	}, [active]);
 
 	// Listen for external openCaseStudy events (from missions)
-    useEffect(() => {
-        const handler = (e: Event) => {
-            try {
-                const detail = (e as CustomEvent).detail;
-                const id = detail?.caseStudyId;
-                if (!id) return;
-                const cs = caseStudies?.find((c) => c.id === id);
-                if (cs) setActive(cs);
-            } catch {}
-        };
-        window.addEventListener("openCaseStudy", handler as EventListener);
-        return () =>
-            window.removeEventListener(
-                "openCaseStudy",
-                handler as EventListener
-            );
-    }, [caseStudies]);
+	useEffect(() => {
+		const handler = (e: Event) => {
+			try {
+				const detail = (e as CustomEvent).detail;
+				const id = detail?.caseStudyId;
+				if (!id) return;
+				const cs = caseStudies?.find((c) => c.id === id);
+				if (cs) setActive(cs);
+			} catch {}
+		};
+		window.addEventListener("openCaseStudy", handler as EventListener);
+		return () =>
+			window.removeEventListener(
+				"openCaseStudy",
+				handler as EventListener
+			);
+	}, [caseStudies]);
 
 	useOutsideClick(ref as React.RefObject<HTMLDivElement>, () =>
 		setActive(null)
@@ -164,10 +164,6 @@ const ResponsiveGridCasestudies = () => {
 						<span className="bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
 							Impact
 						</span>
-						<span
-							aria-hidden
-							className="pointer-events-none absolute inset-x-1 -bottom-1 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent"
-						/>
 					</span>
 				</h2>
 				<p className="mt-4 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
