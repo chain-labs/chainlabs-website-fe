@@ -4,6 +4,8 @@ import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/providers/Auth";
 import Script from "next/script";
+import RouteAnalytics from "@/providers/RouteAnalytics";
+import ClarityAnalytics from "@/providers/ClarityAnalytics";
 
 const geistSans = Geist({
 	variable: "--font-geist-sans",
@@ -25,32 +27,69 @@ export default function RootLayout({
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
+    const enableAnalytics = process.env.NEXT_PUBLIC_ENABLE_ANALYTICS === "true";
+    const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID || "GTM-P3BWGBBD";
+    const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-2TXCJ3VJ1B";
+    const CLARITY_ID = process.env.NEXT_PUBLIC_CLARITY_ID || "";
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<head>
 				<link rel="icon" href="/assets/logo.svg" />
-				{/* Google Tag Manager */}
-				<Script id="gtm" strategy="afterInteractive">
-					{`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-				new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-				j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-				'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-				})(window,document,'script','dataLayer','GTM-P3BWGBBD');`}
-				</Script>
-				{/* End Google Tag Manager */}
-				{/* Google tag (gtag.js) */}
-				<Script
-					async
-					src="https://www.googletagmanager.com/gtag/js?id=G-2TXCJ3VJ1B"
-				></Script>
-				<Script>
-					{`window.dataLayer = window.dataLayer || [];
-					function gtag(){dataLayer.push(arguments);}
-					gtag('js', new Date());
+				{/* Analytics (GTM + GA4) gated by env and consent */}
+				{enableAnalytics && (
+					<>
+						<Script id="gtm" strategy="afterInteractive">
+							{`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+						new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+						j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+						'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+						})(window,document,'script','dataLayer','${GTM_ID}');`}
+						</Script>
+						<Script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} />
+						<Script id="gtag-init" strategy="afterInteractive">
+							{`
+							window.dataLayer = window.dataLayer || [];
+							function gtag(){dataLayer.push(arguments);}
+							gtag('consent', 'default', {
+							  'ad_user_data': 'denied',
+							  'ad_personalization': 'denied',
+							  'ad_storage': 'denied',
+							  'analytics_storage': 'granted'
+							});
+							gtag('js', new Date());
+							gtag('config', '${GA_ID}', {
+							  anonymize_ip: true,
+							  allow_google_signals: false,
+							  allow_ad_personalization_signals: false
+							});
+							`}
+						</Script>
+					</>
+				)}
 
-					gtag('config', 'G-2TXCJ3VJ1B');`}
-				</Script>
-				{/* End Google tag (gtag.js) */}
+				{/* Microsoft Clarity (gated) */}
+				{enableAnalytics && CLARITY_ID && (
+					<Script id="clarity" strategy="afterInteractive">
+						{`
+						(function(c,l,a,r,i,t,y){
+							c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+							t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+							y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+						})(window, document, 'clarity', 'script', '${CLARITY_ID}');
+						try {
+						  var raw = localStorage.getItem('chainlabs-session-store');
+						  if (raw) {
+						    var parsed = JSON.parse(raw);
+						    var sid = parsed && parsed.state && parsed.state.personalised && parsed.state.personalised.sid;
+						    if (sid) {
+						      window.clarity && window.clarity('identify', sid);
+						      window.clarity && window.clarity('set', 'sessionId', sid);
+						    }
+						  }
+						} catch {}
+						`}
+					</Script>
+				)}
 				{/* amplitude - google analytics */}
 				{/* <Script type="text/javascript">
 					{`!function(){"use strict";!function(e,t){var r=e.amplitude||{_q:[],_iq:{}};if(r.invoked)e.console&&console.error&&console.error("Amplitude snippet has been loaded.");else{var n=function(e,t){e.prototype[t]=function(){return this._q.push({name:t,args:Array.prototype.slice.call(arguments,0)}),this}},s=function(e,t,r){return function(n){e._q.push({name:t,args:Array.prototype.slice.call(r,0),resolve:n})}},o=function(e,t,r){e[t]=function(){if(r)return{promise:new Promise(s(e,t,Array.prototype.slice.call(arguments)))}}},i=function(e){for(var t=0;t<m.length;t++)o(e,m[t],!1);for(var r=0;r<y.length;r++)o(e,y[r],!0)};r.invoked=!0;var a=t.createElement("script");a.type="text/javascript",a.crossOrigin="anonymous",a.src="https://cdn.amplitude.com/libs/plugin-ga-events-forwarder-browser-0.4.2-min.js.gz",a.onload=function(){e.gaEventsForwarder&&e.gaEventsForwarder.plugin&&e.amplitude.add(e.gaEventsForwarder.plugin())};var c=t.createElement("script");c.type="text/javascript",c.integrity="sha384-pY2pkwHaLM/6UIseFHVU3hOKr6oAvhLcdYkoRZyaMDWLjpM6B7nTxtOdE823WAOQ",c.crossOrigin="anonymous",c.async=!0,c.src="https://cdn.amplitude.com/libs/analytics-browser-2.11.0-min.js.gz",c.onload=function(){e.amplitude.runQueuedFunctions||console.log("[Amplitude] Error: could not load SDK")};var u=t.getElementsByTagName("script")[0];u.parentNode.insertBefore(a,u),u.parentNode.insertBefore(c,u);for(var p=function(){return this._q=[],this},d=["add","append","clearAll","prepend","set","setOnce","unset","preInsert","postInsert","remove","getUserProperties"],l=0;l<d.length;l++)n(p,d[l]);r.Identify=p;for(var g=function(){return this._q=[],this},v=["getEventProperties","setProductId","setQuantity","setPrice","setRevenue","setRevenueType","setEventProperties"],f=0;f<v.length;f++)n(g,v[f]);r.Revenue=g;var m=["getDeviceId","setDeviceId","getSessionId","setSessionId","getUserId","setUserId","setOptOut","setTransport","reset","extendSession"],y=["init","add","remove","track","logEvent","identify","groupIdentify","setGroup","revenue","flush"];i(r),r.createInstance=function(e){return r._iq[e]={_q:[]},i(r._iq[e]),r._iq[e]},e.amplitude=r}}(window,document)}();
@@ -74,33 +113,22 @@ export default function RootLayout({
 					disableTransitionOnChange
 				>
 					<AuthProvider>{children}</AuthProvider>
-				</ThemeProvider>
+                </ThemeProvider>
+                {enableAnalytics && <RouteAnalytics />}
+                {enableAnalytics && CLARITY_ID && <ClarityAnalytics />}
 				{/* Google Tag Manager (noscript) */}
-				<noscript>
-					<iframe
-						src="https://www.googletagmanager.com/ns.html?id=GTM-P3BWGBBD"
-						height="0"
-						width="0"
-						style={{
-							display: "none",
-							visibility: "hidden",
-						}}
-					></iframe>
-				</noscript>
-				{/* End Google Tag Manager (noscript) */}
-				{/* clarity tag */}
-				<Script>
-					{`
-						const clarity = window.clarity || function() {
-							(this._q = this._q || []).push(arguments);
-							};
-							const sessionId = JSON.parse(localStorage.getItem("chainlabs-session-store")).state.personalised.sid;
-							console.log('Clarity session ID:', sessionId);
-							clarity("set", "sessionId", sessionId);
-							`}
-				</Script>
-				{/* End clarity tag */}
-				{/* <Script>{`window.amplitude.add(window.sessionReplay.plugin({sampleRate: 1}));window.amplitude.init('f455e270b57f7a26880f05be5449e42c', {"autocapture":{"elementInteractions":true}});`}</Script> */}
+				{enableAnalytics && (
+					<noscript>
+						<iframe
+							src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
+							height="0"
+							width="0"
+							style={{ display: "none", visibility: "hidden" }}
+						></iframe>
+					</noscript>
+				)}
+				{/* <Script>{`window.amplitude.add(window.sessionReplay.plugin({sampleRate: 1}));window.amplitude.init('xxx', {"autocapture":{"elementInteractions":true}});`}</Script> */}
+				{enableAnalytics && <RouteAnalytics />}
 			</body>
 		</html>
 	);
