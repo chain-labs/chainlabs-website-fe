@@ -81,32 +81,17 @@ export default function ViewProcessSection(props: {
 				<div className="flex items-center gap-2">
 					<Button
 						type="button"
-						variant="outline"
 						size="sm"
-						onClick={openProcess}
+						variant={ready ? undefined : "outline"}
+						onClick={completed || !ready ? openProcess : onConfirm}
 						disabled={submitting}
 					>
-						{completed
-							? "View"
-							: ready
-							? "Review"
-							: capped > 0
-							? "Continue"
-							: "Open"}
-					</Button>
-					<Button
-						type="button"
-						size="sm"
-						onClick={onConfirm}
-						disabled={completed || submitting || !ready}
-					>
-						{completed
-							? "Done"
-							: submitting
-							? "..."
-							: ready
-							? "Confirm"
-							: `Remaining ${remaining}s`}
+						{(() => {
+							if (submitting) return "...";
+							if (completed) return "View";
+							if (ready) return "Confirm";
+							return capped > 0 ? "Continue" : "Open";
+						})()}
 					</Button>
 				</div>
 			</div>

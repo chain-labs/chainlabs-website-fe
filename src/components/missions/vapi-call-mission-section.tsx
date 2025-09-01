@@ -4,21 +4,14 @@ import { useMissionComputed } from "./mission-card";
 import { useEffect, useRef } from "react";
 import { useInView } from "motion/react";
 
-export default function ReadCaseStudySection(props: {
+export default function VapiCallMissionSection(props: {
 	mission: Mission;
 	state: ReturnType<typeof useMissionComputed>;
 	onConfirm: () => void;
-	openCaseStudy: () => void;
+    callVapi: () => void;
 }) {
-	const { mission, state, onConfirm, openCaseStudy } = props;
-	const {
-		completed,
-		submitting,
-		error,
-		targetCaseStudy,
-		requiredSeconds,
-		timeSpent,
-	} = state;
+	const { mission, state, onConfirm, callVapi } = props;
+	const { completed, submitting, error, requiredSeconds, timeSpent } = state;
 
 	const capped = Math.min(timeSpent, requiredSeconds);
 	const pct = completed ? 1 : capped / requiredSeconds;
@@ -51,16 +44,9 @@ export default function ReadCaseStudySection(props: {
 				}`}
 			>
 				<div className="space-y-3">
-					<p className="text-sm font-medium">
-						Read Case Study{" "}
-						{targetCaseStudy && (
-							<span className="text-primary">
-								“{targetCaseStudy.title}”
-							</span>
-						)}
-					</p>
+					<p className="text-sm font-medium">Interact with Vapi</p>
 					<p className="text-xs leading-relaxed text-muted-foreground">
-						Spend {requiredSeconds}s with the case study. Progress
+						Spend {requiredSeconds}s with the Vapi Call. Progress
 						updates automatically.
 					</p>
 				</div>
@@ -94,14 +80,14 @@ export default function ReadCaseStudySection(props: {
 						type="button"
 						size="sm"
 						variant={ready ? undefined : "outline"}
-						onClick={completed || !ready ? openCaseStudy : onConfirm}
+						onClick={completed || !ready ? callVapi : onConfirm}
 						disabled={submitting}
 					>
 						{(() => {
 							if (submitting) return "...";
-							if (completed) return "View";
+							if (completed) return "Call Again";
 							if (ready) return "Confirm";
-							return capped > 0 ? "Continue" : "Open";
+							return capped > 0 ? "Continue" : "Call Vapi";
 						})()}
 					</Button>
 				</div>

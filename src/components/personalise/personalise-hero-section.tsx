@@ -230,6 +230,7 @@ export default function PersonaliseHeroSection() {
 						speed="5s"
 						thickness={2}
 					>
+						
 						<VapiSection />
 					</StarBorder>
 				</motion.div>

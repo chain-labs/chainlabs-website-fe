@@ -8,7 +8,6 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 
 const apiKey = process.env.NEXT_PUBLIC_VAPI_API_KEY || "";
-const assistantId = process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID || "";
 
 export default function VapiSection() {
 	const [vapi, setVapi] = useState<Vapi | null>(null);
@@ -51,7 +50,8 @@ export default function VapiSection() {
 				- Prefer numbered lists when listing options.
 				`;
 	}, [personalizedContent]);
-	useEffect(() => {
+
+	const initatingVapi = () => {
 		const vapiInstance = new Vapi(apiKey);
 		setVapi(vapiInstance);
 		// Event listeners
@@ -93,28 +93,20 @@ export default function VapiSection() {
 			setIsConnecting(false);
 			setIsEnding(false);
 		});
-		return () => {
-			vapiInstance?.stop();
-		};
-	}, [apiKey]);
+	};
 
 	useEffect(() => {
-		const handler = () => {
-			try {
-				// Start a call when the event is fired (avoid if already connecting/connected)
-				if (!isConnected && !isConnecting) {
-					startCall();
-				}
-			} catch {}
+		initatingVapi();
+		return () => {
+			vapi?.stop();
 		};
-		window.addEventListener("callVapi", handler);
-		return () => window.removeEventListener("callVapi", handler);
-	}, [isConnected, isConnecting]);
+	}, [apiKey]);
 
 	// Track time spent on active Vapi call and store in session
 	useEffect(() => {
 		let interval: number | null = null;
-		if (isConnected) {
+		// Only track time if call has started and isConnected is true
+		if (isConnected && transcript.length > 0) {
 			interval = window.setInterval(() => {
 				try {
 					useGlobalStore.getState().addVapiTime(1);
@@ -124,8 +116,8 @@ export default function VapiSection() {
 		return () => {
 			if (interval) window.clearInterval(interval);
 		};
-	}, [isConnected]);
-	
+	}, [isConnected, transcript.length]);
+
 	const startCall = () => {
 		if (vapi) {
 			// Close AI chat bubble if open (avoid UI overlap)
@@ -135,6 +127,7 @@ export default function VapiSection() {
 			setIsConnecting(true);
 			vapi.start({
 				// Basic assistant configuration
+
 				model: {
 					provider: "openai",
 					model: "gpt-4o",
@@ -167,6 +160,12 @@ export default function VapiSection() {
 				// Max call duration (in seconds) - 10 minutes
 				maxDurationSeconds: 600,
 			});
+
+			// vapi.start("mdekwl", {
+			// 	variableValues: {
+
+			// 	}
+			// })
 		}
 	};
 	const endCall = () => {
