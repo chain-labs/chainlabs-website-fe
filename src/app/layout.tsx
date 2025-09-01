@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
+import { Suspense } from "react";
 import { AuthProvider } from "@/providers/Auth";
 import Script from "next/script";
 import RouteAnalytics from "@/providers/RouteAnalytics";
@@ -114,7 +115,11 @@ export default function RootLayout({
 				>
 					<AuthProvider>{children}</AuthProvider>
                 </ThemeProvider>
-                {enableAnalytics && <RouteAnalytics />}
+                {enableAnalytics && (
+                  <Suspense fallback={null}>
+                    <RouteAnalytics />
+                  </Suspense>
+                )}
                 {enableAnalytics && CLARITY_ID && <ClarityAnalytics />}
 				{/* Google Tag Manager (noscript) */}
 				{enableAnalytics && (
