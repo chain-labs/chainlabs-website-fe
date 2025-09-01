@@ -17,7 +17,6 @@ import { OurMissions } from "@/components/missions/missions-section";
 import InitialLoadingScreen from "@/components/ui/initial-loading-screen";
 import { useChat } from "@/hooks/use-chat";
 import PersonaliseHeroSection from "@/components/personalise/personalise-hero-section";
-import { ReactLenis } from "lenis/react";
 
 export default function Home() {
 	const [showSplash, setShowSplash] = useState(true);
@@ -51,7 +50,6 @@ export default function Home() {
 
 	return (
 		<main className="relative flex flex-col items-center justify-start overflow-x-hidden bg-background">
-			<ReactLenis root />
 			<Header
 				isScrolled={isScrolled}
 				showPersonalized={showPersonalized}
