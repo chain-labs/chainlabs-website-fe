@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import Vapi from "@vapi-ai/web";
 import { buildPersonalizationText } from "@/components/vapi/vapi";
 import { useGlobalStore } from "@/global-store";
@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 
 const apiKey = process.env.NEXT_PUBLIC_VAPI_API_KEY || "";
+const assistantId = process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID || "";
 
 export default function VapiSection() {
 	const [vapi, setVapi] = useState<Vapi | null>(null);
@@ -16,80 +17,61 @@ export default function VapiSection() {
 	const [isEnding, setIsEnding] = useState(false);
 	const [isSpeaking, setIsSpeaking] = useState(false);
 	const [transcript, setTranscript] = useState<
-		Array<{ role: string; text: string; ts: number }>
+		Array<{ role: string; text: string; id: string }>
 	>([]);
 	const personalizedContent = buildPersonalizationText(
 		useGlobalStore((s) => s.personalised)
 	);
-
-	// Compose an optimized voice-oriented system prompt using personalization
-	const voiceSystemPrompt = useMemo(() => {
-		return `You are ChainLabs Voice Assistant — a helpful, friendly AI consultant for website visitors.
-
-				Goals
-				- Understand the user's business goals and constraints.
-				- Offer clear, practical next steps tailored to their context.
-				- Keep responses concise for voice: 1–3 short sentences or a 3-point list.
-
-				Voice Guidelines
-				- Speak clearly and naturally; avoid long monologues.
-				- If user interrupts, adapt and finish the most relevant point.
-				- Convert links, numbers, and jargon into listener-friendly descriptions.
-
-				When Navigating
-				- If the user asks to view a section (e.g., testimonials), reply briefly like: "Sure — showing testimonials now." The UI handles scrolling/navigation.
-
-				If Uncertain
-				- Be honest. Offer a short suggestion for how to proceed.
-
-				Personalization Context
-				${personalizedContent || "(No personalization provided)"}
-
-				Response Pattern
-				- Brief acknowledgement → direct answer → 1–2 suggested next steps.
-				- Prefer numbered lists when listing options.
-				`;
-	}, [personalizedContent]);
 
 	const initatingVapi = () => {
 		const vapiInstance = new Vapi(apiKey);
 		setVapi(vapiInstance);
 		// Event listeners
 		vapiInstance.on("call-start", () => {
-			console.log("Call started");
 			setIsConnected(true);
 			setIsConnecting(false);
 			setIsEnding(false);
 		});
 		vapiInstance.on("call-end", () => {
-			console.log("Call ended");
 			setIsConnected(false);
 			setIsSpeaking(false);
 			setIsConnecting(false);
 			setIsEnding(false);
 		});
 		vapiInstance.on("speech-start", () => {
-			console.log("Assistant started speaking");
 			setIsSpeaking(true);
 		});
 		vapiInstance.on("speech-end", () => {
-			console.log("Assistant stopped speaking");
 			setIsSpeaking(false);
 		});
 		vapiInstance.on("message", (message) => {
-			if (message.type === "transcript") {
-				setTranscript((prev) => [
-					...prev,
-					{
-						role: message.role,
-						text: message.transcript,
-						ts: Date.now(),
-					},
-				]);
+			if (message.type === "conversation-update") {
+				setTranscript(
+					message.messages
+						.filter(
+							(m: {
+								role: "system" | "user" | "bot";
+								message: string;
+								secondsFromStart: number;
+								time: number;
+							}) => m.role !== "system"
+						)
+						.map(
+							(m: {
+								role: string;
+								message: string;
+								time: number;
+							}) => ({
+								role: m.role,
+								text: m.message,
+								id: m.time.toString(),
+							})
+						)
+				);
 			}
 		});
+
 		vapiInstance.on("error", (error) => {
-			console.error("Vapi error:", error);
 			setIsConnecting(false);
 			setIsEnding(false);
 		});
@@ -125,47 +107,11 @@ export default function VapiSection() {
 				window.dispatchEvent(new Event("chainlabs:close-ai-chat"));
 			} catch {}
 			setIsConnecting(true);
-			vapi.start({
-				// Basic assistant configuration
-
-				model: {
-					provider: "openai",
-					model: "gpt-4o",
-					maxTokens: 250,
-					temperature: 0.5,
-					messages: [
-						{
-							role: "system",
-							content: voiceSystemPrompt,
-						},
-					],
+			vapi.start(assistantId, {
+				variableValues: {
+					personalizedContent,
 				},
-				// Voice configuration
-				voice: {
-					provider: "vapi",
-					voiceId: "Elliot",
-				},
-
-				// Transcriber configuration
-				transcriber: {
-					provider: "deepgram",
-					model: "nova-2",
-					language: "en-US",
-				},
-				// Call settings
-				firstMessage:
-					"Hi there! I am ChainLabs Voice Assistant. How can I assist you today?",
-				endCallMessage: "Thank you for the conversation. Goodbye!",
-				endCallPhrases: ["goodbye", "bye", "end call", "hang up"],
-				// Max call duration (in seconds) - 10 minutes
-				maxDurationSeconds: 600,
 			});
-
-			// vapi.start("mdekwl", {
-			// 	variableValues: {
-
-			// 	}
-			// })
 		}
 	};
 	const endCall = () => {
@@ -182,6 +128,35 @@ export default function VapiSection() {
 			container.scrollTop = container.scrollHeight;
 		}
 	}, [transcript]);
+
+	// Derived conversation states for UI
+	const lastRole = transcript.length > 0 ? transcript[transcript.length - 1].role : null;
+	const speaking = isConnected && isSpeaking;
+	const thinking = isConnected && !isSpeaking && lastRole === "user";
+	const listening = isConnected && !isSpeaking && lastRole !== "user";
+
+	const StatusBars = ({ active }: { active: boolean }) => (
+		<div className="ml-2 flex items-end gap-1 h-3" aria-hidden>
+			<motion.span
+				className="w-1 rounded-sm"
+				style={{ backgroundColor: active ? "#ef4444" : "#94a3b8", height: 4 }}
+				animate={active ? { height: [4, 12, 6, 10, 4] } : { height: 4 }}
+				transition={{ duration: 0.8, repeat: active ? Infinity : 0, ease: "easeInOut" }}
+		/>
+			<motion.span
+				className="w-1 rounded-sm"
+				style={{ backgroundColor: active ? "#fb7185" : "#94a3b8", height: 6 }}
+				animate={active ? { height: [6, 8, 14, 6, 10] } : { height: 6 }}
+				transition={{ duration: 0.8, repeat: active ? Infinity : 0, ease: "easeInOut", delay: 0.1 }}
+		/>
+			<motion.span
+				className="w-1 rounded-sm"
+				style={{ backgroundColor: active ? "#fca5a5" : "#94a3b8", height: 5 }}
+				animate={active ? { height: [5, 10, 8, 12, 5] } : { height: 5 }}
+				transition={{ duration: 0.8, repeat: active ? Infinity : 0, ease: "easeInOut", delay: 0.2 }}
+		/>
+		</div>
+	);
 
 	return (
 		<div
@@ -215,17 +190,18 @@ export default function VapiSection() {
 							<span
 								className={
 									"inline-block h-2.5 w-2.5 rounded-full " +
-									(isSpeaking
+									(speaking
 										? "bg-rose-500 animate-pulse"
+										: thinking
+										? "bg-amber-500 animate-pulse"
 										: "bg-emerald-500")
 								}
 								aria-hidden="true"
 							/>
 							<span className="text-sm font-medium text-neutral-800 dark:text-neutral-100">
-								{isSpeaking
-									? "Assistant speaking"
-									: "Listening"}
+								{speaking ? "Speaking" : thinking ? "Thinking" : "Listening"}
 							</span>
+							<StatusBars active={speaking} />
 						</div>
 						<button
 							onClick={endCall}
@@ -243,9 +219,10 @@ export default function VapiSection() {
 
 					<div
 						id="transcript-container"
-						className="rounded-md bg-neutral-50 dark:bg-neutral-800/60 p-3 min-h-14"
+						data-scroll-guard
+						className="rounded-md bg-neutral-50 dark:bg-neutral-800/60 p-3 min-h-14 max-h-72 overflow-y-auto"
 					>
-						<AnimatePresence mode="wait">
+						<AnimatePresence mode="popLayout">
 							{transcript.length === 0 ? (
 								<motion.p
 									key="empty"
@@ -258,15 +235,13 @@ export default function VapiSection() {
 									Say something to get started…
 								</motion.p>
 							) : (
-								(() => {
-									const last =
-										transcript[transcript.length - 1];
-									const isUser = last.role === "user";
+								transcript.map((msg, idx) => {
+									const isUser = msg.role === "user";
 									return (
 										<motion.div
-											key={last.ts}
+											key={msg.id}
 											className={
-												"flex " +
+												"flex mb-2 " +
 												(isUser
 													? "justify-end"
 													: "justify-start")
@@ -287,30 +262,35 @@ export default function VapiSection() {
 												scale: 0.98,
 											}}
 											transition={{
-												duration: 0.25,
+												duration: 0.2,
 												ease: "easeOut",
 											}}
 											layout
 										>
 											<div className="max-w-[85%]">
 												<motion.p
-													className="mb-1 text-[10px] uppercase tracking-wide text-neutral-500"
+													className={cn(
+														"mb-1 text-[10px] uppercase tracking-wide text-neutral-500",
+														isUser
+															? "text-right"
+															: "text-left"
+													)}
 													initial={{ opacity: 0 }}
 													animate={{ opacity: 1 }}
 													transition={{
-														duration: 0.15,
+														duration: 0.12,
 													}}
 												>
 													{isUser
 														? "You"
 														: "Assistant"}
 												</motion.p>
-												<motion.span
+												<motion.div
 													className={
-														"inline-block rounded-xl px-3 py-2 text-xs leading-relaxed " +
+														"inline-block rounded-xl px-3 py-2 text-xs leading-relaxed" +
 														(isUser
-															? "bg-emerald-600 text-white"
-															: "bg-neutral-900 text-white dark:bg-neutral-700")
+															? " bg-emerald-600 text-white text-right"
+															: " bg-neutral-900 text-white dark:bg-neutral-700 text-left")
 													}
 													initial={{
 														filter: "brightness(1.05)",
@@ -319,15 +299,15 @@ export default function VapiSection() {
 														filter: "brightness(1)",
 													}}
 													transition={{
-														duration: 0.6,
+														duration: 0.4,
 													}}
 												>
-													{last.text}
-												</motion.span>
+													<span>{msg.text}</span>
+												</motion.div>
 											</div>
 										</motion.div>
 									);
-								})()
+								})
 							)}
 						</AnimatePresence>
 					</div>
