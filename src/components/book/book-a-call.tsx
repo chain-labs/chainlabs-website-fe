@@ -87,8 +87,10 @@ const BookCallSection = () => {
 	const callUnlocked =
 		useGlobalStore().personalised?.personalisation.call_unlocked;
 
-	const callRecord =
-		useGlobalStore().personalised?.personalisation.call_record?.[0];
+	const callRecordDataArray =
+		useGlobalStore().personalised?.personalisation.call_record;
+
+	const callRecord = callRecordDataArray?.[callRecordDataArray.length - 1];
 
 	const callLinkUID = callRecord?.uid;
 	const hasBooking = !!callLinkUID;
