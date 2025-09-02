@@ -24,7 +24,7 @@
 	--color-muted-foreground: #94a3b8;
 
 	--color-accent: #00d4aa; /* Using primary as accent for consistency */
-	--color-accent-foreground: #0f1419;
+	--color-accent-foreground: #fff;
 
 	--color-destructive: #ef4444; /* Standard red for destructive actions */
 	--color-destructive-foreground: #ffffff;
