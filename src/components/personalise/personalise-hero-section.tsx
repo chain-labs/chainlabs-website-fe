@@ -6,7 +6,6 @@ import { motion } from "motion/react";
 import LightRays from "../ui/light-rays";
 import { useEffect } from "react";
 import VapiSection from "../vapi/vapi-section";
-import StarBorder from "../ui/star-border";
 
 export default function PersonaliseHeroSection() {
 	const store = useGlobalStore().personalised;
@@ -223,16 +222,7 @@ export default function PersonaliseHeroSection() {
 					transition={{ duration: 0.8 }}
 					className="relative text-center"
 				>
-					<StarBorder
-						as="button"
-						className="custom-class"
-						color="white"
-						speed="5s"
-						thickness={2}
-					>
-						
-						<VapiSection />
-					</StarBorder>
+					<VapiSection />
 				</motion.div>
 			</div>
 		</section>

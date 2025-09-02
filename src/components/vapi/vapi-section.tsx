@@ -6,6 +6,7 @@ import { useGlobalStore } from "@/global-store";
 import { Mic, PhoneOff, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
+import StarBorder from "../ui/star-border";
 
 const apiKey = process.env.NEXT_PUBLIC_VAPI_API_KEY || "";
 const assistantId = process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID || "";
@@ -130,7 +131,8 @@ export default function VapiSection() {
 	}, [transcript]);
 
 	// Derived conversation states for UI
-	const lastRole = transcript.length > 0 ? transcript[transcript.length - 1].role : null;
+	const lastRole =
+		transcript.length > 0 ? transcript[transcript.length - 1].role : null;
 	const speaking = isConnected && isSpeaking;
 	const thinking = isConnected && !isSpeaking && lastRole === "user";
 	const listening = isConnected && !isSpeaking && lastRole !== "user";
@@ -139,22 +141,45 @@ export default function VapiSection() {
 		<div className="ml-2 flex items-end gap-1 h-3" aria-hidden>
 			<motion.span
 				className="w-1 rounded-sm"
-				style={{ backgroundColor: active ? "#ef4444" : "#94a3b8", height: 4 }}
+				style={{
+					backgroundColor: active ? "#ef4444" : "#94a3b8",
+					height: 4,
+				}}
 				animate={active ? { height: [4, 12, 6, 10, 4] } : { height: 4 }}
-				transition={{ duration: 0.8, repeat: active ? Infinity : 0, ease: "easeInOut" }}
-		/>
+				transition={{
+					duration: 0.8,
+					repeat: active ? Infinity : 0,
+					ease: "easeInOut",
+				}}
+			/>
 			<motion.span
 				className="w-1 rounded-sm"
-				style={{ backgroundColor: active ? "#fb7185" : "#94a3b8", height: 6 }}
+				style={{
+					backgroundColor: active ? "#fb7185" : "#94a3b8",
+					height: 6,
+				}}
 				animate={active ? { height: [6, 8, 14, 6, 10] } : { height: 6 }}
-				transition={{ duration: 0.8, repeat: active ? Infinity : 0, ease: "easeInOut", delay: 0.1 }}
-		/>
+				transition={{
+					duration: 0.8,
+					repeat: active ? Infinity : 0,
+					ease: "easeInOut",
+					delay: 0.1,
+				}}
+			/>
 			<motion.span
 				className="w-1 rounded-sm"
-				style={{ backgroundColor: active ? "#fca5a5" : "#94a3b8", height: 5 }}
+				style={{
+					backgroundColor: active ? "#fca5a5" : "#94a3b8",
+					height: 5,
+				}}
 				animate={active ? { height: [5, 10, 8, 12, 5] } : { height: 5 }}
-				transition={{ duration: 0.8, repeat: active ? Infinity : 0, ease: "easeInOut", delay: 0.2 }}
-		/>
+				transition={{
+					duration: 0.8,
+					repeat: active ? Infinity : 0,
+					ease: "easeInOut",
+					delay: 0.2,
+				}}
+			/>
 		</div>
 	);
 
@@ -166,23 +191,31 @@ export default function VapiSection() {
 			)}
 		>
 			{!isConnected ? (
-				<button
-					onClick={startCall}
-					disabled={isConnecting}
-					className="inline-flex items-center gap-2 rounded-full bg-emerald-600 enabled:hover:bg-emerald-500 text-white px-5 py-3 shadow-lg transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
-					aria-label="Talk to assistant"
+				<StarBorder
+					as="button"
+					// className="z-[-1]"
+					color="white"
+					speed="5s"
+					thickness={2}
 				>
-					{isConnecting ? (
-						<Loader2 className="h-4 w-4 animate-spin" />
-					) : (
-						<Mic className="h-4 w-4" />
-					)}
-					<span className="font-semibold">
-						{isConnecting
-							? "Connecting..."
-							: "Talk to Vapi Assistant"}
-					</span>
-				</button>
+					<button
+						onClick={startCall}
+						disabled={isConnecting}
+						className="inline-flex items-center gap-2 rounded-full bg-emerald-600 enabled:hover:bg-emerald-500 text-white lg:text-xl px-4 py-3 lg:px-8 lg:py-6 shadow-lg transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+						aria-label="Talk to assistant"
+					>
+						{isConnecting ? (
+							<Loader2 className="h-6 w-6 animate-spin" />
+						) : (
+							<Mic className="h-6 w-6" />
+						)}
+						<span className="font-semibold">
+							{isConnecting
+								? "Connecting..."
+								: "Talk to Vapi Assistant"}
+						</span>
+					</button>
+				</StarBorder>
 			) : (
 				<div className="w-[calc(100vw-2rem)] max-w-sm sm:max-w-xs rounded-xl border border-neutral-200/70 bg-white shadow-xl p-4 dark:border-neutral-800 dark:bg-neutral-900">
 					<div className="flex items-center justify-between mb-3">
@@ -199,7 +232,11 @@ export default function VapiSection() {
 								aria-hidden="true"
 							/>
 							<span className="text-sm font-medium text-neutral-800 dark:text-neutral-100">
-								{speaking ? "Speaking" : thinking ? "Thinking" : "Listening"}
+								{speaking
+									? "Speaking"
+									: thinking
+									? "Thinking"
+									: "Listening"}
 							</span>
 							<StatusBars active={speaking} />
 						</div>
