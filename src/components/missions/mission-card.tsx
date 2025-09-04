@@ -326,7 +326,7 @@ const MissionCard = memo(
 					delay: index * 0.08,
 					ease: "easeOut",
 				}}
-				className="group relative max-w-[400px] h-full"
+				className="group relative max-w-[400px] h-full mx-auto"
 				role="listitem"
 				id={mission.id}
 				aria-label={ariaLabel}
