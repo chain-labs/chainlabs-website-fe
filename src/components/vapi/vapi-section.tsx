@@ -210,7 +210,7 @@ export default function VapiSection() {
 						<span className="font-semibold">
 							{isConnecting
 								? "Connecting..."
-								: "Talk to Vapi Assistant"}
+								: "Schedule a Discovery Call"}
 						</span>
 					</p>
 				</StarBorder>

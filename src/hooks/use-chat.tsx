@@ -4,8 +4,8 @@ import { apiClient } from "@/api-client";
 import { useUI } from "./use-ui";
 
 const PLACE_HOLDERS = {
-	GOAL: "Briefly describe your business and the goal you want to achieve.",
-	CLARIFICATION: "Please clarify your request with a bit more detail.",
+	GOAL: "Tell us the biggest problem you want to solve (e.g. increase restaurant bookings, automate support).",
+	CLARIFICATION: "Thanks! What’s the biggest obstacle that’s stopping more customers from booking tables right now?",
 	DEFAULT: "Type a question or describe what you need.",
 };
 

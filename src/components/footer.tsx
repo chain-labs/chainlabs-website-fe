@@ -107,9 +107,7 @@ export const Footer = ({ showPersonalized, className }: FooterProps) => {
 								transition={{ duration: 0.6, delay: 0.1 }}
 								className="text-muted-foreground leading-relaxed max-w-md"
 							>
-								Building the future with AI-powered solutions.
-								Transform your business with cutting-edge
-								technology and expert development.
+								We specialise in custom AI and blockchain applications that drive real business results.
 							</motion.p>
 
 							<motion.div

@@ -138,58 +138,97 @@ export const ProcessSection = () => {
 						gridTemplateColumns: `repeat(auto-fit, minmax(300px, 1fr))`,
 					}}
 				>
-					{Process.map((step, idx) => (
-						<motion.article
-							id={`process-step-${idx}`}
-							data-process-step-id={`process-${idx}`}
-							key={`personalised-${idx}`}
-							whileHover={{ y: -3, scale: 1.01 }}
-							whileTap={{ scale: 0.99 }}
-							onMouseMove={(e) => {
-								const el = e.currentTarget as HTMLDivElement;
-								const r = el.getBoundingClientRect();
-								const x =
-									((e.clientX - r.left) / r.width) * 100;
-								const y =
-									((e.clientY - r.top) / r.height) * 100;
-								el.style.setProperty("--x", `${x}%`);
-								el.style.setProperty("--y", `${y}%`);
-							}}
-							className="group relative overflow-hidden rounded-2xl border border-border/50 bg-card/60 p-6 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-card/60 transition-all duration-300"
-						>
-							{/* Hover glow */}
-							<div
-								className="pointer-events-none absolute -inset-px opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-100"
-								style={{
-									background:
-										"radial-gradient(500px circle at var(--x,70%) var(--y,30%), color-mix(in oklab, var(--color-primary, #7c3aed) 24%, transparent), transparent 40%)",
+					{Process.map((step, idx) => {
+						const isLastStep = idx === Process.length - 1;
+						const isCelebration = step.name.includes("🎉");
+						
+						return (
+							<motion.article
+								id={`process-step-${idx}`}
+								data-process-step-id={`process-${idx}`}
+								key={`personalised-${idx}`}
+								whileHover={{ y: -3, scale: 1.01 }}
+								whileTap={{ scale: 0.99 }}
+								onMouseMove={(e) => {
+									const el = e.currentTarget as HTMLDivElement;
+									const r = el.getBoundingClientRect();
+									const x =
+										((e.clientX - r.left) / r.width) * 100;
+									const y =
+										((e.clientY - r.top) / r.height) * 100;
+									el.style.setProperty("--x", `${x}%`);
+									el.style.setProperty("--y", `${y}%`);
 								}}
-							/>
-							{/* Top accent line */}
-							<div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+								className={`group relative overflow-hidden rounded-2xl border ${
+									isCelebration 
+										? "border-primary/30 bg-gradient-to-br from-primary/10 via-card/80 to-primary/5" 
+										: "border-border/50 bg-card/60"
+								} p-6 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-card/60 transition-all duration-300`}
+							>
+								{/* Special sparkle effect for celebration card */}
+								{isCelebration && (
+									<>
+										<Sparkles className="absolute top-3 right-3 size-4 text-primary/40 animate-pulse" />
+										<Sparkles className="absolute bottom-3 left-3 size-3 text-primary/30 animate-pulse delay-75" />
+									</>
+								)}
+								
+								{/* Hover glow - enhanced for celebration */}
+								<div
+									className={`pointer-events-none absolute -inset-px blur-2xl transition-opacity duration-300 ${
+										isCelebration 
+											? "opacity-30 group-hover:opacity-60" 
+											: "opacity-0 group-hover:opacity-100"
+									}`}
+									style={{
+										background: isCelebration
+											? "radial-gradient(600px circle at var(--x,50%) var(--y,50%), color-mix(in oklab, var(--color-primary, #7c3aed) 40%, transparent), transparent 30%)"
+											: "radial-gradient(500px circle at var(--x,70%) var(--y,30%), color-mix(in oklab, var(--color-primary, #7c3aed) 24%, transparent), transparent 40%)",
+									}}
+								/>
+								
+								{/* Top accent line - gradient for celebration */}
+								<div className={`absolute inset-x-0 top-0 h-px ${
+									isCelebration 
+										? "h-0.5 bg-gradient-to-r from-primary/60 via-primary to-primary/60" 
+										: "bg-gradient-to-r from-transparent via-primary/40 to-transparent"
+								}`} />
 
-							<div className="relative flex items-start gap-4">
-								{/* Step badge */}
-								<div className="grid place-items-center size-10 shrink-0 rounded-xl bg-primary/12 ring-1 ring-primary/25 text-primary font-semibold">
-									{String(idx + 1).padStart(2, "0")}
-								</div>
-
-								<div className="flex-1">
-									<div className="flex items-baseline justify-between gap-3">
-										<h3 className="text-base font-medium text-foreground transition-colors duration-300 group-hover:text-primary">
-											{step.name}
-										</h3>
+								<div className="relative flex items-start gap-4">
+									{/* Step badge - special styling for celebration */}
+									<div className={`grid place-items-center size-10 shrink-0 rounded-xl ${
+										isCelebration 
+											? "bg-primary/20 ring-2 ring-primary/40 text-primary font-bold animate-pulse" 
+											: "bg-primary/12 ring-1 ring-primary/25 text-primary font-semibold"
+									}`}>
+										{isCelebration ? "✨" : String(idx + 1).padStart(2, "0")}
 									</div>
 
-									<div className="mt-3 h-px w-full bg-gradient-to-r from-primary/20 to-transparent" />
+									<div className="flex-1">
+										<div className="flex items-baseline justify-between gap-3">
+											<h3 className={`text-base font-medium transition-colors duration-300 ${
+												isCelebration 
+													? "text-primary group-hover:text-primary/90 font-semibold" 
+													: "text-foreground group-hover:text-primary"
+											}`}>
+												{step.name}
+											</h3>
+										</div>
 
-									<p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-										{step.description}
-									</p>
+										<div className={`mt-3 h-px w-full bg-gradient-to-r ${
+											isCelebration 
+												? "from-primary/40 via-primary/20 to-primary/40" 
+												: "from-primary/20 to-transparent"
+										}`} />
+
+										<p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+											{step.description}
+										</p>
+									</div>
 								</div>
-							</div>
-						</motion.article>
-					))}
+							</motion.article>
+						);
+					})}
 				</motion.div>
 			</div>
 		</section>

@@ -243,7 +243,7 @@ const ChainLabsHero = () => {
 									>
 										<Sparkles className="w-4 h-4 text-primary" />
 										<span className="text-sm font-medium text-muted-foreground">
-											AI-Powered Website Builder
+											AI & Blockchain Innovation Partner
 										</span>
 									</motion.div>
 
@@ -257,10 +257,11 @@ const ChainLabsHero = () => {
 										}}
 										className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-foreground leading-tight"
 									>
-										Build Your{" "}
+										Unlock Growth with <br/>
 										<span className="bg-gradient-to-r from-primary via-primary to-primary/80 bg-clip-text text-transparent">
-											Dream Website
+											AI & Blockchain
 										</span>
+										{"."}
 									</motion.h1>
 								</motion.div>
 							)}
@@ -358,7 +359,7 @@ const ChainLabsHero = () => {
 								aria-label="View more case studies"
 								className="text-sm font-medium text-muted-foreground hover:text-foreground underline-offset-4 underline transition-colors flex justify-center items-center gap-[1ch]"
 							>
-								View Generic Site
+								Explore our standard site (no personalisation).
 							</Link>
 						</div>
 					</div>

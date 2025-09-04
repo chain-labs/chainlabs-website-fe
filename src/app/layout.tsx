@@ -19,8 +19,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-	title: "Chain Labs - AI Solutions",
-	description: "Build your dream AI solution with Chain Labs",
+	title: "Chain Labs",
+	description: "Build your dream website with Chain Labs",
 };
 
 export default function RootLayout({
@@ -28,10 +28,10 @@ export default function RootLayout({
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
-    const enableAnalytics = process.env.NEXT_PUBLIC_ENABLE_ANALYTICS === "true";
-    const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID || "GTM-P3BWGBBD";
-    const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-2TXCJ3VJ1B";
-    const CLARITY_ID = process.env.NEXT_PUBLIC_CLARITY_ID || "";
+    const enableAnalytics = true;
+    const GTM_ID = "GTM-P3BWGBBD";
+    const GA_ID =  "G-2TXCJ3VJ1B";
+    const CLARITY_ID = "t2fz0iawei";
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<head>

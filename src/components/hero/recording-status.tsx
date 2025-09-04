@@ -1,6 +1,5 @@
 "use client";
 import React from "react";
-import { motion } from "motion/react";
 
 const RecordingStatus = React.memo(({ isRecording }: { isRecording: boolean }) => (
   <p className="text-sm text-text-secondary transition-all duration-300 flex items-center gap-2">
@@ -9,7 +8,7 @@ const RecordingStatus = React.memo(({ isRecording }: { isRecording: boolean }) =
     )}
     {isRecording 
       ? "Recording your business requirements..." 
-      : "Describe your business needs or press ctrl + space to record."
+      : "Share your goal in a sentence. We’ll ask one quick follow‑up to tailor everything for you."
     }
   </p>
 ));
