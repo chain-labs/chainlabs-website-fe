@@ -7,6 +7,7 @@ import { AuthProvider } from "@/providers/Auth";
 import Script from "next/script";
 import RouteAnalytics from "@/providers/RouteAnalytics";
 import ClarityAnalytics from "@/providers/ClarityAnalytics";
+import React from "react";
 
 const geistSans = Geist({
 	variable: "--font-geist-sans",
@@ -18,9 +19,79 @@ const geistMono = Geist_Mono({
 	subsets: ["latin"],
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
 export const metadata: Metadata = {
-	title: "Chain Labs",
-	description: "Build your dream website with Chain Labs",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "Chain Labs",
+    template: "%s | Chain Labs",
+  },
+  description:
+    "AI-driven web experiences and high-performance sites. Build faster with Chain Labs.",
+  applicationName: "Chain Labs",
+  keywords: [
+    "Chain Labs",
+    "web development",
+    "AI websites",
+    "Next.js",
+    "React",
+    "performance",
+    "SEO",
+  ],
+  authors: [{ name: "Chain Labs" }],
+  creator: "Chain Labs",
+  publisher: "Chain Labs",
+  referrer: "strict-origin-when-cross-origin",
+  category: "technology",
+  alternates: {
+    canonical: "/",
+    languages: {
+      "en-US": "/",
+    },
+  },
+  openGraph: {
+    type: "website",
+    url: siteUrl,
+    title: "Chain Labs",
+    siteName: "Chain Labs",
+    description:
+      "AI-driven web experiences and high-performance sites. Build faster with Chain Labs.",
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "Chain Labs",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Chain Labs",
+    description:
+      "AI-driven web experiences and high-performance sites. Build faster with Chain Labs.",
+    images: ["/twitter-image"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/assets/logo.svg", type: "image/svg+xml" },
+    ],
+    shortcut: ["/favicon.ico"],
+    apple: ["/favicon.ico"],
+  },
 };
 
 export default function RootLayout({
@@ -28,14 +99,41 @@ export default function RootLayout({
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
-    const enableAnalytics = true;
-    const GTM_ID = "GTM-P3BWGBBD";
-    const GA_ID =  "G-2TXCJ3VJ1B";
-    const CLARITY_ID = "t2fz0iawei";
+    const enableAnalytics = process.env.NEXT_PUBLIC_ENABLE_ANALYTICS === "true";
+    const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID || "GTM-P3BWGBBD";
+    const GA_ID =  process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-2TXCJ3VJ1B";
+    const CLARITY_ID = process.env.NEXT_PUBLIC_CLARITY_ID || "t2fz0iawei";
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<head>
 				<link rel="icon" href="/assets/logo.svg" />
+				<meta name="viewport" content="width=device-width, initial-scale=1" />
+				<meta name="theme-color" content="#0B0B0F" />
+				{/* Structured Data */}
+				<script
+					type="application/ld+json"
+					dangerouslySetInnerHTML={{
+						__html: JSON.stringify({
+							"@context": "https://schema.org",
+							"@type": "Organization",
+							name: "Chain Labs",
+							url: siteUrl,
+							logo: `${siteUrl}/assets/logo.svg`,
+						}),
+					}}
+				/>
+				<script
+					type="application/ld+json"
+					dangerouslySetInnerHTML={{
+						__html: JSON.stringify({
+							"@context": "https://schema.org",
+							"@type": "WebSite",
+							name: "Chain Labs",
+							url: siteUrl,
+							inLanguage: "en",
+						}),
+					}}
+				/>
 				{/* Analytics (GTM + GA4) gated by env and consent */}
 				{enableAnalytics && (
 					<>
