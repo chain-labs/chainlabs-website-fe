@@ -1,11 +1,12 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useGlobalStore } from "@/global-store";
 import { apiClient } from "@/api-client";
 import { useUI } from "./use-ui";
 
 const PLACE_HOLDERS = {
 	GOAL: "Tell us the biggest problem you want to solve (e.g. increase restaurant bookings, automate support).",
-	CLARIFICATION: "Thanks! What’s the biggest obstacle that’s stopping more customers from booking tables right now?",
+	CLARIFICATION:
+		"Thanks! What’s the biggest obstacle that’s stopping more customers from booking tables right now?",
 	DEFAULT: "Type a question or describe what you need.",
 };
 
@@ -35,6 +36,11 @@ export const useChat = () => {
 			: THINKING_PLACEHOLDER.GOAL
 	);
 	const [aiChatBubbleIsOpen, setAiChatBubbleIsOpen] = useState(false);
+	const aiOpenRef = useRef(aiChatBubbleIsOpen);
+
+	useEffect(() => {
+		aiOpenRef.current = aiChatBubbleIsOpen;
+	}, [aiChatBubbleIsOpen]);
 
 	const getPersonalizedContent = useCallback(async () => {
 		const response = await apiClient.getPersonalizedContent();
@@ -65,7 +71,7 @@ export const useChat = () => {
 			store.setIsThinking(true);
 
 			try {
-				if (showPersonalized) {
+				if (showPersonalized && aiOpenRef.current) {
 					const response = await apiClient.chatWithAssistant(
 						content,
 						{
@@ -80,7 +86,7 @@ export const useChat = () => {
 						message: response.reply,
 						timestamp: new Date().toISOString(),
 					});
-					if (aiChatBubbleIsOpen) {
+					if (aiOpenRef.current) {
 						const target = document.getElementById(
 							response.navigate.metadata.missionId !== "N/A"
 								? response.navigate.metadata.missionId
@@ -93,7 +99,7 @@ export const useChat = () => {
 							response.navigate.sectionId
 						);
 
-						if (target && aiChatBubbleIsOpen) {
+						if (target && aiOpenRef.current) {
 							if ("scrollMarginTop" in target.style) {
 								target.style.scrollMarginTop = "100px";
 								target.scrollIntoView({
@@ -109,7 +115,7 @@ export const useChat = () => {
 								);
 								window.scrollTo({ top: y, behavior: "smooth" });
 							}
-						} else if (targetSection && aiChatBubbleIsOpen) {
+						} else if (targetSection && aiOpenRef.current) {
 							if ("scrollMarginTop" in targetSection.style) {
 								targetSection.style.scrollMarginTop = "100px";
 								targetSection.scrollIntoView({
@@ -161,7 +167,7 @@ export const useChat = () => {
 				store.setIsThinking(false);
 			}
 		},
-		[store]
+		[store, showPersonalized]
 	);
 
 	return {
