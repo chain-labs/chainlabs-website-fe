@@ -11,7 +11,7 @@ declare global {
 	}
 }
 
-export default function RouteAnalytics() {
+function RouteAnalyticsInner() {
 	const pathname = usePathname();
 	const searchParams = useSearchParams();
 
@@ -43,8 +43,18 @@ export default function RouteAnalytics() {
 			if (typeof window.clarity === "function") {
 				window.clarity("set", "page", pagePath);
 			}
-		} catch {}
+		} catch {
+			// no-op
+		}
 	}, [pathname, searchParams]);
 
-	return <Suspense></Suspense>;
+	return null;
+}
+
+export default function RouteAnalytics() {
+	return (
+		<Suspense fallback={null}>
+			<RouteAnalyticsInner />
+		</Suspense>
+	);
 }
