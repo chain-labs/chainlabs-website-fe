@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useMemo } from "react";
 import { Renderer, Program, Triangle, Mesh } from "ogl";
 
 export type RaysOrigin =
@@ -66,6 +66,18 @@ const getAnchorAndDir = (
 	}
 };
 
+function isWebGLSupported(): boolean {
+	try {
+		const canvas = document.createElement("canvas");
+		const gl =
+			canvas.getContext("webgl") ||
+			canvas.getContext("experimental-webgl");
+		return !!(gl && gl instanceof WebGLRenderingContext);
+	} catch (e) {
+		return false;
+	}
+}
+
 const LightRays: React.FC<LightRaysProps> = ({
 	raysOrigin = "top-center",
 	raysColor = DEFAULT_COLOR,
@@ -91,6 +103,7 @@ const LightRays: React.FC<LightRaysProps> = ({
 	const cleanupFunctionRef = useRef<(() => void) | null>(null);
 	const [isVisible, setIsVisible] = useState(false);
 	const observerRef = useRef<IntersectionObserver | null>(null);
+	const webGLSupported = useMemo(() => isWebGLSupported(), [false]);
 
 	useEffect(() => {
 		if (!containerRef.current) return;
@@ -452,6 +465,8 @@ void main() {
 				window.removeEventListener("mousemove", handleMouseMove);
 		}
 	}, [followMouse]);
+
+	if (!webGLSupported) return null;
 
 	return (
 		<div
