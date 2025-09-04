@@ -197,13 +197,11 @@ export default function VapiSection() {
 					color="white"
 					speed="5s"
 					thickness={2}
+					onClick={startCall}
+					disabled={isConnecting}
+					aria-label="Talk to assistant"
 				>
-					<button
-						onClick={startCall}
-						disabled={isConnecting}
-						className="inline-flex items-center gap-2 rounded-full bg-emerald-600 enabled:hover:bg-emerald-500 text-white lg:text-xl px-4 py-3 lg:px-8 lg:py-6 shadow-lg transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
-						aria-label="Talk to assistant"
-					>
+					<p className="inline-flex items-center gap-2 rounded-full bg-emerald-600 enabled:hover:bg-emerald-500 text-white lg:text-xl px-4 py-3 lg:px-8 lg:py-6 shadow-lg transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed">
 						{isConnecting ? (
 							<Loader2 className="h-6 w-6 animate-spin" />
 						) : (
@@ -214,7 +212,7 @@ export default function VapiSection() {
 								? "Connecting..."
 								: "Talk to Vapi Assistant"}
 						</span>
-					</button>
+					</p>
 				</StarBorder>
 			) : (
 				<div className="w-[calc(100vw-2rem)] max-w-sm sm:max-w-xs rounded-xl border border-neutral-200/70 bg-white shadow-xl p-4 dark:border-neutral-800 dark:bg-neutral-900">
