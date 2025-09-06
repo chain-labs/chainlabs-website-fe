@@ -43,6 +43,7 @@ export type ClarificationResponse = {
 };
 
 export type PersonalisedResponse = {
+	sid: string;
 	status: "INITIAL" | "GOAL_SET" | "CLARIFIED";
 	messages: Message[];
 	personalisation: {
