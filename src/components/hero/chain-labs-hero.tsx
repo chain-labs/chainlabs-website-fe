@@ -145,7 +145,7 @@ const ChainLabsHero = () => {
 	// Original hero/chat UI
 
 	return (
-		<section className="relative min-h-screen w-full flex flex-col overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
+		<section className="relative min-h-screen w-full py-16 flex flex-col overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
 			{/* Background Elements */}
 			<div className="absolute inset-0 overflow-hidden">
 				{/* Main spherical gradient */}
@@ -213,10 +213,12 @@ const ChainLabsHero = () => {
 			</div>
 
 			<div className="relative z-10 flex-1 flex flex-col max-w-7xl mx-auto w-full">
-				<div className="h-12 md:h-16" />
+				{/* Remove top spacer on mobile to pin hero text to top */}
+				<div className="h-16" />
 
-				<div className="flex-1 flex flex-col items-center justify-center px-4 md:px-6 lg:px-8">
-					<div className="w-full max-w-4xl mx-auto flex flex-col">
+				<div className="flex-1 flex flex-col px-4 md:px-6 lg:px-8">
+					{/* Distribute sections on mobile; center on md+ */}
+					<div className="w-full max-w-4xl mx-auto flex flex-col flex-1 justify-between md:justify-center">
 						{/* Hero Text - Only show when no messages */}
 						<AnimatePresence mode="wait">
 							{!hasMessages && (
@@ -306,7 +308,7 @@ const ChainLabsHero = () => {
 							)}
 						</AnimatePresence>
 
-						{/* Input Form */}
+						{/* Input Form (center on mobile via parent justify-between) */}
 						<AnimatePresence mode="wait">
 							<motion.div
 								key="input-section"
@@ -352,8 +354,8 @@ const ChainLabsHero = () => {
 							</motion.div>
 						</AnimatePresence>
 
-						{/* Use Generic site */}
-						<div className="mt-12 flex justify-center">
+						{/* Generic site link at bottom on mobile */}
+						<div className="mt-6 md:mt-12 flex justify-center">
 							<Link
 								href="/generic-site"
 								aria-label="View more case studies"
@@ -365,7 +367,8 @@ const ChainLabsHero = () => {
 					</div>
 				</div>
 
-				<div className="h-8 md:h-12" />
+				{/* Remove bottom spacer on mobile so link sits at bottom */}
+				<div className="h-0 md:h-12" />
 			</div>
 		</section>
 	);
