@@ -225,11 +225,17 @@ const ResponsiveGridCasestudies = () => {
 										layoutId={`image-${active.title}-${id}`}
 										className="relative h-48 sm:h-64 lg:h-80 flex-shrink-0"
 									>
-										<img
-											src={active.thumbnail}
-											alt={active.title}
-											className="w-full h-full object-cover"
-										/>
+									<img
+										src={active.thumbnail}
+										alt={active.title}
+										className="w-full h-full object-cover"
+										onError={(e) => {
+											const img = e.currentTarget as HTMLImageElement;
+											if (img.dataset.fallbackApplied === "true") return;
+											img.dataset.fallbackApplied = "true";
+											if (active.fallbackImage) img.src = active.fallbackImage;
+										}}
+									/>
 										<div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
 
 										{/* Logo and Title Overlay - Mobile responsive */}
@@ -295,6 +301,12 @@ const ResponsiveGridCasestudies = () => {
 										src={card.thumbnail}
 										alt={card.title}
 										className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+										onError={(e) => {
+											const img = e.currentTarget as HTMLImageElement;
+											if (img.dataset.fallbackApplied === "true") return;
+											img.dataset.fallbackApplied = "true";
+											if (card.fallbackImage) img.src = card.fallbackImage;
+										}}
 									/>
 									<div className="absolute inset-0 h-full w-full bg-gradient-to-t from-black/80 via-black/30 to-black/10 group-hover:from-black/90 transition-all duration-500"></div>
 								</motion.div>

@@ -42,6 +42,7 @@ export type CaseStudy = {
 	description: string;
 	shortDescription: string;
 	thumbnail: string;
+	fallbackImage: string;
 };
 
 export type History = {
