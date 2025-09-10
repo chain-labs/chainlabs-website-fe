@@ -220,18 +220,17 @@ export default function RootLayout({
                 )}
                 {enableAnalytics && CLARITY_ID && <ClarityAnalytics />}
 				{/* Google Tag Manager (noscript) */}
-				{enableAnalytics && (
-					<noscript>
-						<iframe
-							src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
-							height="0"
-							width="0"
-							style={{ display: "none", visibility: "hidden" }}
-						></iframe>
-					</noscript>
-				)}
-				{/* <Script>{`window.amplitude.add(window.sessionReplay.plugin({sampleRate: 1}));window.amplitude.init('xxx', {"autocapture":{"elementInteractions":true}});`}</Script> */}
-				{enableAnalytics && <RouteAnalytics />}
+                {enableAnalytics && (
+                  <noscript>
+                    <iframe
+                      src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
+                      height="0"
+                      width="0"
+                      style={{ display: "none", visibility: "hidden" }}
+                    ></iframe>
+                  </noscript>
+                )}
+                {/* <Script>{`window.amplitude.add(window.sessionReplay.plugin({sampleRate: 1}));window.amplitude.init('xxx', {"autocapture":{"elementInteractions":true}});`}</Script> */}
 			</body>
 		</html>
 	);

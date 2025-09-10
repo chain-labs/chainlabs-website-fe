@@ -468,13 +468,11 @@ const BookCallSection = () => {
 														<Clock className="h-4 w-4 text-primary" />
 														<span>
 															{startDate
-																? startDate.toLocaleString(
-																		undefined,
+															? startDate.toLocaleString(
+																		"en-US",
 																		{
-																			dateStyle:
-																				"medium",
-																			timeStyle:
-																				"short",
+																			dateStyle: "medium",
+																			timeStyle: "short",
 																		}
 																  )
 																: "—"}
