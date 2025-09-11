@@ -231,7 +231,7 @@ const ChainLabsHero = () => {
 										duration: 0.6,
 										ease: "easeOut",
 									}}
-									className="text-center mb-8 md:mb-12"
+									className="text-center mb-8 md:mb-12 backdrop-blur-lg lg:backdrop-blur-none"
 								>
 									<motion.div
 										initial={{ opacity: 0, y: 15 }}
