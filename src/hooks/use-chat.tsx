@@ -72,6 +72,8 @@ export const useChat = () => {
 
 			try {
 				if (showPersonalized && aiOpenRef.current) {
+					// Track last request for retry
+					store.setLastRequest("chat", content);
 					const response = await apiClient.chatWithAssistant(
 						content,
 						{
@@ -135,6 +137,7 @@ export const useChat = () => {
 					}
 					getPersonalizedContent();
 				} else if (store.hasGoal()) {
+					store.setLastRequest("clarify", content);
 					setThinkingPlaceholder(THINKING_PLACEHOLDER.GOAL);
 					await apiClient.clarifyGoal(content);
 					store.setIsThinking(false);
@@ -149,6 +152,7 @@ export const useChat = () => {
 						getPersonalizedContent();
 					}, 3000);
 				} else {
+					store.setLastRequest("goal", content);
 					setThinkingPlaceholder(THINKING_PLACEHOLDER.CLARIFICATION);
 					const response = await apiClient.submitGoal(content);
 					store.setIsThinking(false);
@@ -160,9 +164,15 @@ export const useChat = () => {
 					store.setGoal(response.message);
 				}
 			} catch (error) {
-				store.setLastError(
-					"An error occurred while sending your message."
-				);
+				console.error("sendMessage failed", error);
+				// Map endpoint-specific friendly errors and persist until user acts
+				if (showPersonalized && aiOpenRef.current) {
+					store.setLastError("Failed to generate response");
+				} else if (store.hasGoal()) {
+					store.setLastError("Failed to generate clarification questions");
+				} else {
+					store.setLastError("Failed to process your goal");
+				}
 			} finally {
 				store.setIsThinking(false);
 			}

@@ -9,6 +9,9 @@ import InputContainer from "./input-container";
 import RecordingStatus from "./recording-status";
 import { useChat } from "@/hooks/use-chat";
 import { useUI } from "@/hooks/use-ui";
+import { useGlobalStore } from "@/global-store";
+import { ErrorBanner } from "@/components/chat/error-banner";
+import { apiClient } from "@/api-client";
 import SpeechRecognition, {
 	useSpeechRecognition,
 } from "react-speech-recognition";
@@ -32,6 +35,13 @@ const ChainLabsHero = () => {
 		setInputValue,
 		setVoiceInputValue,
 	} = useChat();
+
+	// Error state and retry/restart handlers
+	const lastError = useGlobalStore((s) => s.lastError);
+	const lastRequestType = useGlobalStore((s) => s.lastRequestType);
+	const lastRequestPayload = useGlobalStore((s) => s.lastRequestPayload);
+	const clearErrorAndRequest = useGlobalStore((s) => s.clearErrorAndRequest);
+	const resetSessionState = useGlobalStore((s) => s.resetSession);
 
 	const {
 		isFocused,
@@ -80,6 +90,35 @@ const ChainLabsHero = () => {
 		},
 		[inputValue, voiceInputValue, sendMessage, setVoiceInputValue]
 	);
+
+	const handleRetry = useCallback(async () => {
+		if (!lastRequestPayload) {
+			clearErrorAndRequest();
+			return;
+		}
+		clearErrorAndRequest();
+		await sendMessage(lastRequestPayload);
+	}, [lastRequestPayload, sendMessage, clearErrorAndRequest]);
+
+	const handleRestart = useCallback(async () => {
+		// For chat flow, this acts as "Send New Message" (just clear error)
+		if (lastRequestType === "chat") {
+			clearErrorAndRequest();
+			return;
+		}
+		try {
+			// Reset backend session and local state
+			await apiClient.resetSession().catch(() => {});
+			apiClient.clearAuth();
+			await apiClient.initializeSession().catch(() => {});
+			window.scrollTo({ top: 0, behavior: "smooth" });
+		} catch (e) {
+			// Non-fatal; continue to clear local state
+			console.error("Session reset failed", e);
+		}
+		resetSessionState();
+		clearErrorAndRequest();
+	}, [lastRequestType, resetSessionState, clearErrorAndRequest]);
 
 	const handleInputChange = useCallback(
 		(e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -259,7 +298,7 @@ const ChainLabsHero = () => {
 										}}
 										className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-foreground leading-tight"
 									>
-										Unlock Growth with <br/>
+										Unlock Growth with <br />
 										<span className="bg-gradient-to-r from-primary via-primary to-primary/80 bg-clip-text text-transparent">
 											AI & Blockchain
 										</span>
@@ -302,6 +341,23 @@ const ChainLabsHero = () => {
 											)}
 										</AnimatePresence>
 
+										<AnimatePresence>
+											{/* Error banner (persistent until user acts) */}
+											{lastError && lastRequestType && (
+												<div className="mb-4">
+													<ErrorBanner
+														type={lastRequestType}
+														message={lastError}
+														onRetry={handleRetry}
+														onRestart={
+															handleRestart
+														}
+														loading={isThinking}
+													/>
+												</div>
+											)}
+										</AnimatePresence>
+
 										<div ref={messagesEndRef} />
 									</div>
 								</motion.div>
@@ -325,23 +381,29 @@ const ChainLabsHero = () => {
 									onSubmit={handleSubmit}
 									className="space-y-4"
 								>
-									<InputContainer
-										inputValue={
-											inputValue + voiceInputValue
-										}
-										isFocused={isFocused}
-										isRecording={isRecording}
-										hasMessages={hasMessages}
-										onInputChange={handleInputChange}
-										onKeyDown={handleKeyDown}
-										onFocus={handleFocus}
-										onBlur={handleBlur}
-										onToggleRecording={toggleRecording}
-										removeVoiceInput={
-											!browserSupportsSpeechRecognition
-										}
-										disabled={isThinking}
-									/>
+									<AnimatePresence>
+										<InputContainer
+											inputValue={
+												inputValue + voiceInputValue
+											}
+											isFocused={isFocused}
+											isRecording={isRecording}
+											hasMessages={hasMessages}
+											onInputChange={handleInputChange}
+											onKeyDown={handleKeyDown}
+											onFocus={handleFocus}
+											onBlur={handleBlur}
+											onToggleRecording={toggleRecording}
+											removeVoiceInput={
+												!browserSupportsSpeechRecognition
+											}
+											disabled={
+												isThinking ||
+												lastError !== null 
+											}
+										/>
+										)
+									</AnimatePresence>
 
 									{browserSupportsSpeechRecognition && (
 										<div className="flex flex-col sm:flex-row items-center justify-between gap-3">

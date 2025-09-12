@@ -59,6 +59,8 @@ interface SessionState {
 
 	currentMissionId: string | null;
 	lastError: string | null;
+	lastRequestType: "goal" | "clarify" | "chat" | null;
+	lastRequestPayload: string | null;
 
 	caseStudyTimeSpent: Record<string, number>;
 	processSectionTimeSpent: Record<string, number>;
@@ -124,6 +126,11 @@ interface SessionActions {
 
 	// Errors
 	setLastError: (msg: string | null) => void;
+	setLastRequest: (
+		type: "goal" | "clarify" | "chat" | null,
+		payload: string | null
+	) => void;
+	clearErrorAndRequest: () => void;
 
 	// Session Management
 	hydrateFromSession: (sessionData: any) => void;
@@ -172,6 +179,8 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 			isCheckingUnlock: false,
 			currentMissionId: null,
 			lastError: null,
+			lastRequestType: null,
+			lastRequestPayload: null,
 			caseStudyTimeSpent: {},
 			processSectionTimeSpent: {},
 			vapiTimeSpent: 0,
@@ -288,6 +297,10 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 
 			// Errors
 			setLastError: (lastError) => set({ lastError }),
+			setLastRequest: (type, payload) =>
+				set({ lastRequestType: type, lastRequestPayload: payload }),
+			clearErrorAndRequest: () =>
+				set({ lastError: null, lastRequestType: null, lastRequestPayload: null }),
 
 			// Time Tracking Getters
 			getCaseStudyTimeSpent: () => get().caseStudyTimeSpent,
@@ -374,6 +387,8 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 					isCheckingUnlock: false,
 					currentMissionId: null,
 					lastError: null,
+					lastRequestType: null,
+					lastRequestPayload: null,
 					caseStudyTimeSpent: {},
 					processSectionTimeSpent: {},
 					vapiTimeSpent: 0,
@@ -389,6 +404,9 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 				pointsTotal: state.pointsTotal,
 				callUnlocked: state.callUnlocked,
 				chatHistory: state.chatHistory,
+				lastError: state.lastError,
+				lastRequestType: state.lastRequestType,
+				lastRequestPayload: state.lastRequestPayload,
 				hasCompletedOnboarding: state.hasCompletedOnboarding,
 				theme: state.theme,
 				animations: state.animations,
