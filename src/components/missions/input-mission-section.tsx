@@ -22,7 +22,10 @@ export default function InputMissionSection(props: {
 	};
 
 	return (
-		<form onSubmit={handleSubmit} className="mt-5 space-y-3">
+		<form
+			onSubmit={handleSubmit}
+			className="mt-5 space-y-3 flex flex-col justify-between h-full"
+		>
 			<label htmlFor={`mission-answer-${mission.id}`} className="sr-only">
 				Answer for mission {mission.title}
 			</label>

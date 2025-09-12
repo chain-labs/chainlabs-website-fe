@@ -44,7 +44,7 @@ export default function ReadCaseStudySection(props: {
 	}, [inView, ready, completed, submitting, onConfirm]);
 
 	return (
-		<div ref={rootRef} className="mt-5 space-y-4">
+		<div ref={rootRef} className="mt-5 space-y-4 flex flex-col justify-between h-full">
 			<div
 				className={`rounded-xl border bg-card/50 p-4 backdrop-blur-sm transition-colors border-border/40 ${
 					completed ? "opacity-70" : "hover:border-border/60"

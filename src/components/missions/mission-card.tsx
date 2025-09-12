@@ -433,7 +433,7 @@ const MissionCard = memo(
 								"radial-gradient(500px circle at var(--x,70%) var(--y,30%), color-mix(in oklab, var(--color-primary,#7c3aed) 28%, transparent), transparent 40%)",
 						}}
 					/>
-					<div className="relative p-5">
+					<div className="relative p-5 h-full flex flex-col">
 						<div className="flex items-start justify-between gap-4">
 							<div className="grid items-center gap-4">
 								<div className="grid place-items-center rounded-xl size-11 bg-primary/12 ring-1 ring-primary/25 text-primary">

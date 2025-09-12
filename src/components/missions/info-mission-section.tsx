@@ -10,7 +10,7 @@ export default function InfoMissionSection(props: {
 	const { mission, state, onConfirm } = props;
 	const { completed, submitting, error } = state;
 	return (
-		<div className="mt-5 space-y-4">
+		<div className="mt-5 space-y-4 flex flex-col justify-between h-full">
 			<div
 				className={`relative w-full rounded-2xl border px-3 py-3 overflow-hidden transition-colors ${
 					error
