@@ -320,7 +320,7 @@ const ChainLabsHero = () => {
 										duration: 0.5,
 										ease: "easeOut",
 									}}
-									className="flex-1 mb-6"
+									className="mb-4"
 								>
 									<div className="max-h-[55vh] overflow-y-auto space-y-4 px-2 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
 										{messages.map((message, index) => (
@@ -341,22 +341,7 @@ const ChainLabsHero = () => {
 											)}
 										</AnimatePresence>
 
-										<AnimatePresence>
-											{/* Error banner (persistent until user acts) */}
-											{lastError && lastRequestType && (
-												<div className="mb-4">
-													<ErrorBanner
-														type={lastRequestType}
-														message={lastError}
-														onRetry={handleRetry}
-														onRestart={
-															handleRestart
-														}
-														loading={isThinking}
-													/>
-												</div>
-											)}
-										</AnimatePresence>
+										{/* Error banner moved to be rendered globally above input */}
 
 										<div ref={messagesEndRef} />
 									</div>
@@ -382,6 +367,17 @@ const ChainLabsHero = () => {
 									className="space-y-4"
 								>
 									<AnimatePresence>
+										{lastError && lastRequestType && (
+											<div className="mb-3">
+												<ErrorBanner
+													type={lastRequestType}
+													message={lastError}
+													onRetry={handleRetry}
+													onRestart={handleRestart}
+													loading={isThinking}
+												/>
+											</div>
+										)}
 										<InputContainer
 											inputValue={
 												inputValue + voiceInputValue
