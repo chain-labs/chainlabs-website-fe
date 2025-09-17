@@ -20,6 +20,7 @@ interface InputContainerProps {
 	onToggleRecording: () => void;
 	removeVoiceInput: boolean;
 	disabled: boolean;
+	browserSupportsSpeechRecognition: boolean
 }
 
 const InputContainer = React.memo(
@@ -35,6 +36,7 @@ const InputContainer = React.memo(
 		onToggleRecording,
 		removeVoiceInput,
 		disabled,
+		browserSupportsSpeechRecognition
 	}: InputContainerProps) => {
 		const hasInputValue = inputValue.trim().length > 0;
 		const submitButtonRef = React.useRef<HTMLButtonElement>(null);
@@ -157,7 +159,7 @@ const InputContainer = React.memo(
 						)}
 
 						{/* Mobile: Mic button */}
-						{isMobile && !removeVoiceInput && (
+						{isMobile && !removeVoiceInput && browserSupportsSpeechRecognition && (
 							<button
 								type="button"
 								onClick={onToggleRecording}
@@ -182,7 +184,7 @@ const InputContainer = React.memo(
 
 						<div className="flex justify-center items-center gap-4">
 							{/* Mic button - top right (desktop only) */}
-							{!isMobile && (
+							{!isMobile && browserSupportsSpeechRecognition && (
 								<button
 									type="button"
 									onClick={onToggleRecording}

@@ -140,9 +140,9 @@ const ChainLabsHero = () => {
 		browserSupportsSpeechRecognition,
 	} = useSpeechRecognition();
 
-	if (!browserSupportsSpeechRecognition) {
-		return <span>Browser doesn't support speech recognition.</span>;
-	}
+	// if (!browserSupportsSpeechRecognition) {
+	// 	return <span>Browser doesn't support speech recognition.</span>;
+	// }
 
 	// Handle voice recognition state changes
 	useEffect(() => {
@@ -394,8 +394,10 @@ const ChainLabsHero = () => {
 												!browserSupportsSpeechRecognition
 											}
 											disabled={
-												isThinking ||
-												lastError !== null 
+												isThinking || lastError !== null
+											}
+											browserSupportsSpeechRecognition={
+												browserSupportsSpeechRecognition
 											}
 										/>
 										)
