@@ -2,14 +2,23 @@
 
 import React, { useEffect, useRef, useCallback, KeyboardEvent } from "react";
 import { motion, AnimatePresence, useAnimate } from "motion/react";
-import { Sparkles, Globe, Zap, Blocks, Code2, ArrowRight } from "lucide-react";
+import {
+	Sparkles,
+	Globe,
+	Zap,
+	Blocks,
+	Code2,
+	ArrowRight,
+	MessageCircle,
+	Lightbulb,
+} from "lucide-react";
 import ChatBubble from "./chat-bubble";
 import ThinkingIndicator from "./think-indicator";
 import InputContainer from "./input-container";
 import RecordingStatus from "./recording-status";
 import { useChat } from "@/hooks/use-chat";
 import { useUI } from "@/hooks/use-ui";
-import { useGlobalStore } from "@/global-store";
+import { useGlobalStore, GoalSuggestion } from "@/global-store";
 import { ErrorBanner } from "@/components/chat/error-banner";
 import { apiClient } from "@/api-client";
 import SpeechRecognition, {
@@ -19,6 +28,7 @@ import Orb from "@/components/ui/orb";
 import { GradientBars } from "../ui/gradient-bars";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 const ChainLabsHero = () => {
 	const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -56,6 +66,10 @@ const ChainLabsHero = () => {
 	const {
 		isFocused,
 		isRecording,
+		goalSuggestions,
+		clarificationSuggestions,
+		selectedSuggestionKey,
+		setSelectedSuggestionKey,
 		setIsFocused,
 		toggleRecording,
 		stopRecording,
@@ -68,6 +82,15 @@ const ChainLabsHero = () => {
 			inline: "nearest",
 		});
 	}, []);
+
+	const hasGoalSet = useGlobalStore((s) => s.hasGoal());
+	const showGoalSuggestions =
+		!hasMessages && !hasGoalSet && goalSuggestions.length > 0;
+	const showClarificationSuggestions =
+		hasGoalSet &&
+		!showPersonalisedCTA &&
+		!personalisedSiteRequested &&
+		clarificationSuggestions.length > 0;
 
 	useEffect(() => {
 		if (hasMessages || isThinking) {
@@ -93,12 +116,23 @@ const ChainLabsHero = () => {
 			const combinedInput = (inputValue + voiceInputValue).trim();
 
 			if (combinedInput) {
+				if (!hasMessages && !hasGoalSet) {
+					setSelectedSuggestionKey(null);
+				}
 				// Clear voice input when submitting
 				setVoiceInputValue("");
 				await sendMessage(combinedInput);
 			}
 		},
-		[inputValue, voiceInputValue, sendMessage, setVoiceInputValue]
+		[
+			inputValue,
+			voiceInputValue,
+			sendMessage,
+			setVoiceInputValue,
+			hasMessages,
+			hasGoalSet,
+			setSelectedSuggestionKey,
+		]
 	);
 
 	const handleRetry = useCallback(async () => {
@@ -109,6 +143,25 @@ const ChainLabsHero = () => {
 		clearErrorAndRequest();
 		await sendMessage(lastRequestPayload, { skipUserMessage: true });
 	}, [lastRequestPayload, sendMessage, clearErrorAndRequest]);
+
+	const handleGoalSuggestion = useCallback(
+		async (option: GoalSuggestion) => {
+			if (isThinking) return;
+			setSelectedSuggestionKey(option.key);
+			setVoiceInputValue("");
+			await sendMessage(option.label);
+		},
+		[isThinking, setSelectedSuggestionKey, setVoiceInputValue, sendMessage]
+	);
+
+	const handleClarificationSuggestion = useCallback(
+		async (suggestion: string) => {
+			if (isThinking) return;
+			setVoiceInputValue("");
+			await sendMessage(suggestion);
+		},
+		[isThinking, setVoiceInputValue, sendMessage]
+	);
 
 	const handleRestart = useCallback(async () => {
 		// For chat flow, this acts as "Send New Message" (just clear error)
@@ -440,47 +493,105 @@ const ChainLabsHero = () => {
 													<ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-1" />
 												</Button>
 											</motion.div>
-										) : (
-											<motion.div
-												key="chat-input"
-												initial={{ opacity: 0, y: 12 }}
-												animate={{ opacity: 1, y: 0 }}
-												exit={{ opacity: 0, y: 12 }}
-												transition={{
-													duration: 0.2,
-													ease: "easeOut",
-												}}
-											>
+									) : (
+										<motion.div
+											key="chat-input"
+											initial={{ opacity: 0, y: 12 }}
+											animate={{ opacity: 1, y: 0 }}
+											exit={{ opacity: 0, y: 12 }}
+											transition={{
+												duration: 0.2,
+												ease: "easeOut",
+											}}
+										>
+											<div className="flex flex-col">
+											{showGoalSuggestions && !isThinking && (
+												<motion.div
+													initial={{ opacity: 0, y: 8 }}
+													animate={{ opacity: 1, y: 0 }}
+													exit={{ opacity: 0, y: 8 }}
+													transition={{ duration: 0.2, ease: "easeOut" }}
+													className="flex flex-col gap-2 px-4 pt-2 mx-auto relative w-[90%] rounded-t-2xl bg-surface/50 backdrop-blur-lg border transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.08),0_2px_8px_rgb(0,0,0,0.04)]"
+												>
+													<div className="flex items-center gap-2 text-muted-foreground">
+														<Lightbulb className="size-4" />
+														<span className="text-sm font-medium">
+															Need inspiration?
+														</span>
+													</div>
+													<div className="flex gap-2 w-full overflow-x-auto pb-2">
+														{goalSuggestions.map((option) => (
+															<button
+																key={option.key}
+																type="button"
+																onClick={() => handleGoalSuggestion(option)}
+																disabled={isThinking}
+																className={cn(
+																	"inline-flex whitespace-nowrap items-center gap-2 rounded-full border border-border/60 bg-background px-4 py-2 text-sm text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground",
+																	selectedSuggestionKey === option.key &&
+																		"border-primary/60 bg-primary/10 text-foreground"
+																)}
+															>
+																<span className="font-medium">
+																	{option.label}
+																</span>
+															</button>
+														))}
+													</div>
+												</motion.div>
+											)}
+
+											{showClarificationSuggestions && !isThinking && (
+												<motion.div
+													initial={{ opacity: 0, y: 8 }}
+													animate={{ opacity: 1, y: 0 }}
+													exit={{ opacity: 0, y: 8 }}
+													transition={{ duration: 0.2, ease: "easeOut" }}
+													className="flex flex-col gap-2 px-4 pt-2 mx-auto relative w-[90%] rounded-t-2xl bg-surface/50 backdrop-blur-lg border transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.08),0_2px_8px_rgb(0,0,0,0.04)]"
+												>
+													<div className="flex items-center gap-2 text-muted-foreground">
+														<MessageCircle className="size-4" />
+														<span className="text-sm font-medium">
+															Clarify your obstacle
+														</span>
+													</div>
+													<motion.div className="flex gap-2 w-full overflow-x-auto pb-2">
+														{clarificationSuggestions.map((suggestion) => (
+															<button
+																key={suggestion}
+																type="button"
+																onClick={() => handleClarificationSuggestion(suggestion)}
+																disabled={isThinking}
+																className="inline-flex whitespace-nowrap items-center rounded-full border border-border/70 bg-background px-4 py-2 text-sm text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+															>
+																{suggestion}
+															</button>
+														))}
+													</motion.div>
+												</motion.div>
+											)}
+
 												<InputContainer
 													inputValue={
-														inputValue +
-														voiceInputValue
+														inputValue + voiceInputValue
 													}
 													isFocused={isFocused}
 													isRecording={isRecording}
 													hasMessages={hasMessages}
-													onInputChange={
-														handleInputChange
-													}
+													onInputChange={handleInputChange}
 													onKeyDown={handleKeyDown}
 													onFocus={handleFocus}
 													onBlur={handleBlur}
-													onToggleRecording={
-														toggleRecording
-													}
-													removeVoiceInput={
-														!browserSupportsSpeechRecognition
-													}
-													disabled={
-														isThinking ||
-														lastError !== null
-													}
+													onToggleRecording={toggleRecording}
+													removeVoiceInput={!browserSupportsSpeechRecognition}
+													disabled={isThinking || lastError !== null}
 													browserSupportsSpeechRecognition={
 														browserSupportsSpeechRecognition
 													}
 												/>
-											</motion.div>
-										)}
+											</div>
+										</motion.div>
+									)}
 									</AnimatePresence>
 
 									{browserSupportsSpeechRecognition &&

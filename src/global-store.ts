@@ -19,6 +19,48 @@ interface Mission extends MissionResponseAPI {
 	status: "pending" | "completed";
 }
 
+export type GoalSuggestion = {
+	key: string;
+	label: string;
+	helper?: string;
+};
+
+const createDefaultGoalSuggestions = (): GoalSuggestion[] => [
+	{
+		key: "restaurantBookings",
+		label: "Increase table bookings for my restaurant",
+		helper: "Drive more reservations and repeat visits",
+	},
+	{
+		key: "SaaSConversions",
+		label: "Boost conversions for our SaaS onboarding",
+		helper: "Streamline activation and improve trial-to-paid",
+	},
+	{
+		key: "blockchainLoyalty",
+		label: "Launch a blockchain loyalty experience",
+		helper: "Create cross-brand rewards that keep fans engaged",
+	},
+];
+
+const createDefaultClarificationSuggestions = (): Record<string, string[]> => ({
+	restaurantBookings: [
+		"Our diners drop off because the booking flow feels clunky on mobile.",
+		"Weeknight slots stay empty; we lack targeted promotions.",
+		"Guests churn after one visit—no retention program in place.",
+	],
+	SaaSConversions: [
+		"Too many steps in onboarding; we lose users during setup.",
+		"Trial users don’t convert because the value isn’t highlighted early enough.",
+		"Support tickets spike when customers try advanced features.",
+	],
+	blockchainLoyalty: [
+		"Members can’t see real-time rewards, so they disengage.",
+		"We need a seamless wallet-less sign-up to drive adoption.",
+		"Partners want better analytics on cross-brand engagement.",
+	],
+});
+
 // Session State (removed authentication tokens)
 interface SessionState {
 	// Goal & Personalization
@@ -62,6 +104,9 @@ interface SessionState {
 	lastRequestType: "goal" | "clarify" | "chat" | null;
 	lastRequestPayload: string | null;
 	personalisedSiteRequested: boolean;
+	goalSuggestions: GoalSuggestion[];
+	clarificationSuggestions: Record<string, string[]>;
+	selectedSuggestionKey: string | null;
 
 	caseStudyTimeSpent: Record<string, number>;
 	processSectionTimeSpent: Record<string, number>;
@@ -133,6 +178,8 @@ interface SessionActions {
 	) => void;
 	clearErrorAndRequest: () => void;
 	setPersonalisedSiteRequested: (requested: boolean) => void;
+	setSelectedSuggestionKey: (key: string | null) => void;
+	getClarificationSuggestions: () => string[];
 
 	// Session Management
 	hydrateFromSession: (sessionData: any) => void;
@@ -181,10 +228,13 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 			isCheckingUnlock: false,
 			currentMissionId: null,
 			lastError: null,
-			lastRequestType: null,
-			lastRequestPayload: null,
-			personalisedSiteRequested: false,
-			caseStudyTimeSpent: {},
+				lastRequestType: null,
+				lastRequestPayload: null,
+				personalisedSiteRequested: false,
+				goalSuggestions: createDefaultGoalSuggestions(),
+				clarificationSuggestions: createDefaultClarificationSuggestions(),
+				selectedSuggestionKey: null,
+				caseStudyTimeSpent: {},
 			processSectionTimeSpent: {},
 			vapiTimeSpent: 0,
 
@@ -306,6 +356,15 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 				set({ lastError: null, lastRequestType: null, lastRequestPayload: null }),
 			setPersonalisedSiteRequested: (requested) =>
 				set({ personalisedSiteRequested: requested }),
+			setSelectedSuggestionKey: (selectedSuggestionKey) =>
+				set({ selectedSuggestionKey }),
+			getClarificationSuggestions: () => {
+				const state = get();
+				if (!state.selectedSuggestionKey) return [];
+				const suggestions =
+					state.clarificationSuggestions[state.selectedSuggestionKey];
+				return suggestions || [];
+			},
 
 			// Time Tracking Getters
 			getCaseStudyTimeSpent: () => get().caseStudyTimeSpent,
@@ -363,6 +422,9 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 					processSectionTimeSpent:
 						sessionData.process_section_time_spent || 0,
 					vapiTimeSpent: sessionData.vapi_time_spent || 0,
+					goalSuggestions: createDefaultGoalSuggestions(),
+					clarificationSuggestions: createDefaultClarificationSuggestions(),
+					selectedSuggestionKey: null,
 				}),
 			resetSession: () =>
 				set({
@@ -395,6 +457,9 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 					lastRequestType: null,
 					lastRequestPayload: null,
 					personalisedSiteRequested: false,
+					selectedSuggestionKey: null,
+					goalSuggestions: createDefaultGoalSuggestions(),
+					clarificationSuggestions: createDefaultClarificationSuggestions(),
 					caseStudyTimeSpent: {},
 					processSectionTimeSpent: {},
 					vapiTimeSpent: 0,
@@ -414,6 +479,9 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 				lastRequestType: state.lastRequestType,
 				lastRequestPayload: state.lastRequestPayload,
 				personalisedSiteRequested: state.personalisedSiteRequested,
+				selectedSuggestionKey: state.selectedSuggestionKey,
+				clarificationSuggestions: state.clarificationSuggestions,
+				goalSuggestions: state.goalSuggestions,
 				hasCompletedOnboarding: state.hasCompletedOnboarding,
 				theme: state.theme,
 				animations: state.animations,
