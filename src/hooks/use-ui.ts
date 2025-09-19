@@ -17,10 +17,17 @@ export const useUI = () => {
 		}
 	};
 
+	const showPersonalized =
+		store.personalised?.status === "CLARIFIED" &&
+		store.personalisedSiteRequested;
+	const personalisedReady = store.personalised?.status === "CLARIFIED";
+
 	return {
 		isFocused: store.isFocused,
 		isRecording: store.isRecording,
-		showPersonalized: store.personalised?.status === "CLARIFIED",
+		showPersonalized,
+		personalisedReady,
+		personalisedSiteRequested: store.personalisedSiteRequested,
 		sidebarOpen: store.sidebarOpen,
 		theme: store.theme,
 		animations: store.animations,
@@ -28,7 +35,7 @@ export const useUI = () => {
 		setIsRecording: store.setIsRecording,
 		toggleRecording: toggleRecording,
 		stopRecording: store.stopRecording,
-		setShowPersonalized: store.personalised?.status === "CLARIFIED",
+		setPersonalisedSiteRequested: store.setPersonalisedSiteRequested,
 		setSidebarOpen: store.setSidebarOpen,
 		toggleSidebar: store.toggleSidebar,
 		setTheme: store.setTheme,

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useCallback, KeyboardEvent } from "react";
 import { motion, AnimatePresence, useAnimate } from "motion/react";
-import { Sparkles, Globe, Zap, Blocks, Code2 } from "lucide-react";
+import { Sparkles, Globe, Zap, Blocks, Code2, ArrowRight } from "lucide-react";
 import ChatBubble from "./chat-bubble";
 import ThinkingIndicator from "./think-indicator";
 import InputContainer from "./input-container";
@@ -18,6 +18,7 @@ import SpeechRecognition, {
 import Orb from "@/components/ui/orb";
 import { GradientBars } from "../ui/gradient-bars";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 const ChainLabsHero = () => {
 	const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -42,6 +43,15 @@ const ChainLabsHero = () => {
 	const lastRequestPayload = useGlobalStore((s) => s.lastRequestPayload);
 	const clearErrorAndRequest = useGlobalStore((s) => s.clearErrorAndRequest);
 	const resetSessionState = useGlobalStore((s) => s.resetSession);
+	const personalisedStatus = useGlobalStore((s) => s.personalised?.status);
+	const personalisedSiteRequested = useGlobalStore(
+		(s) => s.personalisedSiteRequested
+	);
+	const setPersonalisedSiteRequested = useGlobalStore(
+		(s) => s.setPersonalisedSiteRequested
+	);
+	const showPersonalisedCTA =
+		personalisedStatus === "CLARIFIED" && !personalisedSiteRequested;
 
 	const {
 		isFocused,
@@ -119,6 +129,10 @@ const ChainLabsHero = () => {
 		resetSessionState();
 		clearErrorAndRequest();
 	}, [lastRequestType, resetSessionState, clearErrorAndRequest]);
+
+	const handleShowPersonalisedSite = useCallback(() => {
+		setPersonalisedSiteRequested(true);
+	}, [setPersonalisedSiteRequested]);
 
 	const handleInputChange = useCallback(
 		(e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -378,52 +392,124 @@ const ChainLabsHero = () => {
 												/>
 											</div>
 										)}
-										<InputContainer
-											inputValue={
-												inputValue + voiceInputValue
-											}
-											isFocused={isFocused}
-											isRecording={isRecording}
-											hasMessages={hasMessages}
-											onInputChange={handleInputChange}
-											onKeyDown={handleKeyDown}
-											onFocus={handleFocus}
-											onBlur={handleBlur}
-											onToggleRecording={toggleRecording}
-											removeVoiceInput={
-												!browserSupportsSpeechRecognition
-											}
-											disabled={
-												isThinking || lastError !== null
-											}
-											browserSupportsSpeechRecognition={
-												browserSupportsSpeechRecognition
-											}
-										/>
-										)
 									</AnimatePresence>
 
-									{browserSupportsSpeechRecognition && (
-										<div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-											<RecordingStatus
-												isRecording={isRecording}
-											/>
-										</div>
-									)}
+									<AnimatePresence mode="wait">
+										{showPersonalisedCTA ? (
+											<motion.div
+												key="personalised-cta"
+												initial={{ opacity: 0, y: 12 }}
+												animate={{ opacity: 1, y: 0 }}
+												exit={{ opacity: 0, y: 12 }}
+												transition={{
+													duration: 0.25,
+													ease: "easeOut",
+												}}
+												className="rounded-2xl border border-primary/40 backdrop-blur-lg bg-gradient-to-br from-primary/10 via-primary/5 to-background/80 p-5 shadow-[0_18px_40px_-24px_rgb(59,130,246)]"
+											>
+												<div className="flex items-start gap-3">
+													<span className="mt-1 flex size-8 items-center justify-center rounded-full bg-primary/15 text-primary">
+														<Sparkles className="size-4" />
+													</span>
+													<div className="flex-1 space-y-2">
+														<p className="text-sm font-medium text-foreground">
+															Personalisation
+															complete
+														</p>
+														<p className="text-sm text-muted-foreground">
+															Preview
+															recommendations,
+															missions, and
+															tailored messaging
+															tuned to your goal.
+														</p>
+													</div>
+												</div>
+												<Button
+													type="button"
+													onClick={
+														handleShowPersonalisedSite
+													}
+													size="lg"
+													className="group mt-4 w-full justify-between bg-primary text-primary-foreground hover:bg-primary/90"
+												>
+													<span>
+														Take me to my
+														personalised site
+													</span>
+													<ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-1" />
+												</Button>
+											</motion.div>
+										) : (
+											<motion.div
+												key="chat-input"
+												initial={{ opacity: 0, y: 12 }}
+												animate={{ opacity: 1, y: 0 }}
+												exit={{ opacity: 0, y: 12 }}
+												transition={{
+													duration: 0.2,
+													ease: "easeOut",
+												}}
+											>
+												<InputContainer
+													inputValue={
+														inputValue +
+														voiceInputValue
+													}
+													isFocused={isFocused}
+													isRecording={isRecording}
+													hasMessages={hasMessages}
+													onInputChange={
+														handleInputChange
+													}
+													onKeyDown={handleKeyDown}
+													onFocus={handleFocus}
+													onBlur={handleBlur}
+													onToggleRecording={
+														toggleRecording
+													}
+													removeVoiceInput={
+														!browserSupportsSpeechRecognition
+													}
+													disabled={
+														isThinking ||
+														lastError !== null
+													}
+													browserSupportsSpeechRecognition={
+														browserSupportsSpeechRecognition
+													}
+												/>
+											</motion.div>
+										)}
+									</AnimatePresence>
+
+									{browserSupportsSpeechRecognition &&
+										!showPersonalisedCTA && (
+											<div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+												<RecordingStatus
+													isRecording={isRecording}
+												/>
+											</div>
+										)}
 								</form>
 							</motion.div>
 						</AnimatePresence>
 
 						{/* Generic site link at bottom on mobile */}
-						<div className="mt-6 md:mt-12 flex justify-center">
-							<Link
-								href="/generic-site"
-								aria-label="View more case studies"
-								className="text-sm font-medium text-muted-foreground hover:text-foreground underline-offset-4 underline transition-colors flex justify-center items-center gap-[1ch]"
-							>
-								Explore our standard site (no personalisation).
-							</Link>
-						</div>
+						<AnimatePresence>
+							{!showPersonalisedCTA && (
+								<div className="mt-6 md:mt-12 flex justify-center">
+									<Link
+										href="/generic-site"
+										aria-label="View more case studies"
+										className="text-sm font-medium text-muted-foreground hover:text-foreground underline-offset-4 underline transition-colors flex justify-center items-center gap-[1ch]"
+									>
+										Explore our standard site (no
+										personalisation).
+									</Link>
+								</div>
+							)}
+						</AnimatePresence>
 					</div>
 				</div>
 

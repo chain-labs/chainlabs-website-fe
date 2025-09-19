@@ -61,6 +61,7 @@ interface SessionState {
 	lastError: string | null;
 	lastRequestType: "goal" | "clarify" | "chat" | null;
 	lastRequestPayload: string | null;
+	personalisedSiteRequested: boolean;
 
 	caseStudyTimeSpent: Record<string, number>;
 	processSectionTimeSpent: Record<string, number>;
@@ -131,6 +132,7 @@ interface SessionActions {
 		payload: string | null
 	) => void;
 	clearErrorAndRequest: () => void;
+	setPersonalisedSiteRequested: (requested: boolean) => void;
 
 	// Session Management
 	hydrateFromSession: (sessionData: any) => void;
@@ -181,6 +183,7 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 			lastError: null,
 			lastRequestType: null,
 			lastRequestPayload: null,
+			personalisedSiteRequested: false,
 			caseStudyTimeSpent: {},
 			processSectionTimeSpent: {},
 			vapiTimeSpent: 0,
@@ -301,6 +304,8 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 				set({ lastRequestType: type, lastRequestPayload: payload }),
 			clearErrorAndRequest: () =>
 				set({ lastError: null, lastRequestType: null, lastRequestPayload: null }),
+			setPersonalisedSiteRequested: (requested) =>
+				set({ personalisedSiteRequested: requested }),
 
 			// Time Tracking Getters
 			getCaseStudyTimeSpent: () => get().caseStudyTimeSpent,
@@ -389,6 +394,7 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 					lastError: null,
 					lastRequestType: null,
 					lastRequestPayload: null,
+					personalisedSiteRequested: false,
 					caseStudyTimeSpent: {},
 					processSectionTimeSpent: {},
 					vapiTimeSpent: 0,
@@ -407,6 +413,7 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 				lastError: state.lastError,
 				lastRequestType: state.lastRequestType,
 				lastRequestPayload: state.lastRequestPayload,
+				personalisedSiteRequested: state.personalisedSiteRequested,
 				hasCompletedOnboarding: state.hasCompletedOnboarding,
 				theme: state.theme,
 				animations: state.animations,
