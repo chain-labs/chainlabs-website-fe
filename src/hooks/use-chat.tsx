@@ -60,14 +60,17 @@ export const useChat = () => {
 	}, [aiChatBubbleIsOpen]);
 
 	const sendMessage = useCallback(
-		async (content: string) => {
+		async (content: string, options?: { skipUserMessage?: boolean }) => {
+			const skipUserMessage = options?.skipUserMessage ?? false;
 			setIsThisLatestAssistantMessage(true);
 			store.setInputValue("");
-			store.addChatMessage({
-				role: "user",
-				message: content,
-				timestamp: new Date().toISOString(),
-			});
+			if (!skipUserMessage) {
+				store.addChatMessage({
+					role: "user",
+					message: content,
+					timestamp: new Date().toISOString(),
+				});
+			}
 			store.setIsThinking(true);
 
 			try {

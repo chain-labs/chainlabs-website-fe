@@ -97,7 +97,7 @@ const ChainLabsHero = () => {
 			return;
 		}
 		clearErrorAndRequest();
-		await sendMessage(lastRequestPayload);
+		await sendMessage(lastRequestPayload, { skipUserMessage: true });
 	}, [lastRequestPayload, sendMessage, clearErrorAndRequest]);
 
 	const handleRestart = useCallback(async () => {
