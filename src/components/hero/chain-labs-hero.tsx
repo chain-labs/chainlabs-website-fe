@@ -121,7 +121,16 @@ const ChainLabsHero = () => {
 				}
 				// Clear voice input when submitting
 				setVoiceInputValue("");
-				await sendMessage(combinedInput);
+
+				if (lastError) {
+					clearErrorAndRequest();
+					await sendMessage(combinedInput, {
+						updateLastRequest: true,
+						skipUserMessage: true
+					});
+				} else {
+					await sendMessage(combinedInput);
+				}
 			}
 		},
 		[
@@ -141,7 +150,7 @@ const ChainLabsHero = () => {
 			return;
 		}
 		clearErrorAndRequest();
-		await sendMessage(lastRequestPayload, { skipUserMessage: true });
+		await sendMessage(lastRequestPayload, { skipUserMessage: true, updateLastRequest: false });
 	}, [lastRequestPayload, sendMessage, clearErrorAndRequest]);
 
 	const handleGoalSuggestion = useCallback(
@@ -434,7 +443,7 @@ const ChainLabsHero = () => {
 									className="space-y-4"
 								>
 									<AnimatePresence>
-										{lastError && lastRequestType && (
+										{lastError && lastRequestType && !showPersonalisedCTA && (
 											<div className="mb-3">
 												<ErrorBanner
 													type={lastRequestType}
@@ -493,105 +502,176 @@ const ChainLabsHero = () => {
 													<ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-1" />
 												</Button>
 											</motion.div>
-									) : (
-										<motion.div
-											key="chat-input"
-											initial={{ opacity: 0, y: 12 }}
-											animate={{ opacity: 1, y: 0 }}
-											exit={{ opacity: 0, y: 12 }}
-											transition={{
-												duration: 0.2,
-												ease: "easeOut",
-											}}
-										>
-											<div className="flex flex-col">
-											{showGoalSuggestions && !isThinking && (
-												<motion.div
-													initial={{ opacity: 0, y: 8 }}
-													animate={{ opacity: 1, y: 0 }}
-													exit={{ opacity: 0, y: 8 }}
-													transition={{ duration: 0.2, ease: "easeOut" }}
-													className="flex flex-col gap-2 px-4 pt-2 mx-auto relative w-[90%] rounded-t-2xl bg-surface/50 backdrop-blur-lg border transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.08),0_2px_8px_rgb(0,0,0,0.04)]"
-												>
-													<div className="flex items-center gap-2 text-muted-foreground">
-														<Lightbulb className="size-4" />
-														<span className="text-sm font-medium">
-															Need inspiration?
-														</span>
-													</div>
-													<div className="flex gap-2 w-full overflow-x-auto pb-2">
-														{goalSuggestions.map((option) => (
-															<button
-																key={option.key}
-																type="button"
-																onClick={() => handleGoalSuggestion(option)}
-																disabled={isThinking}
-																className={cn(
-																	"inline-flex whitespace-nowrap items-center gap-2 rounded-full border border-border/60 bg-background px-4 py-2 text-sm text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground",
-																	selectedSuggestionKey === option.key &&
-																		"border-primary/60 bg-primary/10 text-foreground"
-																)}
+										) : (
+											<motion.div
+												key="chat-input"
+												initial={{ opacity: 0, y: 12 }}
+												animate={{ opacity: 1, y: 0 }}
+												exit={{ opacity: 0, y: 12 }}
+												transition={{
+													duration: 0.2,
+													ease: "easeOut",
+												}}
+											>
+												<div className="flex flex-col">
+													{showGoalSuggestions &&
+														!isThinking && (
+															<motion.div
+																initial={{
+																	opacity: 0,
+																	y: 8,
+																}}
+																animate={{
+																	opacity: 1,
+																	y: 0,
+																}}
+																exit={{
+																	opacity: 0,
+																	y: 8,
+																}}
+																transition={{
+																	duration: 0.2,
+																	ease: "easeOut",
+																}}
+																className="flex flex-col gap-2 px-4 pt-2 mx-auto relative w-[90%] rounded-t-2xl bg-surface/50 backdrop-blur-lg border transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.08),0_2px_8px_rgb(0,0,0,0.04)]"
 															>
-																<span className="font-medium">
-																	{option.label}
-																</span>
-															</button>
-														))}
-													</div>
-												</motion.div>
-											)}
+																<div className="flex items-center gap-2 text-muted-foreground">
+																	<Lightbulb className="size-4" />
+																	<span className="text-sm font-medium">
+																		Need
+																		inspiration?
+																	</span>
+																</div>
+																<div className="flex gap-2 w-full overflow-x-auto pb-2">
+																	{goalSuggestions.map(
+																		(
+																			option
+																		) => (
+																			<button
+																				key={
+																					option.key
+																				}
+																				type="button"
+																				onClick={() =>
+																					handleGoalSuggestion(
+																						option
+																					)
+																				}
+																				disabled={
+																					isThinking
+																				}
+																				className={cn(
+																					"inline-flex whitespace-nowrap items-center gap-2 rounded-full border border-border/60 bg-background px-4 py-2 text-sm text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground",
+																					selectedSuggestionKey ===
+																						option.key &&
+																						"border-primary/60 bg-primary/10 text-foreground"
+																				)}
+																			>
+																				<span className="font-medium">
+																					{
+																						option.label
+																					}
+																				</span>
+																			</button>
+																		)
+																	)}
+																</div>
+															</motion.div>
+														)}
 
-											{showClarificationSuggestions && !isThinking && (
-												<motion.div
-													initial={{ opacity: 0, y: 8 }}
-													animate={{ opacity: 1, y: 0 }}
-													exit={{ opacity: 0, y: 8 }}
-													transition={{ duration: 0.2, ease: "easeOut" }}
-													className="flex flex-col gap-2 px-4 pt-2 mx-auto relative w-[90%] rounded-t-2xl bg-surface/50 backdrop-blur-lg border transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.08),0_2px_8px_rgb(0,0,0,0.04)]"
-												>
-													<div className="flex items-center gap-2 text-muted-foreground">
-														<MessageCircle className="size-4" />
-														<span className="text-sm font-medium">
-															Clarify your obstacle
-														</span>
-													</div>
-													<motion.div className="flex gap-2 w-full overflow-x-auto pb-2">
-														{clarificationSuggestions.map((suggestion) => (
-															<button
-																key={suggestion}
-																type="button"
-																onClick={() => handleClarificationSuggestion(suggestion)}
-																disabled={isThinking}
-																className="inline-flex whitespace-nowrap items-center rounded-full border border-border/70 bg-background px-4 py-2 text-sm text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+													{showClarificationSuggestions &&
+														!isThinking && (
+															<motion.div
+																initial={{
+																	opacity: 0,
+																	y: 8,
+																}}
+																animate={{
+																	opacity: 1,
+																	y: 0,
+																}}
+																exit={{
+																	opacity: 0,
+																	y: 8,
+																}}
+																transition={{
+																	duration: 0.2,
+																	ease: "easeOut",
+																}}
+																className="flex flex-col gap-2 px-4 pt-2 mx-auto relative w-[90%] rounded-t-2xl bg-surface/50 backdrop-blur-lg border transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.08),0_2px_8px_rgb(0,0,0,0.04)]"
 															>
-																{suggestion}
-															</button>
-														))}
-													</motion.div>
-												</motion.div>
-											)}
+																<div className="flex items-center gap-2 text-muted-foreground">
+																	<MessageCircle className="size-4" />
+																	<span className="text-sm font-medium">
+																		Clarify
+																		your
+																		obstacle
+																	</span>
+																</div>
+																<motion.div className="flex gap-2 w-full overflow-x-auto pb-2">
+																	{clarificationSuggestions.map(
+																		(
+																			suggestion
+																		) => (
+																			<button
+																				key={
+																					suggestion
+																				}
+																				type="button"
+																				onClick={() =>
+																					handleClarificationSuggestion(
+																						suggestion
+																					)
+																				}
+																				disabled={
+																					isThinking
+																				}
+																				className="inline-flex whitespace-nowrap items-center rounded-full border border-border/70 bg-background px-4 py-2 text-sm text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+																			>
+																				{
+																					suggestion
+																				}
+																			</button>
+																		)
+																	)}
+																</motion.div>
+															</motion.div>
+														)}
 
-												<InputContainer
-													inputValue={
-														inputValue + voiceInputValue
-													}
-													isFocused={isFocused}
-													isRecording={isRecording}
-													hasMessages={hasMessages}
-													onInputChange={handleInputChange}
-													onKeyDown={handleKeyDown}
-													onFocus={handleFocus}
-													onBlur={handleBlur}
-													onToggleRecording={toggleRecording}
-													removeVoiceInput={!browserSupportsSpeechRecognition}
-													disabled={isThinking || lastError !== null}
-													browserSupportsSpeechRecognition={
-														browserSupportsSpeechRecognition
-													}
-												/>
-											</div>
-										</motion.div>
-									)}
+													<InputContainer
+														inputValue={
+															inputValue +
+															voiceInputValue
+														}
+														isFocused={isFocused}
+														isRecording={
+															isRecording
+														}
+														hasMessages={
+															hasMessages
+														}
+														onInputChange={
+															handleInputChange
+														}
+														onKeyDown={
+															handleKeyDown
+														}
+														onFocus={handleFocus}
+														onBlur={handleBlur}
+														onToggleRecording={
+															toggleRecording
+														}
+														removeVoiceInput={
+															!browserSupportsSpeechRecognition
+														}
+														disabled={isThinking}
+														browserSupportsSpeechRecognition={
+															browserSupportsSpeechRecognition
+														}
+													/>
+												</div>
+											</motion.div>
+										)}
 									</AnimatePresence>
 
 									{browserSupportsSpeechRecognition &&

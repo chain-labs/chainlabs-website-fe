@@ -140,6 +140,7 @@ interface SessionActions {
 	clearChatHistory: () => void;
 	setIsThinking: (thinking: boolean) => void;
 	setCurrentContext: (context: ChatContext | null) => void;
+	removeLastChatMessage: () => void;
 
 	// UI Actions
 	setInputValue: (value: string) => void;
@@ -228,13 +229,13 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 			isCheckingUnlock: false,
 			currentMissionId: null,
 			lastError: null,
-				lastRequestType: null,
-				lastRequestPayload: null,
-				personalisedSiteRequested: false,
-				goalSuggestions: createDefaultGoalSuggestions(),
-				clarificationSuggestions: createDefaultClarificationSuggestions(),
-				selectedSuggestionKey: null,
-				caseStudyTimeSpent: {},
+			lastRequestType: null,
+			lastRequestPayload: null,
+			personalisedSiteRequested: false,
+			goalSuggestions: createDefaultGoalSuggestions(),
+			clarificationSuggestions: createDefaultClarificationSuggestions(),
+			selectedSuggestionKey: null,
+			caseStudyTimeSpent: {},
 			processSectionTimeSpent: {},
 			vapiTimeSpent: 0,
 
@@ -280,6 +281,11 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 			clearChatHistory: () => set({ chatHistory: [] }),
 			setIsThinking: (isThinking) => set({ isThinking }),
 			setCurrentContext: (currentContext) => set({ currentContext }),
+			removeLastChatMessage: () =>
+				set((state) => {
+					state.chatHistory.pop();
+					return state;
+				}),
 
 			// Actions - UI
 			setInputValue: (inputValue) => set({ inputValue }),
@@ -353,7 +359,11 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 			setLastRequest: (type, payload) =>
 				set({ lastRequestType: type, lastRequestPayload: payload }),
 			clearErrorAndRequest: () =>
-				set({ lastError: null, lastRequestType: null, lastRequestPayload: null }),
+				set({
+					lastError: null,
+					lastRequestType: null,
+					lastRequestPayload: null,
+				}),
 			setPersonalisedSiteRequested: (requested) =>
 				set({ personalisedSiteRequested: requested }),
 			setSelectedSuggestionKey: (selectedSuggestionKey) =>
@@ -423,7 +433,8 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 						sessionData.process_section_time_spent || 0,
 					vapiTimeSpent: sessionData.vapi_time_spent || 0,
 					goalSuggestions: createDefaultGoalSuggestions(),
-					clarificationSuggestions: createDefaultClarificationSuggestions(),
+					clarificationSuggestions:
+						createDefaultClarificationSuggestions(),
 					selectedSuggestionKey: null,
 				}),
 			resetSession: () =>
@@ -459,7 +470,8 @@ export const useGlobalStore = create<SessionState & SessionActions>()(
 					personalisedSiteRequested: false,
 					selectedSuggestionKey: null,
 					goalSuggestions: createDefaultGoalSuggestions(),
-					clarificationSuggestions: createDefaultClarificationSuggestions(),
+					clarificationSuggestions:
+						createDefaultClarificationSuggestions(),
 					caseStudyTimeSpent: {},
 					processSectionTimeSpent: {},
 					vapiTimeSpent: 0,

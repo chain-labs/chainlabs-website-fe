@@ -60,17 +60,30 @@ export const useChat = () => {
 	}, [aiChatBubbleIsOpen]);
 
 	const sendMessage = useCallback(
-		async (content: string, options?: { skipUserMessage?: boolean }) => {
+		async (
+			content: string,
+			options?: { skipUserMessage?: boolean; updateLastRequest?: boolean }
+		) => {
 			const skipUserMessage = options?.skipUserMessage ?? false;
+			const updateLastRequest = options?.updateLastRequest ?? false;
 			setIsThisLatestAssistantMessage(true);
 			store.setInputValue("");
-			if (!skipUserMessage) {
+			if (updateLastRequest) {
+				store.removeLastChatMessage();
 				store.addChatMessage({
 					role: "user",
 					message: content,
 					timestamp: new Date().toISOString(),
 				});
 			}
+			if (!skipUserMessage && !updateLastRequest) {
+				store.addChatMessage({
+					role: "user",
+					message: content,
+					timestamp: new Date().toISOString(),
+				});
+			}
+
 			store.setIsThinking(true);
 
 			try {
@@ -172,7 +185,9 @@ export const useChat = () => {
 				if (showPersonalized && aiOpenRef.current) {
 					store.setLastError("Failed to generate response");
 				} else if (store.hasGoal()) {
-					store.setLastError("Failed to generate clarification questions");
+					store.setLastError(
+						"Failed to generate clarification questions"
+					);
 				} else {
 					store.setLastError("Failed to process your goal");
 				}

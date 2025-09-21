@@ -41,8 +41,13 @@ export const Footer = ({ showPersonalized, className }: FooterProps) => {
 			apiClient.clearAuth();
 			resetSession();
 			await apiClient.initializeSession().catch(() => {});
-			window.location.href = "/";
+			if (window.location.pathname !== "/") {
+				window.location.href = "/";
+			}
 			window.scrollTo({ top: 0, behavior: "smooth" });
+		} catch (e) {
+			// Non-fatal; continue to clear local state
+			console.error("Session reset failed", e);
 		} finally {
 			setIsResetting(false);
 		}
@@ -107,7 +112,8 @@ export const Footer = ({ showPersonalized, className }: FooterProps) => {
 								transition={{ duration: 0.6, delay: 0.1 }}
 								className="text-muted-foreground leading-relaxed max-w-md"
 							>
-								We specialise in custom AI and blockchain applications that drive real business results.
+								We specialise in custom AI and blockchain
+								applications that drive real business results.
 							</motion.p>
 
 							<motion.div
