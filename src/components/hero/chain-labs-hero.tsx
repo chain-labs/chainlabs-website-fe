@@ -199,6 +199,10 @@ const ChainLabsHero = () => {
 	const handleGoalSuggestion = useCallback(
 		async (option: GoalSuggestion) => {
 			if (isThinking) return;
+			if (!isCaptchaVerified) {
+				setShowCaptchaDialog(true);
+				return;
+			}
 			setSelectedSuggestionKey(option.key);
 			setVoiceInputValue("");
 			await sendMessage(option.label);
@@ -209,6 +213,10 @@ const ChainLabsHero = () => {
 	const handleClarificationSuggestion = useCallback(
 		async (suggestion: string) => {
 			if (isThinking) return;
+			if (!isCaptchaVerified) {
+				setShowCaptchaDialog(true);
+				return;
+			}
 			setVoiceInputValue("");
 			await sendMessage(suggestion);
 		},
