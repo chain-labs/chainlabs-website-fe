@@ -38,15 +38,17 @@ const ChainLabsHero = () => {
 	const wasListeningRef = useRef(false);
 	const turnstileRef = useRef<TurnstileInstance | null>(null);
 
-	const { NEXT_PUBLIC_CLOUDFLARE_SITE_KEY } = process.env;
+	const CloudflareSiteKey = process.env.NEXT_PUBLIC_CLOUDFLARE_SITE_KEY;
 
 	// Check if running on localhost (development)
-	const isLocalhost = typeof window !== "undefined" && 
-		(window.location.hostname === "localhost" || 
-		 window.location.hostname === "127.0.0.1");
+	const isLocalhost =
+		typeof window !== "undefined" &&
+		(window.location.hostname === "localhost" ||
+			window.location.hostname === "127.0.0.1");
 
 	// Turnstile state - skip verification on localhost
-	const [isCaptchaVerified, setIsCaptchaVerified] = React.useState(isLocalhost);
+	const [isCaptchaVerified, setIsCaptchaVerified] =
+		React.useState(isLocalhost);
 	const [isCaptchaVerifying, setIsCaptchaVerifying] = React.useState(false);
 	const [captchaError, setCaptchaError] = React.useState<string | null>(null);
 
@@ -130,7 +132,9 @@ const ChainLabsHero = () => {
 
 			// Check if captcha is verified before allowing submission
 			if (!isCaptchaVerified) {
-				setCaptchaError("Please complete the captcha verification first");
+				setCaptchaError(
+					"Please complete the captcha verification first"
+				);
 				return;
 			}
 
@@ -259,7 +263,8 @@ const ChainLabsHero = () => {
 				return true;
 			} else {
 				setCaptchaError(
-					data.error || "Captcha verification failed. Please try again."
+					data.error ||
+						"Captcha verification failed. Please try again."
 				);
 				setIsCaptchaVerified(false);
 				turnstileRef.current?.reset();
@@ -771,8 +776,14 @@ const ChainLabsHero = () => {
 										>
 											{captchaError && (
 												<motion.div
-													initial={{ opacity: 0, y: -4 }}
-													animate={{ opacity: 1, y: 0 }}
+													initial={{
+														opacity: 0,
+														y: -4,
+													}}
+													animate={{
+														opacity: 1,
+														y: 0,
+													}}
 													exit={{ opacity: 0, y: -4 }}
 													className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-sm"
 												>
@@ -782,11 +793,11 @@ const ChainLabsHero = () => {
 											)}
 
 											<div className="flex justify-center">
-												{NEXT_PUBLIC_CLOUDFLARE_SITE_KEY ? (
+												{CloudflareSiteKey ? (
 													<Turnstile
 														ref={turnstileRef}
 														siteKey={
-															NEXT_PUBLIC_CLOUDFLARE_SITE_KEY
+															CloudflareSiteKey
 														}
 														onSuccess={
 															handleTurnstileVerification
