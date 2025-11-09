@@ -806,7 +806,7 @@ const ChainLabsHero = () => {
 		</section>
 
 		{/* Captcha Dialog */}
-		<Dialog open={showCaptchaDialog} onOpenChange={setShowCaptchaDialog}>
+		<Dialog open={showCaptchaDialog || !isCaptchaVerified} onOpenChange={setShowCaptchaDialog}>
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
 					<DialogTitle>Verify your identity</DialogTitle>
