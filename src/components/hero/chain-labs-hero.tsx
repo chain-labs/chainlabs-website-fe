@@ -1,13 +1,9 @@
 "use client";
 
 import React, { useEffect, useRef, useCallback, KeyboardEvent } from "react";
-import { motion, AnimatePresence, useAnimate } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import {
 	Sparkles,
-	Globe,
-	Zap,
-	Blocks,
-	Code2,
 	ArrowRight,
 	MessageCircle,
 	Lightbulb,
@@ -353,543 +349,574 @@ const ChainLabsHero = () => {
 	return (
 		<>
 			<section className="relative min-h-screen w-full py-16 flex flex-col overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
-			{/* Background Elements */}
-			<div className="absolute inset-0 overflow-hidden">
-				{/* Main spherical gradient */}
-				{/* <motion.div
+				{/* Background Elements */}
+				<div className="absolute inset-0 overflow-hidden">
+					{/* Main spherical gradient */}
+					{/* <motion.div
 					initial={{ opacity: 0, scale: 0.8 }}
 					animate={{ opacity: 1, scale: 1 }}
 					transition={{ duration: 1.2, ease: "easeOut" }}
 					className="absolute left-1/2 top-[15%] size-80 -translate-x-1/2 rounded-full bg-gradient-to-br from-primary/15 via-primary/25 to-primary/35 blur-3xl"
 				/> */}
 
-				{/* Secondary accent orbs */}
-				<Orb
-					hue={20}
-					hoverIntensity={isThinking ? 0.35 : 0}
-					rotateOnHover
-					forceHoverState
-				/>
+					{/* Secondary accent orbs */}
+					<Orb
+						hue={20}
+						hoverIntensity={isThinking ? 0.35 : 0}
+						rotateOnHover
+						forceHoverState
+					/>
 
-				<GradientBars />
+					<GradientBars />
 
-				{/* Grid pattern overlay */}
-				<div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_1px,hsl(var(--muted))_1px)] bg-[length:40px_40px] opacity-[0.015]" />
+					{/* Grid pattern overlay */}
+					<div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_1px,hsl(var(--muted))_1px)] bg-[length:40px_40px] opacity-[0.015]" />
 
-				{/* Floating code elements - only show when no messages */}
-				{!hasMessages && (
-					<div className="absolute inset-0 overflow-hidden pointer-events-none">
-						<motion.div
-							initial={{ opacity: 0, y: 50 }}
-							animate={{ opacity: 0.08, y: 0 }}
-							transition={{
-								duration: 2,
-								ease: "easeOut",
-								delay: 1,
-							}}
-							className="absolute left-[15%] top-[35%] font-mono text-xs text-primary"
-						>
-							{"<Website />"}
-						</motion.div>
-						<motion.div
-							initial={{ opacity: 0, y: -50 }}
-							animate={{ opacity: 0.08, y: 0 }}
-							transition={{
-								duration: 2,
-								ease: "easeOut",
-								delay: 1.5,
-							}}
-							className="absolute right-[20%] top-[30%] font-mono text-xs text-primary"
-						>
-							{"function buildSite() {"}
-						</motion.div>
-						<motion.div
-							initial={{ opacity: 0, x: -50 }}
-							animate={{ opacity: 0.08, x: 0 }}
-							transition={{
-								duration: 2,
-								ease: "easeOut",
-								delay: 2,
-							}}
-							className="absolute left-[12%] bottom-[35%] font-mono text-xs text-primary"
-						>
-							{"AI.analyze(requirements)"}
-						</motion.div>
-					</div>
-				)}
-			</div>
+					{/* Floating code elements - only show when no messages */}
+					{!hasMessages && (
+						<div className="absolute inset-0 overflow-hidden pointer-events-none">
+							<motion.div
+								initial={{ opacity: 0, y: 50 }}
+								animate={{ opacity: 0.08, y: 0 }}
+								transition={{
+									duration: 2,
+									ease: "easeOut",
+									delay: 1,
+								}}
+								className="absolute left-[15%] top-[35%] font-mono text-xs text-primary"
+							>
+								{"<Website />"}
+							</motion.div>
+							<motion.div
+								initial={{ opacity: 0, y: -50 }}
+								animate={{ opacity: 0.08, y: 0 }}
+								transition={{
+									duration: 2,
+									ease: "easeOut",
+									delay: 1.5,
+								}}
+								className="absolute right-[20%] top-[30%] font-mono text-xs text-primary"
+							>
+								{"function buildSite() {"}
+							</motion.div>
+							<motion.div
+								initial={{ opacity: 0, x: -50 }}
+								animate={{ opacity: 0.08, x: 0 }}
+								transition={{
+									duration: 2,
+									ease: "easeOut",
+									delay: 2,
+								}}
+								className="absolute left-[12%] bottom-[35%] font-mono text-xs text-primary"
+							>
+								{"AI.analyze(requirements)"}
+							</motion.div>
+						</div>
+					)}
+				</div>
 
-			<div className="relative z-10 flex-1 flex flex-col max-w-7xl mx-auto w-full">
-				{/* Remove top spacer on mobile to pin hero text to top */}
-				<div className="h-16" />
+				<div className="relative z-10 flex-1 flex flex-col max-w-7xl mx-auto w-full">
+					{/* Remove top spacer on mobile to pin hero text to top */}
+					<div className="h-16" />
 
-				<div className="flex-1 flex flex-col px-4 md:px-6 lg:px-8">
-					{/* Distribute sections on mobile; center on md+ */}
-					<div className="w-full max-w-4xl mx-auto flex flex-col flex-1 justify-between md:justify-center">
-						{/* Hero Text - Only show when no messages */}
-						<AnimatePresence mode="wait">
-							{!hasMessages && (
+					<div className="flex-1 flex flex-col px-4 md:px-6 lg:px-8">
+						{/* Distribute sections on mobile; center on md+ */}
+						<div className="w-full max-w-4xl mx-auto flex flex-col flex-1 justify-between md:justify-center">
+							{/* Hero Text - Only show when no messages */}
+							<AnimatePresence mode="wait">
+								{!hasMessages && (
+									<motion.div
+										key="hero-text"
+										initial={{ opacity: 0, y: 20 }}
+										animate={{ opacity: 1, y: 0 }}
+										exit={{ opacity: 0, y: -20 }}
+										transition={{
+											duration: 0.6,
+											ease: "easeOut",
+										}}
+										className="text-center mb-8 md:mb-12 backdrop-blur-lg lg:backdrop-blur-none"
+									>
+										<motion.div
+											initial={{ opacity: 0, y: 15 }}
+											animate={{ opacity: 1, y: 0 }}
+											transition={{
+												duration: 0.7,
+												ease: "easeOut",
+												delay: 0.2,
+											}}
+											className="flex items-center justify-center gap-2 mb-4"
+										>
+											<Sparkles className="w-4 h-4 text-primary" />
+											<span className="text-sm font-medium text-muted-foreground">
+												AI & Blockchain Innovation
+												Partner
+											</span>
+										</motion.div>
+
+										<motion.h1
+											initial={{ opacity: 0, y: 15 }}
+											animate={{ opacity: 1, y: 0 }}
+											transition={{
+												duration: 0.7,
+												ease: "easeOut",
+												delay: 0.3,
+											}}
+											className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-foreground leading-tight"
+										>
+											Unlock Growth with <br />
+											<span className="bg-gradient-to-r from-primary via-primary to-primary/80 bg-clip-text text-transparent">
+												AI & Blockchain
+											</span>
+											{"."}
+										</motion.h1>
+									</motion.div>
+								)}
+							</AnimatePresence>
+
+							{/* Chat Messages */}
+							<AnimatePresence>
+								{hasMessages && (
+									<motion.div
+										key="chat-messages"
+										initial={{ opacity: 0, height: 0 }}
+										animate={{ opacity: 1, height: "auto" }}
+										exit={{ opacity: 0, height: 0 }}
+										transition={{
+											duration: 0.5,
+											ease: "easeOut",
+										}}
+										className="mb-4"
+									>
+										<div className="max-h-[55vh] overflow-y-auto space-y-4 px-2 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
+											{messages.map((message, index) => (
+												<ChatBubble
+													key={message.timestamp}
+													message={message}
+													isLatest={
+														index ===
+															messages.length -
+																1 &&
+														isThisLatestAssistantMessage
+													}
+												/>
+											))}
+
+											<AnimatePresence>
+												{isThinking && (
+													<ThinkingIndicator />
+												)}
+											</AnimatePresence>
+
+											{/* Error banner moved to be rendered globally above input */}
+
+											<div ref={messagesEndRef} />
+										</div>
+									</motion.div>
+								)}
+							</AnimatePresence>
+
+							{/* Input Form (center on mobile via parent justify-between) */}
+							<AnimatePresence mode="wait">
 								<motion.div
-									key="hero-text"
+									key="input-section"
 									initial={{ opacity: 0, y: 20 }}
 									animate={{ opacity: 1, y: 0 }}
 									exit={{ opacity: 0, y: -20 }}
 									transition={{
-										duration: 0.6,
+										duration: 0.4,
 										ease: "easeOut",
 									}}
-									className="text-center mb-8 md:mb-12 backdrop-blur-lg lg:backdrop-blur-none"
+									className="w-full"
 								>
-									<motion.div
-										initial={{ opacity: 0, y: 15 }}
-										animate={{ opacity: 1, y: 0 }}
-										transition={{
-											duration: 0.7,
-											ease: "easeOut",
-											delay: 0.2,
-										}}
-										className="flex items-center justify-center gap-2 mb-4"
+									<form
+										onSubmit={handleSubmit}
+										className="space-y-4"
 									>
-										<Sparkles className="w-4 h-4 text-primary" />
-										<span className="text-sm font-medium text-muted-foreground">
-											AI & Blockchain Innovation Partner
-										</span>
-									</motion.div>
-
-									<motion.h1
-										initial={{ opacity: 0, y: 15 }}
-										animate={{ opacity: 1, y: 0 }}
-										transition={{
-											duration: 0.7,
-											ease: "easeOut",
-											delay: 0.3,
-										}}
-										className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-foreground leading-tight"
-									>
-										Unlock Growth with <br />
-										<span className="bg-gradient-to-r from-primary via-primary to-primary/80 bg-clip-text text-transparent">
-											AI & Blockchain
-										</span>
-										{"."}
-									</motion.h1>
-								</motion.div>
-							)}
-						</AnimatePresence>
-
-						{/* Chat Messages */}
-						<AnimatePresence>
-							{hasMessages && (
-								<motion.div
-									key="chat-messages"
-									initial={{ opacity: 0, height: 0 }}
-									animate={{ opacity: 1, height: "auto" }}
-									exit={{ opacity: 0, height: 0 }}
-									transition={{
-										duration: 0.5,
-										ease: "easeOut",
-									}}
-									className="mb-4"
-								>
-									<div className="max-h-[55vh] overflow-y-auto space-y-4 px-2 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
-										{messages.map((message, index) => (
-											<ChatBubble
-												key={message.timestamp}
-												message={message}
-												isLatest={
-													index ===
-														messages.length - 1 &&
-													isThisLatestAssistantMessage
-												}
-											/>
-										))}
-
 										<AnimatePresence>
-											{isThinking && (
-												<ThinkingIndicator />
+											{lastError &&
+												lastRequestType &&
+												!showPersonalisedCTA && (
+													<div className="mb-3">
+														<ErrorBanner
+															type={
+																lastRequestType
+															}
+															message={lastError}
+															onRetry={
+																handleRetry
+															}
+															onRestart={
+																handleRestart
+															}
+															loading={isThinking}
+														/>
+													</div>
+												)}
+										</AnimatePresence>
+
+										<AnimatePresence mode="wait">
+											{showPersonalisedCTA ? (
+												<motion.div
+													key="personalised-cta"
+													initial={{
+														opacity: 0,
+														y: 12,
+													}}
+													animate={{
+														opacity: 1,
+														y: 0,
+													}}
+													exit={{ opacity: 0, y: 12 }}
+													transition={{
+														duration: 0.25,
+														ease: "easeOut",
+													}}
+													className="rounded-2xl border border-primary/40 backdrop-blur-lg bg-gradient-to-br from-primary/10 via-primary/5 to-background/80 p-5 shadow-[0_18px_40px_-24px_rgb(59,130,246)]"
+												>
+													<div className="flex items-start gap-3">
+														<span className="mt-1 flex size-8 items-center justify-center rounded-full bg-primary/15 text-primary">
+															<Sparkles className="size-4" />
+														</span>
+														<div className="flex-1 space-y-2">
+															<p className="text-sm font-medium text-foreground">
+																Personalisation
+																complete
+															</p>
+															<p className="text-sm text-muted-foreground">
+																Preview
+																recommendations,
+																missions, and
+																tailored
+																messaging tuned
+																to your goal.
+															</p>
+														</div>
+													</div>
+													<Button
+														type="button"
+														onClick={
+															handleShowPersonalisedSite
+														}
+														size="lg"
+														className="group mt-4 w-full justify-between bg-primary text-primary-foreground hover:bg-primary/90"
+													>
+														<span>
+															Take me to my
+															personalised site
+														</span>
+														<ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-1" />
+													</Button>
+												</motion.div>
+											) : (
+												<motion.div
+													key="chat-input"
+													initial={{
+														opacity: 0,
+														y: 12,
+													}}
+													animate={{
+														opacity: 1,
+														y: 0,
+													}}
+													exit={{ opacity: 0, y: 12 }}
+													transition={{
+														duration: 0.2,
+														ease: "easeOut",
+													}}
+												>
+													<div className="flex flex-col">
+														{showGoalSuggestions &&
+															!isThinking && (
+																<motion.div
+																	initial={{
+																		opacity: 0,
+																		y: 8,
+																	}}
+																	animate={{
+																		opacity: 1,
+																		y: 0,
+																	}}
+																	exit={{
+																		opacity: 0,
+																		y: 8,
+																	}}
+																	transition={{
+																		duration: 0.2,
+																		ease: "easeOut",
+																	}}
+																	className="flex flex-col gap-2 px-4 pt-2 mx-auto relative w-[90%] rounded-t-2xl bg-surface/50 backdrop-blur-lg border transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.08),0_2px_8px_rgb(0,0,0,0.04)]"
+																>
+																	<div className="flex items-center gap-2 text-muted-foreground">
+																		<Lightbulb className="size-4" />
+																		<span className="text-sm font-medium">
+																			Need
+																			inspiration?
+																		</span>
+																	</div>
+																	<div className="flex gap-2 w-full overflow-x-auto pb-2 scrollbar-hide">
+																		{goalSuggestions.map(
+																			(
+																				option
+																			) => (
+																				<button
+																					key={
+																						option.key
+																					}
+																					type="button"
+																					onClick={() =>
+																						handleGoalSuggestion(
+																							option
+																						)
+																					}
+																					disabled={
+																						isThinking
+																					}
+																					className={cn(
+																						"inline-flex whitespace-nowrap items-center gap-2 rounded-full border border-border/60 bg-background px-4 py-2 text-sm text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground",
+																						selectedSuggestionKey ===
+																							option.key &&
+																							"border-primary/60 bg-primary/10 text-foreground"
+																					)}
+																				>
+																					<span className="font-medium">
+																						{
+																							option.label
+																						}
+																					</span>
+																				</button>
+																			)
+																		)}
+																	</div>
+																</motion.div>
+															)}
+
+														{showClarificationSuggestions &&
+															!isThinking && (
+																<motion.div
+																	initial={{
+																		opacity: 0,
+																		y: 8,
+																	}}
+																	animate={{
+																		opacity: 1,
+																		y: 0,
+																	}}
+																	exit={{
+																		opacity: 0,
+																		y: 8,
+																	}}
+																	transition={{
+																		duration: 0.2,
+																		ease: "easeOut",
+																	}}
+																	className="flex flex-col gap-2 px-4 pt-2 mx-auto relative w-[90%] rounded-t-2xl bg-surface/50 backdrop-blur-lg border transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.08),0_2px_8px_rgb(0,0,0,0.04)]"
+																>
+																	<div className="flex items-center gap-2 text-muted-foreground">
+																		<MessageCircle className="size-4" />
+																		<span className="text-sm font-medium">
+																			Clarify
+																			your
+																			obstacle
+																		</span>
+																	</div>
+																	<motion.div className="flex gap-2 w-full overflow-x-auto pb-2 scrollbar-hide">
+																		{clarificationSuggestions.map(
+																			(
+																				suggestion
+																			) => (
+																				<button
+																					key={
+																						suggestion
+																					}
+																					type="button"
+																					onClick={() =>
+																						handleClarificationSuggestion(
+																							suggestion
+																						)
+																					}
+																					disabled={
+																						isThinking
+																					}
+																					className="inline-flex whitespace-nowrap items-center rounded-full border border-border/70 bg-background px-4 py-2 text-sm text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+																				>
+																					{
+																						suggestion
+																					}
+																				</button>
+																			)
+																		)}
+																	</motion.div>
+																</motion.div>
+															)}
+
+														<InputContainer
+															inputValue={
+																inputValue +
+																voiceInputValue
+															}
+															isFocused={
+																isFocused
+															}
+															isRecording={
+																isRecording
+															}
+															hasMessages={
+																hasMessages
+															}
+															onInputChange={
+																handleInputChange
+															}
+															onKeyDown={
+																handleKeyDown
+															}
+															onFocus={
+																handleFocus
+															}
+															onBlur={handleBlur}
+															onToggleRecording={
+																toggleRecording
+															}
+															removeVoiceInput={
+																!browserSupportsSpeechRecognition
+															}
+															disabled={
+																isThinking
+															}
+															browserSupportsSpeechRecognition={
+																browserSupportsSpeechRecognition
+															}
+														/>
+													</div>
+												</motion.div>
 											)}
 										</AnimatePresence>
 
-										{/* Error banner moved to be rendered globally above input */}
-
-										<div ref={messagesEndRef} />
-									</div>
-								</motion.div>
-							)}
-						</AnimatePresence>
-
-						{/* Input Form (center on mobile via parent justify-between) */}
-						<AnimatePresence mode="wait">
-							<motion.div
-								key="input-section"
-								initial={{ opacity: 0, y: 20 }}
-								animate={{ opacity: 1, y: 0 }}
-								exit={{ opacity: 0, y: -20 }}
-								transition={{
-									duration: 0.4,
-									ease: "easeOut",
-								}}
-								className="w-full"
-							>
-								<form
-									onSubmit={handleSubmit}
-									className="space-y-4"
-								>
-									<AnimatePresence>
-										{lastError &&
-											lastRequestType &&
+										{browserSupportsSpeechRecognition &&
 											!showPersonalisedCTA && (
-												<div className="mb-3">
-													<ErrorBanner
-														type={lastRequestType}
-														message={lastError}
-														onRetry={handleRetry}
-														onRestart={
-															handleRestart
-														}
-														loading={isThinking}
-													/>
-												</div>
-											)}
-									</AnimatePresence>
-
-									<AnimatePresence mode="wait">
-										{showPersonalisedCTA ? (
-											<motion.div
-												key="personalised-cta"
-												initial={{ opacity: 0, y: 12 }}
-												animate={{ opacity: 1, y: 0 }}
-												exit={{ opacity: 0, y: 12 }}
-												transition={{
-													duration: 0.25,
-													ease: "easeOut",
-												}}
-												className="rounded-2xl border border-primary/40 backdrop-blur-lg bg-gradient-to-br from-primary/10 via-primary/5 to-background/80 p-5 shadow-[0_18px_40px_-24px_rgb(59,130,246)]"
-											>
-												<div className="flex items-start gap-3">
-													<span className="mt-1 flex size-8 items-center justify-center rounded-full bg-primary/15 text-primary">
-														<Sparkles className="size-4" />
-													</span>
-													<div className="flex-1 space-y-2">
-														<p className="text-sm font-medium text-foreground">
-															Personalisation
-															complete
-														</p>
-														<p className="text-sm text-muted-foreground">
-															Preview
-															recommendations,
-															missions, and
-															tailored messaging
-															tuned to your goal.
-														</p>
-													</div>
-												</div>
-												<Button
-													type="button"
-													onClick={
-														handleShowPersonalisedSite
-													}
-													size="lg"
-													className="group mt-4 w-full justify-between bg-primary text-primary-foreground hover:bg-primary/90"
-												>
-													<span>
-														Take me to my
-														personalised site
-													</span>
-													<ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-1" />
-												</Button>
-											</motion.div>
-										) : (
-											<motion.div
-												key="chat-input"
-												initial={{ opacity: 0, y: 12 }}
-												animate={{ opacity: 1, y: 0 }}
-												exit={{ opacity: 0, y: 12 }}
-												transition={{
-													duration: 0.2,
-													ease: "easeOut",
-												}}
-											>
-												<div className="flex flex-col">
-													{showGoalSuggestions &&
-														!isThinking && (
-															<motion.div
-																initial={{
-																	opacity: 0,
-																	y: 8,
-																}}
-																animate={{
-																	opacity: 1,
-																	y: 0,
-																}}
-																exit={{
-																	opacity: 0,
-																	y: 8,
-																}}
-																transition={{
-																	duration: 0.2,
-																	ease: "easeOut",
-																}}
-																className="flex flex-col gap-2 px-4 pt-2 mx-auto relative w-[90%] rounded-t-2xl bg-surface/50 backdrop-blur-lg border transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.08),0_2px_8px_rgb(0,0,0,0.04)]"
-															>
-																<div className="flex items-center gap-2 text-muted-foreground">
-																	<Lightbulb className="size-4" />
-																	<span className="text-sm font-medium">
-																		Need
-																		inspiration?
-																	</span>
-																</div>
-																<div className="flex gap-2 w-full overflow-x-auto pb-2">
-																	{goalSuggestions.map(
-																		(
-																			option
-																		) => (
-																			<button
-																				key={
-																					option.key
-																				}
-																				type="button"
-																				onClick={() =>
-																					handleGoalSuggestion(
-																						option
-																					)
-																				}
-																				disabled={
-																					isThinking
-																				}
-																				className={cn(
-																					"inline-flex whitespace-nowrap items-center gap-2 rounded-full border border-border/60 bg-background px-4 py-2 text-sm text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground",
-																					selectedSuggestionKey ===
-																						option.key &&
-																						"border-primary/60 bg-primary/10 text-foreground"
-																				)}
-																			>
-																				<span className="font-medium">
-																					{
-																						option.label
-																					}
-																				</span>
-																			</button>
-																		)
-																	)}
-																</div>
-															</motion.div>
-														)}
-
-													{showClarificationSuggestions &&
-														!isThinking && (
-															<motion.div
-																initial={{
-																	opacity: 0,
-																	y: 8,
-																}}
-																animate={{
-																	opacity: 1,
-																	y: 0,
-																}}
-																exit={{
-																	opacity: 0,
-																	y: 8,
-																}}
-																transition={{
-																	duration: 0.2,
-																	ease: "easeOut",
-																}}
-																className="flex flex-col gap-2 px-4 pt-2 mx-auto relative w-[90%] rounded-t-2xl bg-surface/50 backdrop-blur-lg border transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.08),0_2px_8px_rgb(0,0,0,0.04)]"
-															>
-																<div className="flex items-center gap-2 text-muted-foreground">
-																	<MessageCircle className="size-4" />
-																	<span className="text-sm font-medium">
-																		Clarify
-																		your
-																		obstacle
-																	</span>
-																</div>
-																<motion.div className="flex gap-2 w-full overflow-x-auto pb-2">
-																	{clarificationSuggestions.map(
-																		(
-																			suggestion
-																		) => (
-																			<button
-																				key={
-																					suggestion
-																				}
-																				type="button"
-																				onClick={() =>
-																					handleClarificationSuggestion(
-																						suggestion
-																					)
-																				}
-																				disabled={
-																					isThinking
-																				}
-																				className="inline-flex whitespace-nowrap items-center rounded-full border border-border/70 bg-background px-4 py-2 text-sm text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
-																			>
-																				{
-																					suggestion
-																				}
-																			</button>
-																		)
-																	)}
-																</motion.div>
-															</motion.div>
-														)}
-
-													<InputContainer
-														inputValue={
-															inputValue +
-															voiceInputValue
-														}
-														isFocused={isFocused}
+												<div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+													<RecordingStatus
 														isRecording={
 															isRecording
 														}
-														hasMessages={
-															hasMessages
-														}
-														onInputChange={
-															handleInputChange
-														}
-														onKeyDown={
-															handleKeyDown
-														}
-														onFocus={handleFocus}
-														onBlur={handleBlur}
-														onToggleRecording={
-															toggleRecording
-														}
-														removeVoiceInput={
-															!browserSupportsSpeechRecognition
-														}
-														disabled={isThinking}
-														browserSupportsSpeechRecognition={
-															browserSupportsSpeechRecognition
-														}
 													/>
 												</div>
-											</motion.div>
-										)}
-									</AnimatePresence>
+											)}
+									</form>
+								</motion.div>
+							</AnimatePresence>
 
-									{browserSupportsSpeechRecognition &&
-										!showPersonalisedCTA && (
-											<div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-												<RecordingStatus
-													isRecording={isRecording}
-												/>
-											</div>
-										)}
-								</form>
+							{/* Generic site link at bottom on mobile */}
+							<AnimatePresence>
+								{!showPersonalisedCTA && (
+									<div className="mt-6 md:mt-12 flex justify-center">
+										<Link
+											href="/generic-site"
+											aria-label="View more case studies"
+											className="text-sm font-medium text-muted-foreground hover:text-foreground underline-offset-4 underline transition-colors flex justify-center items-center gap-[1ch]"
+										>
+											Explore our standard site (no
+											personalisation).
+										</Link>
+									</div>
+								)}
+							</AnimatePresence>
+						</div>
+					</div>
+
+					{/* Remove bottom spacer on mobile so link sits at bottom */}
+					<div className="h-0 md:h-12" />
+				</div>
+			</section>
+
+			{/* Captcha Dialog */}
+			<Dialog
+				open={showCaptchaDialog || !isCaptchaVerified}
+				onOpenChange={setShowCaptchaDialog}
+			>
+				<DialogContent className="sm:max-w-md">
+					<DialogHeader>
+						<DialogTitle>Verify your identity</DialogTitle>
+						<DialogDescription>
+							Please complete the security verification to
+							continue.
+						</DialogDescription>
+					</DialogHeader>
+
+					<div className="flex flex-col gap-4">
+						{captchaError && (
+							<motion.div
+								initial={{
+									opacity: 0,
+									y: -4,
+								}}
+								animate={{
+									opacity: 1,
+									y: 0,
+								}}
+								exit={{ opacity: 0, y: -4 }}
+								className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-sm"
+							>
+								<AlertCircle className="size-4 flex-shrink-0" />
+								<span>{captchaError}</span>
 							</motion.div>
-						</AnimatePresence>
+						)}
 
-						{/* Generic site link at bottom on mobile */}
-						<AnimatePresence>
-							{!showPersonalisedCTA && (
-								<div className="mt-6 md:mt-12 flex justify-center">
-									<Link
-										href="/generic-site"
-										aria-label="View more case studies"
-										className="text-sm font-medium text-muted-foreground hover:text-foreground underline-offset-4 underline transition-colors flex justify-center items-center gap-[1ch]"
-									>
-										Explore our standard site (no
-										personalisation).
-									</Link>
+						<div className="flex justify-center py-4">
+							{CloudflareSiteKey ? (
+								!isCaptchaVerified && (
+									<Turnstile
+										ref={turnstileRef}
+										siteKey={CloudflareSiteKey}
+										onSuccess={handleTurnstileVerification}
+										onError={() => {
+											setCaptchaError(
+												"Captcha error. Please try again."
+											);
+											setIsCaptchaVerified(false);
+										}}
+										onExpire={() => {
+											setIsCaptchaVerified(false);
+											setCaptchaError(
+												"Captcha expired. Please refresh and try again."
+											);
+										}}
+										options={{
+											theme: "dark",
+										}}
+									/>
+								)
+							) : (
+								<div className="text-xs text-muted-foreground">
+									Captcha not configured
 								</div>
 							)}
-						</AnimatePresence>
-					</div>
-				</div>
+						</div>
 
-				{/* Remove bottom spacer on mobile so link sits at bottom */}
-				<div className="h-0 md:h-12" />
-			</div>
-		</section>
+						{isCaptchaVerifying && (
+							<motion.p
+								initial={{ opacity: 0 }}
+								animate={{ opacity: 1 }}
+								className="text-xs text-muted-foreground text-center"
+							>
+								Verifying...
+							</motion.p>
+						)}
 
-		{/* Captcha Dialog */}
-		<Dialog open={showCaptchaDialog || !isCaptchaVerified} onOpenChange={setShowCaptchaDialog}>
-			<DialogContent className="sm:max-w-md">
-				<DialogHeader>
-					<DialogTitle>Verify your identity</DialogTitle>
-					<DialogDescription>
-						Please complete the security verification to continue.
-					</DialogDescription>
-				</DialogHeader>
-
-				<div className="flex flex-col gap-4">
-					{captchaError && (
-						<motion.div
-							initial={{
-								opacity: 0,
-								y: -4,
-							}}
-							animate={{
-								opacity: 1,
-								y: 0,
-							}}
-							exit={{ opacity: 0, y: -4 }}
-							className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-sm"
-						>
-							<AlertCircle className="size-4 flex-shrink-0" />
-							<span>{captchaError}</span>
-						</motion.div>
-					)}
-
-					<div className="flex justify-center py-4">
-						{CloudflareSiteKey ? (
-							!isCaptchaVerified && (
-								<Turnstile
-									ref={turnstileRef}
-									siteKey={CloudflareSiteKey}
-									onSuccess={
-										handleTurnstileVerification
-									}
-									onError={() => {
-										setCaptchaError(
-											"Captcha error. Please try again."
-										);
-										setIsCaptchaVerified(false);
-									}}
-									onExpire={() => {
-										setIsCaptchaVerified(false);
-										setCaptchaError(
-											"Captcha expired. Please refresh and try again."
-										);
-									}}
-									options={{
-										theme: "dark",
-									}}
-								/>
-							)
-						) : (
-							<div className="text-xs text-muted-foreground">
-								Captcha not configured
-							</div>
+						{isCaptchaVerified && (
+							<motion.div
+								initial={{ opacity: 0, y: -4 }}
+								animate={{ opacity: 1, y: 0 }}
+								className="flex items-center gap-2 p-3 rounded-lg bg-green-500/10 border border-green-500/30 text-green-600 text-sm"
+							>
+								<Sparkles className="size-4 flex-shrink-0" />
+								<span>
+									Verification complete! You can now proceed.
+								</span>
+							</motion.div>
 						)}
 					</div>
-
-					{isCaptchaVerifying && (
-						<motion.p
-							initial={{ opacity: 0 }}
-							animate={{ opacity: 1 }}
-							className="text-xs text-muted-foreground text-center"
-						>
-							Verifying...
-						</motion.p>
-					)}
-
-					{isCaptchaVerified && (
-						<motion.div
-							initial={{ opacity: 0, y: -4 }}
-							animate={{ opacity: 1, y: 0 }}
-							className="flex items-center gap-2 p-3 rounded-lg bg-green-500/10 border border-green-500/30 text-green-600 text-sm"
-						>
-							<Sparkles className="size-4 flex-shrink-0" />
-							<span>Verification complete! You can now proceed.</span>
-						</motion.div>
-					)}
-				</div>
-			</DialogContent>
-		</Dialog>
+				</DialogContent>
+			</Dialog>
 		</>
 	);
 };
