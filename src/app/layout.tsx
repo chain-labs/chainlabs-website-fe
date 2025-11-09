@@ -103,12 +103,21 @@ export default function RootLayout({
     const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID || "GTM-P3BWGBBD";
     const GA_ID =  process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-2TXCJ3VJ1B";
     const CLARITY_ID = process.env.NEXT_PUBLIC_CLARITY_ID || "t2fz0iawei";
+	const { NEXT_PUBLIC_CLOUDFLARE_SITE_KEY } = process.env;
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<head>
 				<link rel="icon" href="/assets/logo.svg" />
+				<link rel="preconnect" href="https://challenges.cloudflare.com"></link>
 				<meta name="viewport" content="width=device-width, initial-scale=1" />
 				<meta name="theme-color" content="#0B0B0F" />
+				
+				{/* Cloudflare Turnstile Script */}
+				<Script 
+					src="https://challenges.cloudflare.com/turnstile/v0/api.js" 
+					strategy="beforeInteractive"
+				/>
+
 				{/* Structured Data */}
 				<script
 					type="application/ld+json"
@@ -134,6 +143,7 @@ export default function RootLayout({
 						}),
 					}}
 				/>
+
 				{/* Analytics (GTM + GA4) gated by env and consent */}
 				{enableAnalytics && (
 					<>
@@ -219,7 +229,7 @@ export default function RootLayout({
                   </Suspense>
                 )}
                 {enableAnalytics && CLARITY_ID && <ClarityAnalytics />}
-				{/* Google Tag Manager (noscript) */}
+                {/* Google Tag Manager (noscript) */}
                 {enableAnalytics && (
                   <noscript>
                     <iframe
@@ -230,7 +240,6 @@ export default function RootLayout({
                     ></iframe>
                   </noscript>
                 )}
-                {/* <Script>{`window.amplitude.add(window.sessionReplay.plugin({sampleRate: 1}));window.amplitude.init('xxx', {"autocapture":{"elementInteractions":true}});`}</Script> */}
 			</body>
 		</html>
 	);
