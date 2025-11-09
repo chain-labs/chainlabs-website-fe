@@ -31,6 +31,13 @@ import Orb from "@/components/ui/orb";
 import { GradientBars } from "../ui/gradient-bars";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 const ChainLabsHero = () => {
@@ -51,6 +58,7 @@ const ChainLabsHero = () => {
 		React.useState(isLocalhost);
 	const [isCaptchaVerifying, setIsCaptchaVerifying] = React.useState(false);
 	const [captchaError, setCaptchaError] = React.useState<string | null>(null);
+	const [showCaptchaDialog, setShowCaptchaDialog] = React.useState(false);
 
 	// Global state hooks
 	const {
@@ -132,9 +140,7 @@ const ChainLabsHero = () => {
 
 			// Check if captcha is verified before allowing submission
 			if (!isCaptchaVerified) {
-				setCaptchaError(
-					"Please complete the captcha verification first"
-				);
+				setShowCaptchaDialog(true);
 				return;
 			}
 
@@ -161,6 +167,7 @@ const ChainLabsHero = () => {
 				// Reset captcha after successful submission
 				turnstileRef.current?.reset();
 				setIsCaptchaVerified(false);
+				setShowCaptchaDialog(false);
 			}
 		},
 		[
@@ -336,7 +343,8 @@ const ChainLabsHero = () => {
 	// Original hero/chat UI
 
 	return (
-		<section className="relative min-h-screen w-full py-16 flex flex-col overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
+		<>
+			<section className="relative min-h-screen w-full py-16 flex flex-col overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
 			{/* Background Elements */}
 			<div className="absolute inset-0 overflow-hidden">
 				{/* Main spherical gradient */}
@@ -762,88 +770,6 @@ const ChainLabsHero = () => {
 												/>
 											</div>
 										)}
-
-									{/* Cloudflare Turnstile Widget - Hidden on localhost */}
-									{!showPersonalisedCTA && !isLocalhost && (
-										<motion.div
-											initial={{ opacity: 0, y: 8 }}
-											animate={{ opacity: 1, y: 0 }}
-											transition={{
-												duration: 0.3,
-												ease: "easeOut",
-											}}
-											className="flex flex-col gap-3"
-										>
-											{captchaError && (
-												<motion.div
-													initial={{
-														opacity: 0,
-														y: -4,
-													}}
-													animate={{
-														opacity: 1,
-														y: 0,
-													}}
-													exit={{ opacity: 0, y: -4 }}
-													className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-sm"
-												>
-													<AlertCircle className="size-4 flex-shrink-0" />
-													<span>{captchaError}</span>
-												</motion.div>
-											)}
-
-											<div className="flex justify-center">
-												{CloudflareSiteKey ? (
-													isCaptchaVerified && (
-														<Turnstile
-															ref={turnstileRef}
-															siteKey={
-																CloudflareSiteKey
-															}
-															onSuccess={
-																handleTurnstileVerification
-															}
-															onError={() => {
-																setCaptchaError(
-																	"Captcha error. Please try again."
-																);
-																setIsCaptchaVerified(
-																	false
-																);
-															}}
-															onExpire={() => {
-																setIsCaptchaVerified(
-																	false
-																);
-																setCaptchaError(
-																	"Captcha expired. Please refresh and try again."
-																);
-															}}
-															options={{
-																theme: "dark",
-															}}
-														/>
-													)
-												) : (
-													<div className="text-xs text-muted-foreground">
-														Captcha not configured
-													</div>
-												)}
-											</div>
-
-											{!isCaptchaVerified && (
-												<motion.p
-													initial={{ opacity: 0 }}
-													animate={{ opacity: 1 }}
-													className="text-xs text-muted-foreground text-center"
-												>
-													{isCaptchaVerifying
-														? "Verifying..."
-														: "Please complete the verification to proceed"}
-												</motion.p>
-											)}
-										</motion.div>
-									)}
 								</form>
 							</motion.div>
 						</AnimatePresence>
@@ -870,6 +796,93 @@ const ChainLabsHero = () => {
 				<div className="h-0 md:h-12" />
 			</div>
 		</section>
+
+		{/* Captcha Dialog */}
+		<Dialog open={showCaptchaDialog} onOpenChange={setShowCaptchaDialog}>
+			<DialogContent className="sm:max-w-md">
+				<DialogHeader>
+					<DialogTitle>Verify your identity</DialogTitle>
+					<DialogDescription>
+						Please complete the security verification to continue.
+					</DialogDescription>
+				</DialogHeader>
+
+				<div className="flex flex-col gap-4">
+					{captchaError && (
+						<motion.div
+							initial={{
+								opacity: 0,
+								y: -4,
+							}}
+							animate={{
+								opacity: 1,
+								y: 0,
+							}}
+							exit={{ opacity: 0, y: -4 }}
+							className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-sm"
+						>
+							<AlertCircle className="size-4 flex-shrink-0" />
+							<span>{captchaError}</span>
+						</motion.div>
+					)}
+
+					<div className="flex justify-center py-4">
+						{CloudflareSiteKey ? (
+							!isCaptchaVerified && (
+								<Turnstile
+									ref={turnstileRef}
+									siteKey={CloudflareSiteKey}
+									onSuccess={
+										handleTurnstileVerification
+									}
+									onError={() => {
+										setCaptchaError(
+											"Captcha error. Please try again."
+										);
+										setIsCaptchaVerified(false);
+									}}
+									onExpire={() => {
+										setIsCaptchaVerified(false);
+										setCaptchaError(
+											"Captcha expired. Please refresh and try again."
+										);
+									}}
+									options={{
+										theme: "dark",
+									}}
+								/>
+							)
+						) : (
+							<div className="text-xs text-muted-foreground">
+								Captcha not configured
+							</div>
+						)}
+					</div>
+
+					{isCaptchaVerifying && (
+						<motion.p
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							className="text-xs text-muted-foreground text-center"
+						>
+							Verifying...
+						</motion.p>
+					)}
+
+					{isCaptchaVerified && (
+						<motion.div
+							initial={{ opacity: 0, y: -4 }}
+							animate={{ opacity: 1, y: 0 }}
+							className="flex items-center gap-2 p-3 rounded-lg bg-green-500/10 border border-green-500/30 text-green-600 text-sm"
+						>
+							<Sparkles className="size-4 flex-shrink-0" />
+							<span>Verification complete! You can now proceed.</span>
+						</motion.div>
+					)}
+				</div>
+			</DialogContent>
+		</Dialog>
+		</>
 	);
 };
 
