@@ -34,9 +34,11 @@ See AGENTS.md for contributor guidelines.
 ## Getting Started
 
 Prerequisites
+
 - Node.js 18+ and a package manager (pnpm recommended; lockfile included).
 
 Install and run
+
 ```bash
 # install deps
 pnpm install        # or: npm install / yarn / bun
@@ -54,19 +56,23 @@ pnpm lint
 ## Configuration
 
 Environment variables
+
 - Create `.env.local` in the project root. Required:
   - `NEXT_PUBLIC_API_BASE_URL` – Backend base URL for session, chat, and personalization (defaults to `http://localhost:8000`).
 - Do not commit secrets. Public analytics IDs are hardcoded in `src/app/layout.tsx`; change or comment out for local development if needed.
 
 Theming and design tokens
+
 - Single dark theme with CSS variables defined under `@theme` in `src/app/globals.css`. Tokens map to shadcn/ui variables under `:root`.
 
 Analytics
+
 - Initialized in `src/app/layout.tsx` (GTM, GA, Amplitude). Disable by commenting out scripts during development.
 
 ## Backend Integration
 
 All API calls are centralized in `src/api-client.ts`. Endpoints expected from the backend:
+
 - Auth/session: `POST /api/auth/session`, `POST /api/auth/reset`
 - Goal flow: `POST /api/goal`, `POST /api/clarify`, `GET /api/personalised`
 - Chat: `POST /api/chat`

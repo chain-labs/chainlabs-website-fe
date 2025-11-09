@@ -6,9 +6,9 @@ type StarBorderProps<T extends React.ElementType> =
     className?: string;
     children?: React.ReactNode;
     color?: string;
-    speed?: React.CSSProperties['animationDuration'];
+    speed?: React.CSSProperties["animationDuration"];
     thickness?: number;
-  }
+  };
 
 const StarBorder = <T extends React.ElementType = "button">({
   as,
@@ -22,8 +22,8 @@ const StarBorder = <T extends React.ElementType = "button">({
   const Component = as || "button";
 
   return (
-    <Component 
-      className={`star-border-container ${className}`} 
+    <Component
+      className={`star-border-container ${className}`}
       {...(rest as any)}
       style={{
         padding: `${thickness}px 0`,

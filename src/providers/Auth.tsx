@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { ReactNode } from 'react';
-import { useAuth } from '@/hooks/use-auth';
-import { SplashScreen } from '@/components/splash/splash-screen';
+import { ReactNode } from "react";
+import { useAuth } from "@/hooks/use-auth";
+import { SplashScreen } from "@/components/splash/splash-screen";
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -13,9 +13,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   // Show loading during initialization
   if (isLoading) {
-    return (
-      <SplashScreen />
-    );
+    return <SplashScreen />;
   }
 
   // Show error if initialization failed
@@ -25,7 +23,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         <div className="text-center">
           <h2 className="text-xl font-semibold mb-2">Initialization Error</h2>
           <p className="text-muted-foreground mb-4">{error}</p>
-          <button 
+          <button
             onClick={() => window.location.reload()}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
           >

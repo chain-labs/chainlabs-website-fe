@@ -21,7 +21,7 @@ const defaultParams: ShaderParams = {
 };
 
 export function parseLogoImage(
-  file: File
+  file: File,
 ): Promise<{ imageData: ImageData; pngBlob: Blob }> {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
@@ -45,7 +45,12 @@ export function parseLogoImage(
       let width = img.naturalWidth;
       let height = img.naturalHeight;
 
-      if (width > MAX_SIZE || height > MAX_SIZE || width < MIN_SIZE || height < MIN_SIZE) {
+      if (
+        width > MAX_SIZE ||
+        height > MAX_SIZE ||
+        width < MIN_SIZE ||
+        height < MIN_SIZE
+      ) {
         if (width > height) {
           if (width > MAX_SIZE) {
             height = Math.round((height * MAX_SIZE) / width);
@@ -151,7 +156,10 @@ export function parseLogoImage(
               continue;
             }
             const sumN =
-              getU(x + 1, y, u) + getU(x - 1, y, u) + getU(x, y + 1, u) + getU(x, y - 1, u);
+              getU(x + 1, y, u) +
+              getU(x - 1, y, u) +
+              getU(x, y + 1, u) +
+              getU(x, y - 1, u);
             newU[idx] = (C + sumN) / 4;
           }
         }
@@ -408,7 +416,7 @@ export default function MetallicPaint({
       function createShader(
         gl: WebGL2RenderingContext,
         sourceCode: string,
-        type: number
+        type: number,
       ) {
         const shader = gl.createShader(type);
         if (!shader) {
@@ -421,7 +429,7 @@ export default function MetallicPaint({
         if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
           console.error(
             "An error occurred compiling the shaders: " +
-              gl.getShaderInfoLog(shader)
+              gl.getShaderInfoLog(shader),
           );
           gl.deleteShader(shader);
           return null;
@@ -433,12 +441,12 @@ export default function MetallicPaint({
       const vertexShader = createShader(
         gl,
         vertexShaderSource,
-        gl.VERTEX_SHADER
+        gl.VERTEX_SHADER,
       );
       const fragmentShader = createShader(
         gl,
         liquidFragSource,
-        gl.FRAGMENT_SHADER
+        gl.FRAGMENT_SHADER,
       );
       const program = gl.createProgram();
       if (!program || !vertexShader || !fragmentShader) {
@@ -452,7 +460,7 @@ export default function MetallicPaint({
       if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
         console.error(
           "Unable to initialize the shader program: " +
-            gl.getProgramInfoLog(program)
+            gl.getProgramInfoLog(program),
         );
         return null;
       }
@@ -465,7 +473,7 @@ export default function MetallicPaint({
           if (!uniformName) continue;
           uniforms[uniformName] = gl.getUniformLocation(
             program,
-            uniformName
+            uniformName,
           ) as WebGLUniformLocation;
         }
         return uniforms;
@@ -575,7 +583,7 @@ export default function MetallicPaint({
         0,
         gl.RGBA,
         gl.UNSIGNED_BYTE,
-        imageData?.data
+        imageData?.data,
       );
 
       gl.uniform1i(uniforms.u_image_texture, 0);
@@ -590,5 +598,7 @@ export default function MetallicPaint({
     };
   }, [gl, uniforms, imageData]);
 
-  return <canvas ref={canvasRef} className="block w-full h-full object-contain" />;
+  return (
+    <canvas ref={canvasRef} className="block w-full h-full object-contain" />
+  );
 }

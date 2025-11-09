@@ -1,5 +1,5 @@
-import { apiClient } from '@/api-client';
-import { useEffect, useState } from 'react';
+import { apiClient } from "@/api-client";
+import { useEffect, useState } from "react";
 
 export const useAuth = () => {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -15,8 +15,8 @@ export const useAuth = () => {
         await apiClient.initializeSession();
         setIsInitialized(true);
       } catch (err) {
-        console.error('Failed to initialize authentication:', err);
-        setError('Failed to initialize session');
+        console.error("Failed to initialize authentication:", err);
+        setError("Failed to initialize session");
       } finally {
         setIsLoading(false);
       }

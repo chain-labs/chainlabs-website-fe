@@ -51,4 +51,3 @@ export function setUserProperties(props: EventParams) {
     }
   } catch {}
 }
-

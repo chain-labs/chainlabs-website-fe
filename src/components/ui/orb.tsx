@@ -4,46 +4,45 @@ import { useEffect, useMemo, useRef } from "react";
 import { Renderer, Program, Mesh, Triangle, Vec3 } from "ogl";
 
 interface OrbProps {
-	hue?: number;
-	hoverIntensity?: number;
-	rotateOnHover?: boolean;
-	forceHoverState?: boolean;
+  hue?: number;
+  hoverIntensity?: number;
+  rotateOnHover?: boolean;
+  forceHoverState?: boolean;
 }
 
 function isWebGLSupported(): boolean {
-	try {
-		const canvas = document.createElement("canvas");
-		const gl =
-			canvas.getContext("webgl") ||
-			canvas.getContext("experimental-webgl");
-		return !!(gl && gl instanceof WebGLRenderingContext);
-	} catch (e) {
-		return false;
-	}
+  try {
+    const canvas = document.createElement("canvas");
+    const gl =
+      canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+    return !!(gl && gl instanceof WebGLRenderingContext);
+  } catch (e) {
+    return false;
+  }
 }
 
 export default function Orb({
-	hue = 0,
-	hoverIntensity = 0.2,
-	rotateOnHover = true,
-	forceHoverState = false,
+  hue = 0,
+  hoverIntensity = 0.2,
+  rotateOnHover = true,
+  forceHoverState = false,
 }: OrbProps) {
-	const ctnDom = useRef<HTMLDivElement>(null);
+  const ctnDom = useRef<HTMLDivElement>(null);
 
-	// Refs for dynamic props (prevents effect teardown / context rebuild)
-	const hueRef = useRef(hue);
-	const hoverIntensityRef = useRef(hoverIntensity);
-	const rotateOnHoverRef = useRef(rotateOnHover);
-	const forceHoverStateRef = useRef(forceHoverState);
+  // Refs for dynamic props (prevents effect teardown / context rebuild)
+  const hueRef = useRef(hue);
+  const hoverIntensityRef = useRef(hoverIntensity);
+  const rotateOnHoverRef = useRef(rotateOnHover);
+  const forceHoverStateRef = useRef(forceHoverState);
 
-	const webGLSupported = useMemo(() => isWebGLSupported(), [false]);
+  const webGLSupported = useMemo(() => isWebGLSupported(), [false]);
 
-	hueRef.current = hue;
-	hoverIntensityRef.current = hoverIntensity;
-	rotateOnHoverRef.current = rotateOnHover;
-	forceHoverStateRef.current = forceHoverState;
+  hueRef.current = hue;
+  hoverIntensityRef.current = hoverIntensity;
+  rotateOnHoverRef.current = rotateOnHover;
+  forceHoverStateRef.current = forceHoverState;
 
-	const vert = /* glsl */ `
+  const vert = /* glsl */ `
     precision highp float;
     attribute vec2 position;
     attribute vec2 uv;
@@ -54,7 +53,7 @@ export default function Orb({
     }
   `;
 
-	const frag = /* glsl */ `
+  const frag = /* glsl */ `
     precision highp float;
     uniform float iTime;
     uniform vec3 iResolution;
@@ -126,141 +125,140 @@ export default function Orb({
     }
   `;
 
-	useEffect(() => {
-		const container = ctnDom.current;
-		if (!container) return;
+  useEffect(() => {
+    const container = ctnDom.current;
+    if (!container) return;
 
-		const renderer = new Renderer({
-			alpha: true,
-			premultipliedAlpha: false,
-			antialias: true,
-		});
-		const gl = renderer.gl;
-		gl.clearColor(0, 0, 0, 0);
-		container.appendChild(gl.canvas);
+    const renderer = new Renderer({
+      alpha: true,
+      premultipliedAlpha: false,
+      antialias: true,
+    });
+    const gl = renderer.gl;
+    gl.clearColor(0, 0, 0, 0);
+    container.appendChild(gl.canvas);
 
-		const geometry = new Triangle(gl);
-		const program = new Program(gl, {
-			vertex: vert,
-			fragment: frag,
-			uniforms: {
-				iTime: { value: 0 },
-				iResolution: {
-					value: new Vec3(
-						gl.canvas.width,
-						gl.canvas.height,
-						gl.canvas.width / gl.canvas.height
-					),
-				},
-				hue: { value: hueRef.current },
-				hover: { value: 0 },
-				rot: { value: 0 },
-				hoverIntensity: { value: hoverIntensityRef.current },
-			},
-			transparent: true,
-		});
+    const geometry = new Triangle(gl);
+    const program = new Program(gl, {
+      vertex: vert,
+      fragment: frag,
+      uniforms: {
+        iTime: { value: 0 },
+        iResolution: {
+          value: new Vec3(
+            gl.canvas.width,
+            gl.canvas.height,
+            gl.canvas.width / gl.canvas.height,
+          ),
+        },
+        hue: { value: hueRef.current },
+        hover: { value: 0 },
+        rot: { value: 0 },
+        hoverIntensity: { value: hoverIntensityRef.current },
+      },
+      transparent: true,
+    });
 
-		const mesh = new Mesh(gl, { geometry, program });
+    const mesh = new Mesh(gl, { geometry, program });
 
-		function resize() {
-			if (!container) return;
-			const dpr = Math.min(window.devicePixelRatio || 1, 2);
-			const width = container.clientWidth;
-			const height = container.clientHeight;
-			renderer.setSize(width * dpr, height * dpr);
-			gl.canvas.style.width = width + "px";
-			gl.canvas.style.height = height + "px";
-			program.uniforms.iResolution.value.set(
-				gl.canvas.width,
-				gl.canvas.height,
-				gl.canvas.width / gl.canvas.height
-			);
-		}
-		window.addEventListener("resize", resize);
-		resize();
+    function resize() {
+      if (!container) return;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+      renderer.setSize(width * dpr, height * dpr);
+      gl.canvas.style.width = width + "px";
+      gl.canvas.style.height = height + "px";
+      program.uniforms.iResolution.value.set(
+        gl.canvas.width,
+        gl.canvas.height,
+        gl.canvas.width / gl.canvas.height,
+      );
+    }
+    window.addEventListener("resize", resize);
+    resize();
 
-		let targetHover = 0;
-		let lastTime = 0;
-		let currentRot = 0;
-		const rotationSpeed = 0.3;
+    let targetHover = 0;
+    let lastTime = 0;
+    let currentRot = 0;
+    const rotationSpeed = 0.3;
 
-		const handleMouseMove = (e: MouseEvent) => {
-			if (forceHoverStateRef.current) return;
-			const rect = container.getBoundingClientRect();
-			const x = e.clientX - rect.left;
-			const y = e.clientY - rect.top;
-			const size = Math.min(rect.width, rect.height);
-			const cx = rect.width / 2;
-			const cy = rect.height / 2;
-			const uvx = ((x - cx) / size) * 2.0;
-			const uvy = ((y - cy) / size) * 2.0;
-			targetHover = Math.sqrt(uvx * uvx + uvy * uvy) < 0.8 ? 1 : 0;
-		};
-		const handleMouseLeave = () => {
-			if (forceHoverStateRef.current) return;
-			targetHover = 0;
-		};
+    const handleMouseMove = (e: MouseEvent) => {
+      if (forceHoverStateRef.current) return;
+      const rect = container.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const size = Math.min(rect.width, rect.height);
+      const cx = rect.width / 2;
+      const cy = rect.height / 2;
+      const uvx = ((x - cx) / size) * 2.0;
+      const uvy = ((y - cy) / size) * 2.0;
+      targetHover = Math.sqrt(uvx * uvx + uvy * uvy) < 0.8 ? 1 : 0;
+    };
+    const handleMouseLeave = () => {
+      if (forceHoverStateRef.current) return;
+      targetHover = 0;
+    };
 
-		container.addEventListener("mousemove", handleMouseMove);
-		container.addEventListener("mouseleave", handleMouseLeave);
+    container.addEventListener("mousemove", handleMouseMove);
+    container.addEventListener("mouseleave", handleMouseLeave);
 
-		let rafId: number;
-		const update = (t: number) => {
-			rafId = requestAnimationFrame(update);
-			const dt = (t - lastTime) * 0.001;
-			lastTime = t;
+    let rafId: number;
+    const update = (t: number) => {
+      rafId = requestAnimationFrame(update);
+      const dt = (t - lastTime) * 0.001;
+      lastTime = t;
 
-			// Time
-			program.uniforms.iTime.value = t * 0.001;
+      // Time
+      program.uniforms.iTime.value = t * 0.001;
 
-			// Smooth hue & hoverIntensity transitions (lerp)
-			program.uniforms.hue.value +=
-				(hueRef.current - program.uniforms.hue.value) * 0.12;
-			program.uniforms.hoverIntensity.value +=
-				(hoverIntensityRef.current -
-					program.uniforms.hoverIntensity.value) *
-				0.2;
+      // Smooth hue & hoverIntensity transitions (lerp)
+      program.uniforms.hue.value +=
+        (hueRef.current - program.uniforms.hue.value) * 0.12;
+      program.uniforms.hoverIntensity.value +=
+        (hoverIntensityRef.current - program.uniforms.hoverIntensity.value) *
+        0.2;
 
-			// Hover easing
-			const desiredHover = forceHoverStateRef.current ? 1 : targetHover;
-			program.uniforms.hover.value +=
-				(desiredHover - program.uniforms.hover.value) * 0.1;
+      // Hover easing
+      const desiredHover = forceHoverStateRef.current ? 1 : targetHover;
+      program.uniforms.hover.value +=
+        (desiredHover - program.uniforms.hover.value) * 0.1;
 
-			// Rotation only when "active"
-			if (
-				rotateOnHoverRef.current &&
-				program.uniforms.hover.value > 0.5 &&
-				hoverIntensityRef.current > 0.05
-			) {
-				currentRot += dt * rotationSpeed;
-			}
-			// Smooth rotation uniform
-			program.uniforms.rot.value = currentRot;
+      // Rotation only when "active"
+      if (
+        rotateOnHoverRef.current &&
+        program.uniforms.hover.value > 0.5 &&
+        hoverIntensityRef.current > 0.05
+      ) {
+        currentRot += dt * rotationSpeed;
+      }
+      // Smooth rotation uniform
+      program.uniforms.rot.value = currentRot;
 
-			renderer.render({ scene: mesh });
-		};
-		rafId = requestAnimationFrame(update);
+      renderer.render({ scene: mesh });
+    };
+    rafId = requestAnimationFrame(update);
 
-		return () => {
-			cancelAnimationFrame(rafId);
-			window.removeEventListener("resize", resize);
-			container.removeEventListener("mousemove", handleMouseMove);
-			container.removeEventListener("mouseleave", handleMouseLeave);
-			if (gl && gl.canvas && gl.canvas.parentNode === container) {
-				container.removeChild(gl.canvas);
-			}
-			gl.getExtension("WEBGL_lose_context")?.loseContext();
-		};
-		// Empty dependency array => initialize once (prevents flash).
-	}, []); // IMPORTANT: no hoverIntensity / hue deps here
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener("resize", resize);
+      container.removeEventListener("mousemove", handleMouseMove);
+      container.removeEventListener("mouseleave", handleMouseLeave);
+      if (gl && gl.canvas && gl.canvas.parentNode === container) {
+        container.removeChild(gl.canvas);
+      }
+      gl.getExtension("WEBGL_lose_context")?.loseContext();
+    };
+    // Empty dependency array => initialize once (prevents flash).
+  }, []); // IMPORTANT: no hoverIntensity / hue deps here
 
-	if (!webGLSupported) return null;
+  if (!webGLSupported) return null;
 
-	return (
-		<div
-			ref={ctnDom}
-			className="w-full h-full pointer-events-none select-none"
-			// pointer-events-none so it doesn't block other UI unless you need interaction
-		/>
-	);
+  return (
+    <div
+      ref={ctnDom}
+      className="w-full h-full pointer-events-none select-none"
+      // pointer-events-none so it doesn't block other UI unless you need interaction
+    />
+  );
 }

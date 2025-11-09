@@ -24,9 +24,15 @@ const FloatingNavbar = () => {
   return (
     <section className="absolute top-5 left-1/2 z-50 w-[min(90%,700px)] -translate-x-1/2 rounded-full border bg-background/70 backdrop-blur-md lg:top-12">
       <div className="flex items-center justify-between px-6 py-3">
-        <a href="/" className="flex shrink-0 items-center gap-2" title="Chain Labs">
+        <a
+          href="/"
+          className="flex shrink-0 items-center gap-2"
+          title="Chain Labs"
+        >
           <div className="flex size-7 items-center justify-center rounded-full bg-primary">
-            <span className="text-sm font-bold text-primary-foreground">CL</span>
+            <span className="text-sm font-bold text-primary-foreground">
+              CL
+            </span>
           </div>
           <span className="text-lg font-bold text-foreground">Chain Labs</span>
         </a>

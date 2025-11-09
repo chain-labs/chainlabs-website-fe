@@ -19,59 +19,56 @@ import { useChat } from "@/hooks/use-chat";
 import PersonaliseHeroSection from "@/components/personalise/personalise-hero-section";
 
 export default function Home() {
-	const [showSplash, setShowSplash] = useState(true);
-	const [isScrolled, setIsScrolled] = useState(false);
-	const { showPersonalized } = useUI();
-	const handleSplashComplete = () => {
-		setShowSplash(false);
-	};
-	const { getPersonalizedContent } = useChat();
+  const [showSplash, setShowSplash] = useState(true);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const { showPersonalized } = useUI();
+  const handleSplashComplete = () => {
+    setShowSplash(false);
+  };
+  const { getPersonalizedContent } = useChat();
 
-	useEffect(() => {
-		const handleScroll = () => {
-			const scrollPosition = window.scrollY;
-			const windowHeight = window.innerHeight;
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      const windowHeight = window.innerHeight;
 
-			// Consider scrolled if we've scrolled more than 10% of viewport height
-			setIsScrolled(scrollPosition > windowHeight * 0.01);
-		};
+      // Consider scrolled if we've scrolled more than 10% of viewport height
+      setIsScrolled(scrollPosition > windowHeight * 0.01);
+    };
 
-		window.addEventListener("scroll", handleScroll, { passive: true });
-		return () => window.removeEventListener("scroll", handleScroll);
-	}, []);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
-	useEffect(() => {
-		getPersonalizedContent();
-	}, []);
+  useEffect(() => {
+    getPersonalizedContent();
+  }, []);
 
-	if (showSplash && showPersonalized) {
-		return <SplashScreen onComplete={handleSplashComplete} />;
-	}
+  if (showSplash && showPersonalized) {
+    return <SplashScreen onComplete={handleSplashComplete} />;
+  }
 
-	return (
-		<main className="relative flex flex-col items-center justify-start overflow-x-hidden bg-background">
-			<Header
-				isScrolled={isScrolled}
-				showPersonalized={showPersonalized}
-			/>
+  return (
+    <main className="relative flex flex-col items-center justify-start overflow-x-hidden bg-background">
+      <Header isScrolled={isScrolled} showPersonalized={showPersonalized} />
 
-			<div className="w-full">
-				{showPersonalized ? (
-					<div className="flex flex-col items-center justify-center pt-8">
-						<PersonaliseHeroSection />
-						<ProcessSection />
-						<ScrollingCarouselTestimonials />
-						<ResponsiveGridCasestudies />
-						<OurMissions />
-						<BookCallSection />
-					</div>
-				) : (
-					<ChainLabsHero />
-				)}
-			</div>
+      <div className="w-full">
+        {showPersonalized ? (
+          <div className="flex flex-col items-center justify-center pt-8">
+            <PersonaliseHeroSection />
+            <ProcessSection />
+            <ScrollingCarouselTestimonials />
+            <ResponsiveGridCasestudies />
+            <OurMissions />
+            <BookCallSection />
+          </div>
+        ) : (
+          <ChainLabsHero />
+        )}
+      </div>
 
-			<Footer showPersonalized={showPersonalized} />
-			<AIChatBubble />
-		</main>
-	);
+      <Footer showPersonalized={showPersonalized} />
+      <AIChatBubble />
+    </main>
+  );
 }

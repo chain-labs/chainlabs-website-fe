@@ -27,7 +27,9 @@ export default function GoalInputSection() {
     e.preventDefault();
     if (inputValue.trim()) {
       console.log("Submitting goals:", inputValue);
-      alert(`Thank you! Your request for a strategy session has been submitted.`);
+      alert(
+        `Thank you! Your request for a strategy session has been submitted.`,
+      );
       setInputValue("");
     }
   };
@@ -45,7 +47,8 @@ export default function GoalInputSection() {
             Ready to transform your business?
           </h2>
           <p className="mt-6 text-lg leading-8 text-text-secondary">
-            Tell us about your challenges for a personalized AI strategy session.
+            Tell us about your challenges for a personalized AI strategy
+            session.
           </p>
         </motion.div>
 
@@ -60,20 +63,24 @@ export default function GoalInputSection() {
           <div
             className={cn(
               "relative w-full rounded-xl bg-input transition-all duration-300 group",
-              "shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_4px_12px_rgba(0,0,0,0.1),0_8px_24px_rgba(0,212,170,0.1)]"
+              "shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_4px_12px_rgba(0,0,0,0.1),0_8px_24px_rgba(0,212,170,0.1)]",
             )}
           >
             <div
               className={cn(
                 "absolute -inset-px rounded-xl border transition-all duration-300",
-                isFocused ? "border-primary" : "border-primary/20 group-hover:border-primary/50"
+                isFocused
+                  ? "border-primary"
+                  : "border-primary/20 group-hover:border-primary/50",
               )}
               aria-hidden="true"
             />
             <div
               className={cn(
                 "absolute -inset-px rounded-xl transition-all duration-300",
-                isFocused ? "shadow-[0_0_12px_theme(colors.primary)]" : "shadow-none"
+                isFocused
+                  ? "shadow-[0_0_12px_theme(colors.primary)]"
+                  : "shadow-none",
               )}
               aria-hidden="true"
             />
@@ -95,17 +102,21 @@ export default function GoalInputSection() {
                 className={cn(
                   "relative z-10 flex h-12 w-12 items-center justify-center rounded-full transition-colors duration-300",
                   "text-primary hover:bg-primary/10",
-                  isRecording && "bg-primary/20"
+                  isRecording && "bg-primary/20",
                 )}
                 aria-label={isRecording ? "Stop recording" : "Start recording"}
               >
-                {isRecording && <span className="absolute h-full w-full animate-ping rounded-full bg-primary opacity-75" />}
+                {isRecording && (
+                  <span className="absolute h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+                )}
                 <Mic className="h-6 w-6" />
               </button>
             </div>
           </div>
           <p className="mt-4 text-sm text-text-secondary transition-opacity duration-300">
-            {isRecording ? "Recording... press space or click the mic to stop." : "Press space to record, or type your message."}
+            {isRecording
+              ? "Recording... press space or click the mic to stop."
+              : "Press space to record, or type your message."}
           </p>
 
           {inputValue && (
@@ -116,7 +127,11 @@ export default function GoalInputSection() {
               transition={{ duration: 0.4, ease: "easeInOut" }}
               className="mt-8"
             >
-              <Button type="submit" size="lg" className="font-semibold w-full sm:w-auto">
+              <Button
+                type="submit"
+                size="lg"
+                className="font-semibold w-full sm:w-auto"
+              >
                 Request Strategy Session
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>

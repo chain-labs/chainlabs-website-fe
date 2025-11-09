@@ -39,7 +39,7 @@ export function ErrorBanner({
         "relative w-full overflow-hidden rounded-2xl border",
         "bg-surface/50 backdrop-blur-xl border-destructive/20",
         "shadow-[0_8px_30px_rgba(0,0,0,0.08)]",
-        className
+        className,
       )}
     >
       {/* Top gradient accent */}
@@ -51,16 +51,14 @@ export function ErrorBanner({
             className={cn(
               "relative flex h-9 w-9 items-center justify-center rounded-full",
               "bg-destructive/15 border border-destructive/30",
-              "shadow-[0_0_30px_rgba(255,60,60,0.25)]"
+              "shadow-[0_0_30px_rgba(255,60,60,0.25)]",
             )}
             aria-hidden="true"
           >
             <AlertTriangle className="h-4.5 w-4.5 text-destructive" />
           </div>
           <div className="text-sm text-text-primary/90">
-            <p className="leading-relaxed">
-              {message}
-            </p>
+            <p className="leading-relaxed">{message}</p>
           </div>
         </div>
 
@@ -71,7 +69,7 @@ export function ErrorBanner({
             disabled={!!loading}
             className={cn(
               "bg-primary text-primary-foreground hover:bg-primary/90",
-              "shadow-sm hover:shadow-md transition-all"
+              "shadow-sm hover:shadow-md transition-all",
             )}
             aria-label="Try again"
           >
@@ -85,7 +83,7 @@ export function ErrorBanner({
             disabled={!!loading}
             className={cn(
               "border-border/60 hover:bg-primary/10",
-              "text-text-primary"
+              "text-text-primary",
             )}
             aria-label={type === "chat" ? "Send new message" : "Restart"}
           >

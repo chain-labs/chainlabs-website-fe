@@ -1,49 +1,49 @@
 import { useGlobalStore } from "@/global-store";
 import SpeechRecognition, {
-	useSpeechRecognition,
+  useSpeechRecognition,
 } from "react-speech-recognition";
 
 export const useUI = () => {
-	const store = useGlobalStore();
-	const { resetTranscript } = useSpeechRecognition();
+  const store = useGlobalStore();
+  const { resetTranscript } = useSpeechRecognition();
 
-	const toggleRecording = () => {
-		store.toggleRecording();
-		if (store.isRecording) {
-			SpeechRecognition.stopListening();
-			resetTranscript();
-		} else {
-			SpeechRecognition.startListening({ continuous: true });
-		}
-	};
+  const toggleRecording = () => {
+    store.toggleRecording();
+    if (store.isRecording) {
+      SpeechRecognition.stopListening();
+      resetTranscript();
+    } else {
+      SpeechRecognition.startListening({ continuous: true });
+    }
+  };
 
-	const showPersonalized =
-		store.personalised?.status === "CLARIFIED" &&
-		store.personalisedSiteRequested;
-	const personalisedReady = store.personalised?.status === "CLARIFIED";
+  const showPersonalized =
+    store.personalised?.status === "CLARIFIED" &&
+    store.personalisedSiteRequested;
+  const personalisedReady = store.personalised?.status === "CLARIFIED";
 
-	return {
-		isFocused: store.isFocused,
-		isRecording: store.isRecording,
-		showPersonalized,
-		personalisedReady,
-		personalisedSiteRequested: store.personalisedSiteRequested,
-		goalSuggestions: store.goalSuggestions,
-		selectedSuggestionKey: store.selectedSuggestionKey,
-		clarificationSuggestions: store.getClarificationSuggestions(),
-		sidebarOpen: store.sidebarOpen,
-		theme: store.theme,
-		animations: store.animations,
-		setIsFocused: store.setIsFocused,
-		setIsRecording: store.setIsRecording,
-		toggleRecording: toggleRecording,
-		stopRecording: store.stopRecording,
-		setPersonalisedSiteRequested: store.setPersonalisedSiteRequested,
-		setSelectedSuggestionKey: store.setSelectedSuggestionKey,
-		setSidebarOpen: store.setSidebarOpen,
-		toggleSidebar: store.toggleSidebar,
-		setTheme: store.setTheme,
-		toggleTheme: store.toggleTheme,
-		setAnimations: store.setAnimations,
-	};
+  return {
+    isFocused: store.isFocused,
+    isRecording: store.isRecording,
+    showPersonalized,
+    personalisedReady,
+    personalisedSiteRequested: store.personalisedSiteRequested,
+    goalSuggestions: store.goalSuggestions,
+    selectedSuggestionKey: store.selectedSuggestionKey,
+    clarificationSuggestions: store.getClarificationSuggestions(),
+    sidebarOpen: store.sidebarOpen,
+    theme: store.theme,
+    animations: store.animations,
+    setIsFocused: store.setIsFocused,
+    setIsRecording: store.setIsRecording,
+    toggleRecording: toggleRecording,
+    stopRecording: store.stopRecording,
+    setPersonalisedSiteRequested: store.setPersonalisedSiteRequested,
+    setSelectedSuggestionKey: store.setSelectedSuggestionKey,
+    setSidebarOpen: store.setSidebarOpen,
+    toggleSidebar: store.toggleSidebar,
+    setTheme: store.setTheme,
+    toggleTheme: store.toggleTheme,
+    setAnimations: store.setAnimations,
+  };
 };
