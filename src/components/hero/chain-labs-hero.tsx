@@ -794,34 +794,36 @@ const ChainLabsHero = () => {
 
 											<div className="flex justify-center">
 												{CloudflareSiteKey ? (
-													<Turnstile
-														ref={turnstileRef}
-														siteKey={
-															CloudflareSiteKey
-														}
-														onSuccess={
-															handleTurnstileVerification
-														}
-														onError={() => {
-															setCaptchaError(
-																"Captcha error. Please try again."
-															);
-															setIsCaptchaVerified(
-																false
-															);
-														}}
-														onExpire={() => {
-															setIsCaptchaVerified(
-																false
-															);
-															setCaptchaError(
-																"Captcha expired. Please refresh and try again."
-															);
-														}}
-														options={{
-															theme: "dark",
-														}}
-													/>
+													isCaptchaVerified && (
+														<Turnstile
+															ref={turnstileRef}
+															siteKey={
+																CloudflareSiteKey
+															}
+															onSuccess={
+																handleTurnstileVerification
+															}
+															onError={() => {
+																setCaptchaError(
+																	"Captcha error. Please try again."
+																);
+																setIsCaptchaVerified(
+																	false
+																);
+															}}
+															onExpire={() => {
+																setIsCaptchaVerified(
+																	false
+																);
+																setCaptchaError(
+																	"Captcha expired. Please refresh and try again."
+																);
+															}}
+															options={{
+																theme: "dark",
+															}}
+														/>
+													)
 												) : (
 													<div className="text-xs text-muted-foreground">
 														Captcha not configured
@@ -839,23 +841,6 @@ const ChainLabsHero = () => {
 														? "Verifying..."
 														: "Please complete the verification to proceed"}
 												</motion.p>
-											)}
-
-											{isCaptchaVerified && (
-												<motion.div
-													initial={{
-														opacity: 0,
-														scale: 0.95,
-													}}
-													animate={{
-														opacity: 1,
-														scale: 1,
-													}}
-													className="flex items-center justify-center gap-2 p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 text-sm"
-												>
-													<span className="size-2 rounded-full bg-emerald-500" />
-													Verification successful
-												</motion.div>
 											)}
 										</motion.div>
 									)}
