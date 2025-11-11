@@ -745,7 +745,7 @@ const ChainLabsHero = () => {
               {/* Generic site link at bottom on mobile */}
               <AnimatePresence>
                 {!showPersonalisedCTA && (
-                  <div className="mt-6 md:mt-12 flex justify-center">
+                  <div className="md:absolute bottom-4 left-1/2 md:-translate-x-1/2 mt-6 md:mt-12 flex justify-center">
                     <Link
                       href="/generic-site"
                       aria-label="View more case studies"
