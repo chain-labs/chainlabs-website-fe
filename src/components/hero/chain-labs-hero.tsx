@@ -629,7 +629,7 @@ const ChainLabsHero = () => {
                                   duration: 0.2,
                                   ease: "easeOut",
                                 }}
-                                className="flex flex-col gap-2 px-4 pt-2 mx-auto relative w-[90%] rounded-t-2xl bg-surface/50 backdrop-blur-lg border transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.08),0_2px_8px_rgb(0,0,0,0.04)]"
+                                className="flex flex-col gap-2 px-4 pt-2 mx-auto relative w-[90%] rounded-t-2xl bg-surface/50 backdrop-blur-lg transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.08),0_2px_8px_rgb(0,0,0,0.04)]"
                               >
                                 <div className="flex items-center gap-2 text-muted-foreground">
                                   <Lightbulb className="size-4" />
@@ -679,7 +679,7 @@ const ChainLabsHero = () => {
                                   duration: 0.2,
                                   ease: "easeOut",
                                 }}
-                                className="flex flex-col gap-2 px-4 pt-2 mx-auto relative w-[90%] rounded-t-2xl bg-surface/50 backdrop-blur-lg border transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.08),0_2px_8px_rgb(0,0,0,0.04)]"
+                                className="flex flex-col gap-2 px-4 pt-2 mx-auto relative w-[90%] rounded-t-2xl bg-surface/50 backdrop-blur-lg transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.08),0_2px_8px_rgb(0,0,0,0.04)]"
                               >
                                 <div className="flex items-center gap-2 text-muted-foreground">
                                   <MessageCircle className="size-4" />
