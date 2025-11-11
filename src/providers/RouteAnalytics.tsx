@@ -115,13 +115,23 @@ function RouteAnalyticsInner() {
         if (store.personalised?.sid) {
           window.clarity("set", "user_session_id", store.personalised.sid);
         }
-        window.clarity("set", "user_has_goal", store.goal ? "true" : "false");
+        if (store.goal) {
+          window.clarity("set", "user_has_goal", "true");
+          window.clarity("set", "user_goal", store.goal);
+        } else {
+          window.clarity("set", "user_has_goal", "false");
+        }
         window.clarity("set", "user_points", String(store.pointsTotal));
+        window.clarity(
+          "set",
+          "missions_completed",
+          String(store.missions.filter((m) => m.status === "completed").length)
+        );
 
         // Track page change event
         window.clarity("event", "spa_navigation");
 
-        console.log("[Clarity] Page navigation tracked:", pagePath);
+        console.log("[Clarity] 📍 Page navigation tracked:", pagePath);
       }
     } catch (error) {
       console.error("[Analytics] Error tracking page view:", error);

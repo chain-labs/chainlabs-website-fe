@@ -9,53 +9,68 @@ declare global {
   }
 }
 
+// Helper to ensure Clarity is loaded and ready
+function isClarityReady(): boolean {
+  return typeof window !== "undefined" && typeof window.clarity === "function";
+}
+
 function callClarity(fn: string, ...args: any[]) {
   try {
-    if (typeof window !== "undefined" && typeof window.clarity === "function") {
-      // Wait for Clarity to be fully loaded
-      if (window.clarity && typeof window.clarity === "function") {
-        // @ts-ignore
-        window.clarity(fn, ...args);
-        console.log(`[Clarity] Called: ${fn}`, args); // Debug log
-      }
+    if (isClarityReady()) {
+      // @ts-ignore - Clarity function is dynamic
+      window.clarity(fn, ...args);
+      console.log(`[Clarity] ✓ ${fn}`, args.length > 0 ? args : "");
+    } else {
+      console.warn(`[Clarity] ⚠ Not ready for: ${fn}`, args);
     }
   } catch (error) {
-    console.error("[Clarity] Error:", error);
+    console.error(`[Clarity] ✗ Error calling ${fn}:`, error);
   }
 }
 
-// Helper to ensure Clarity is loaded before sending events
-function waitForClarity(callback: () => void, maxAttempts = 20) {
+// Helper to ensure Clarity is loaded before executing callback
+function waitForClarity(callback: () => void, maxAttempts = 30, interval = 100) {
   let attempts = 0;
-  const interval = setInterval(() => {
-    if (typeof window !== "undefined" && typeof window.clarity === "function") {
-      clearInterval(interval);
+  const checkInterval = setInterval(() => {
+    attempts++;
+    if (isClarityReady()) {
+      clearInterval(checkInterval);
+      console.log(`[Clarity] ✓ Ready after ${attempts} attempts`);
       callback();
     } else if (attempts >= maxAttempts) {
-      clearInterval(interval);
-      console.warn("[Clarity] Failed to load after maximum attempts");
+      clearInterval(checkInterval);
+      console.error(
+        `[Clarity] ✗ Failed to load after ${maxAttempts} attempts (${maxAttempts * interval}ms)`
+      );
     }
-    attempts++;
-  }, 500);
+  }, interval);
 }
 
 export default function ClarityAnalytics() {
   const store = useGlobalStore();
 
-  // Initialize Clarity custom data once loaded
+  // Initialize Clarity with session data once loaded
   useEffect(() => {
     waitForClarity(() => {
+      console.log("[Clarity] 🚀 Initializing custom tracking");
+      
       // Set initial session data
       const sessionId = store.personalised?.sid || "unknown";
+      if (sessionId !== "unknown") {
+        callClarity("identify", sessionId);
+      }
       callClarity("set", "session_id", sessionId);
-      callClarity("set", "has_goal", String(!!store.goal));
-      console.log("[Clarity] Initialized with session:", sessionId);
+      callClarity("set", "has_goal", store.goal ? "true" : "false");
+      
+      console.log("[Clarity] ✓ Initialized with session:", sessionId);
     });
-  }, []);
+  }, [store.personalised?.sid, store.goal]);
 
   // Click tracking with improved data capture
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
+      if (!isClarityReady()) return;
+
       const target = e.target as HTMLElement | null;
       if (!target) return;
 
@@ -75,8 +90,8 @@ export default function ClarityAnalytics() {
 
       // Standard attributes
       customData.element_type = el.tagName.toLowerCase();
-      customData.element_id = el.id || "none";
-      customData.element_class = el.className || "none";
+      if (el.id) customData.element_id = el.id;
+      if (el.className) customData.element_class = el.className;
 
       // Custom data attributes
       if (el.getAttribute("data-component")) {
@@ -92,18 +107,18 @@ export default function ClarityAnalytics() {
       // Link specific
       if (el instanceof HTMLAnchorElement && el.href) {
         customData.link_href = el.href;
-        customData.link_target = el.target || "self";
+        if (el.target) customData.link_target = el.target;
       }
 
-      // Text content (sanitized)
+      // Text content (sanitized, first 50 chars)
       const text = (el.textContent || "").trim().slice(0, 50);
       if (text) {
         customData.element_text = text;
       }
 
-      // Send custom data to Clarity
+      // Send custom tags to Clarity (one at a time for better reliability)
       Object.entries(customData).forEach(([key, value]) => {
-        if (value && value !== "none") {
+        if (value) {
           callClarity("set", `click_${key}`, value);
         }
       });
@@ -111,7 +126,7 @@ export default function ClarityAnalytics() {
       // Send the event
       callClarity("event", eventName);
 
-      console.log("[Clarity] Click event:", eventName, customData);
+      console.log("[Clarity] 🖱️ Click:", eventName, customData);
     };
 
     document.addEventListener("click", onClick, { capture: true });
@@ -121,9 +136,18 @@ export default function ClarityAnalytics() {
 
   // Track personalization status changes
   useEffect(() => {
+    if (!isClarityReady()) {
+      waitForClarity(() => {
+        // Will be handled by subscribe callback once ready
+      });
+      return;
+    }
+
     let lastStatus: string | undefined;
 
     const unsub = useGlobalStore.subscribe((state) => {
+      if (!isClarityReady()) return;
+      
       const status = state.personalised?.status;
       if (!status || status === lastStatus) return;
 
@@ -137,9 +161,11 @@ export default function ClarityAnalytics() {
       if (status === "CLARIFIED") {
         callClarity("event", "personalization_completed");
         // Also send the personalized data
-        if (state.personalised) {
-          callClarity("set", "user_goal", state.goal || "none");
-          callClarity("set", "user_headline", state.headline || "none");
+        if (state.personalised && state.goal) {
+          callClarity("set", "user_goal", state.goal);
+        }
+        if (state.headline) {
+          callClarity("set", "user_headline", state.headline);
         }
       } else if (status === "GOAL_SET") {
         callClarity("event", "personalization_started");
@@ -147,7 +173,7 @@ export default function ClarityAnalytics() {
         callClarity("event", "personalization_status_changed");
       }
 
-      console.log("[Clarity] Personalization status:", status);
+      console.log("[Clarity] 🎯 Personalization status:", status);
     });
 
     return () => unsub();
@@ -155,9 +181,18 @@ export default function ClarityAnalytics() {
 
   // Track missions progress
   useEffect(() => {
+    if (!isClarityReady()) {
+      waitForClarity(() => {
+        // Will be tracked once Clarity is ready
+      });
+      return;
+    }
+
     let lastCompletedCount = -1;
 
     const checkMissions = () => {
+      if (!isClarityReady()) return;
+      
       const missions = store.missions;
       const completedCount = missions.filter(
         (m) => m.status === "completed",
@@ -189,10 +224,8 @@ export default function ClarityAnalytics() {
 
         callClarity("event", "missions_progress_updated");
         console.log(
-          "[Clarity] Missions updated:",
-          completedCount,
-          "/",
-          totalCount,
+          "[Clarity] 🎯 Missions:",
+          `${completedCount}/${totalCount}`,
         );
       }
     };
@@ -212,10 +245,19 @@ export default function ClarityAnalytics() {
 
   // Track time spent on different sections
   useEffect(() => {
+    if (!isClarityReady()) {
+      waitForClarity(() => {
+        // Will be tracked once Clarity is ready
+      });
+      return;
+    }
+
     const reportedTimes: Record<string, number> = {};
     const REPORT_INTERVAL = 10; // Report every 10 seconds of activity
 
     const reportTime = (category: string, id: string, seconds: number) => {
+      if (!isClarityReady()) return;
+      
       const key = `${category}_${id}`;
       const lastReported = reportedTimes[key] || 0;
 
@@ -227,11 +269,13 @@ export default function ClarityAnalytics() {
         callClarity("set", `${category}_time_seconds`, String(seconds));
         callClarity("event", `${category}_time_milestone`);
 
-        console.log(`[Clarity] Time tracked: ${category} ${id} = ${seconds}s`);
+        console.log(`[Clarity] ⏱️ Time: ${category} ${id} = ${seconds}s`);
       }
     };
 
     const unsub = useGlobalStore.subscribe((state) => {
+      if (!isClarityReady()) return;
+      
       // Track case study time
       if (state.caseStudyTimeSpent) {
         Object.entries(state.caseStudyTimeSpent).forEach(([id, seconds]) => {
@@ -267,35 +311,48 @@ export default function ClarityAnalytics() {
 
   // Track page engagement time
   useEffect(() => {
+    if (!isClarityReady()) {
+      waitForClarity(() => {
+        // Will start tracking once Clarity is ready
+      });
+      return;
+    }
+
     let totalSeconds = 0;
     let isActive = document.visibilityState === "visible";
 
     const handleVisibilityChange = () => {
       isActive = document.visibilityState === "visible";
-      if (isActive) {
+      if (isActive && isClarityReady()) {
         callClarity("event", "page_reactivated");
       }
     };
 
     const interval = setInterval(() => {
-      if (isActive) {
+      if (isActive && isClarityReady()) {
         totalSeconds++;
 
         // Report engagement milestones
         if (totalSeconds === 30) {
           callClarity("set", "engagement_30s", "true");
           callClarity("event", "engagement_30_seconds");
+          console.log("[Clarity] ⏱️ Engagement: 30 seconds");
         } else if (totalSeconds === 60) {
           callClarity("set", "engagement_1m", "true");
           callClarity("event", "engagement_1_minute");
+          console.log("[Clarity] ⏱️ Engagement: 1 minute");
         } else if (totalSeconds === 300) {
           callClarity("set", "engagement_5m", "true");
           callClarity("event", "engagement_5_minutes");
+          console.log("[Clarity] ⏱️ Engagement: 5 minutes");
         } else if (totalSeconds % 300 === 0) {
           // Every 5 minutes after the first
           const minutes = totalSeconds / 60;
           callClarity("set", "engagement_minutes", String(Math.floor(minutes)));
           callClarity("event", "engagement_milestone");
+          console.log(
+            `[Clarity] ⏱️ Engagement: ${Math.floor(minutes)} minutes`
+          );
         }
       }
     }, 1000);
@@ -310,6 +367,13 @@ export default function ClarityAnalytics() {
 
   // Track scroll depth on important elements
   useEffect(() => {
+    if (!isClarityReady()) {
+      waitForClarity(() => {
+        // Will start tracking once Clarity is ready
+      });
+      return;
+    }
+
     const trackedElements = new Map<
       Element,
       {
@@ -322,6 +386,8 @@ export default function ClarityAnalytics() {
 
     const observer = new IntersectionObserver(
       (entries) => {
+        if (!isClarityReady()) return;
+        
         entries.forEach((entry) => {
           const data = trackedElements.get(entry.target);
           if (!data) return;
@@ -332,7 +398,7 @@ export default function ClarityAnalytics() {
 
             callClarity("set", `viewed_${data.name}`, "true");
             callClarity("event", `${data.name}_viewed`);
-            console.log(`[Clarity] Element viewed: ${data.name}`);
+            console.log(`[Clarity] 👁️ Element viewed: ${data.name}`);
           } else if (!entry.isIntersecting && data.viewStart > 0) {
             const viewTime = Math.floor((Date.now() - data.viewStart) / 1000);
             data.totalTime += viewTime;
@@ -346,6 +412,9 @@ export default function ClarityAnalytics() {
                 String(data.totalTime),
               );
               callClarity("event", `${data.name}_view_ended`);
+              console.log(
+                `[Clarity] 👁️ Element view ended: ${data.name} (${data.totalTime}s)`
+              );
             }
           }
         });
