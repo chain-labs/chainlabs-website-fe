@@ -8,6 +8,8 @@ import Script from "next/script";
 import RouteAnalytics from "@/providers/RouteAnalytics";
 import ClarityAnalytics from "@/providers/ClarityAnalytics";
 import React from "react";
+import { BotIdClient } from 'botid/client';
+import path from "path";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -94,6 +96,17 @@ export const metadata: Metadata = {
   },
 };
 
+const protectedRoutes = [
+  {
+    path: '/api/verify-captcha',
+    method: 'POST',
+  },
+  {
+    path: "/",
+    method: 'GET',
+  }
+];
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -106,6 +119,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <BotIdClient protect={protectedRoutes} />
         <link rel="icon" href="/assets/logo.svg" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#0B0B0F" />
