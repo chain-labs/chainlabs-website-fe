@@ -263,40 +263,36 @@ export const AnimatedTestimonials = ({
 	);
 };
 
-// const testimonials = [
-//   {
-//     name: "Sarah Chen",
-//     designation: "Chief Technology Officer",
-//     company: "TechFlow Solutions",
-//     src: "https://api.dicebear.com/9.x/adventurer/svg?seed=Sarah%20Chen",
-//     quote:
-//       "Chain Labs transformed our customer service with their AI chatbot. Response times dropped by 80% and customer satisfaction soared. Their team understood our needs perfectly and delivered beyond expectations.",
-//   },
-//   {
-//     name: "Marcus Rodriguez",
-//     designation: "Operations Director",
-//     company: "RetailPro Industries",
-//     src: "https://api.dicebear.com/9.x/adventurer/svg?seed=Marcus%20Rodriguez",
-//     quote:
-//       "Their predictive analytics solution helped us forecast demand 3x more accurately. Game-changing for our supply chain. The ROI was immediate and the implementation was seamless.",
-//   },
-//   {
-//     name: "Jennifer Kim",
-//     designation: "VP of Marketing",
-//     company: "GrowthCorp Digital",
-//     src: "https://api.dicebear.com/9.x/adventurer/svg?seed=Jennifer%20Kim",
-//     quote:
-//       "The personalization engine they built increased our conversion rates by 250%. ROI was immediate and substantial. Chain Labs doesn't just build solutions, they build partnerships.",
-//   },
-//   {
-//     name: "David Park",
-//     designation: "Chief Executive Officer",
-//     company: "InnovateTech Ventures",
-//     src: "https://api.dicebear.com/9.x/adventurer/svg?seed=David%20Park",
-//     quote:
-//       "Chain Labs doesn't just deliver AI solutions - they deliver business transformation. Their expertise in blockchain integration set us apart from competitors. Highly recommended.",
-//   },
-// ];
+const testimonialsImages = [
+	{
+		name: "Sarah Chen",
+		designation: "Chief Technology Officer",
+		company: "TechFlow Solutions",
+		src: "https://api.dicebear.com/9.x/adventurer/svg?seed=Sarah%20Chen",
+		quote: "Chain Labs transformed our customer service with their AI chatbot. Response times dropped by 80% and customer satisfaction soared. Their team understood our needs perfectly and delivered beyond expectations.",
+	},
+	{
+		name: "Marcus Rodriguez",
+		designation: "Operations Director",
+		company: "RetailPro Industries",
+		src: "https://api.dicebear.com/9.x/adventurer/svg?seed=Marcus%20Rodriguez",
+		quote: "Their predictive analytics solution helped us forecast demand 3x more accurately. Game-changing for our supply chain. The ROI was immediate and the implementation was seamless.",
+	},
+	{
+		name: "Jennifer Kim",
+		designation: "VP of Marketing",
+		company: "GrowthCorp Digital",
+		src: "https://api.dicebear.com/9.x/adventurer/svg?seed=Jennifer%20Kim",
+		quote: "The personalization engine they built increased our conversion rates by 250%. ROI was immediate and substantial. Chain Labs doesn't just build solutions, they build partnerships.",
+	},
+	{
+		name: "David Park",
+		designation: "Chief Executive Officer",
+		company: "InnovateTech Ventures",
+		src: "https://api.dicebear.com/9.x/adventurer/svg?seed=David%20Park",
+		quote: "Chain Labs doesn't just deliver AI solutions - they deliver business transformation. Their expertise in blockchain integration set us apart from competitors. Highly recommended.",
+	},
+];
 
 const ScrollingCarouselTestimonials = () => {
 	const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
@@ -315,11 +311,11 @@ const ScrollingCarouselTestimonials = () => {
 			}[] = await fetch(
 				"https://testimonial-microservice-production.up.railway.app/api/get-testimonials/"
 			).then((res) => res.json());
-			testimonialsData = testimonialsFetchData.map((t) => ({
+			testimonialsData = testimonialsFetchData.map((t, index) => ({
 				quote: t.quote,
 				name: t.name,
 				designation: t.designation,
-				src: t.src,
+				src: testimonialsImages[index % testimonialsImages.length].src,
 				company: t.url,
 			}));
 			setTestimonials(testimonialsData);
