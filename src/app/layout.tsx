@@ -117,11 +117,6 @@ export default function RootLayout({
 	const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-2TXCJ3VJ1B";
 	const CLARITY_ID = process.env.NEXT_PUBLIC_CLARITY_ID || "t2fz0iawei";
 
-	console.log(
-		"analytics",
-		{ enableAnalytics, GTM_ID, GA_ID, CLARITY_ID },
-		enableAnalytics && CLARITY_ID && true
-	);
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<head>
