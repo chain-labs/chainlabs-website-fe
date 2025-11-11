@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Menu, X, Phone, Github, Linkedin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import AnnouncementBanner from "./ui/announcement-banner";
 
 interface HeaderProps {
   isScrolled: boolean;
@@ -24,6 +25,7 @@ export const Header = ({ isScrolled, showPersonalized }: HeaderProps) => {
           : "bg-transparent",
       )}
     >
+      <AnnouncementBanner />
       <div className="container max-w-7xl mx-auto px-4 md:px-6">
         <div className="flex items-center justify-center h-16 md:h-20">
           {/* Logo */}

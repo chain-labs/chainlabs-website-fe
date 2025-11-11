@@ -17,6 +17,7 @@ import { OurMissions } from "@/components/missions/missions-section";
 import InitialLoadingScreen from "@/components/ui/initial-loading-screen";
 import { useChat } from "@/hooks/use-chat";
 import PersonaliseHeroSection from "@/components/personalise/personalise-hero-section";
+import AnnouncementBanner from "@/components/ui/announcement-banner";
 
 export default function Home() {
   const [showSplash, setShowSplash] = useState(true);

@@ -7,10 +7,7 @@ import {
   ArrowRight,
   MessageCircle,
   Lightbulb,
-  AlertCircle,
 } from "lucide-react";
-import { Turnstile } from "@marsidev/react-turnstile";
-import type { TurnstileInstance } from "@marsidev/react-turnstile";
 import ChatBubble from "./chat-bubble";
 import ThinkingIndicator from "./think-indicator";
 import InputContainer from "./input-container";
@@ -27,21 +24,11 @@ import Orb from "@/components/ui/orb";
 import { GradientBars } from "../ui/gradient-bars";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 const ChainLabsHero = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const wasListeningRef = useRef(false);
-  const turnstileRef = useRef<TurnstileInstance | null>(null);
-
-  const CloudflareSiteKey = process.env.NEXT_PUBLIC_CLOUDFLARE_SITE_KEY;
 
   // Check if running on localhost (development)
   const isLocalhost =
@@ -49,11 +36,8 @@ const ChainLabsHero = () => {
     (window.location.hostname === "localhost" ||
       window.location.hostname === "127.0.0.1");
 
-  // Turnstile state - skip verification on localhost
-  const [isCaptchaVerified, setIsCaptchaVerified] = React.useState(isLocalhost);
-  const [isCaptchaVerifying, setIsCaptchaVerifying] = React.useState(false);
-  const [captchaError, setCaptchaError] = React.useState<string | null>(null);
-  const [showCaptchaDialog, setShowCaptchaDialog] = React.useState(false);
+  // For simplified verification, we'll assume verification is complete
+  const [isCaptchaVerified, setIsCaptchaVerified] = React.useState(true);
 
   // Global state hooks
   const {
@@ -133,12 +117,6 @@ const ChainLabsHero = () => {
     async (e: React.FormEvent) => {
       e.preventDefault();
 
-      // Check if captcha is verified before allowing submission
-      if (!isCaptchaVerified) {
-        setShowCaptchaDialog(true);
-        return;
-      }
-
       // Combine text input and voice input
       const combinedInput = (inputValue + voiceInputValue).trim();
 
@@ -158,11 +136,6 @@ const ChainLabsHero = () => {
         } else {
           await sendMessage(combinedInput);
         }
-
-        // Reset captcha after successful submission
-        turnstileRef.current?.reset();
-        setIsCaptchaVerified(false);
-        setShowCaptchaDialog(false);
       }
     },
     [
@@ -175,7 +148,6 @@ const ChainLabsHero = () => {
       setSelectedSuggestionKey,
       lastError,
       clearErrorAndRequest,
-      isCaptchaVerified,
     ],
   );
 
@@ -194,10 +166,6 @@ const ChainLabsHero = () => {
   const handleGoalSuggestion = useCallback(
     async (option: GoalSuggestion) => {
       if (isThinking) return;
-      if (!isCaptchaVerified) {
-        setShowCaptchaDialog(true);
-        return;
-      }
       setSelectedSuggestionKey(option.key);
       setVoiceInputValue("");
       await sendMessage(option.label);
@@ -208,10 +176,6 @@ const ChainLabsHero = () => {
   const handleClarificationSuggestion = useCallback(
     async (suggestion: string) => {
       if (isThinking) return;
-      if (!isCaptchaVerified) {
-        setShowCaptchaDialog(true);
-        return;
-      }
       setVoiceInputValue("");
       await sendMessage(suggestion);
     },
@@ -251,45 +215,6 @@ const ChainLabsHero = () => {
     },
     [setInputValue],
   );
-
-  // Turnstile verification handler
-  const handleTurnstileVerification = useCallback(async (token: string) => {
-    setIsCaptchaVerifying(true);
-    setCaptchaError(null);
-
-    try {
-      const response = await fetch("/api/verify-captcha", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ token }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setIsCaptchaVerified(true);
-        return true;
-      } else {
-        setCaptchaError(
-          data.error || "Captcha verification failed. Please try again.",
-        );
-        setIsCaptchaVerified(false);
-        turnstileRef.current?.reset();
-        return false;
-      }
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Network error";
-      setCaptchaError(errorMessage);
-      setIsCaptchaVerified(false);
-      turnstileRef.current?.reset();
-      return false;
-    } finally {
-      setIsCaptchaVerifying(false);
-    }
-  }, []);
 
   const handleFocus = useCallback(() => setIsFocused(true), [setIsFocused]);
   const handleBlur = useCallback(() => setIsFocused(false), [setIsFocused]);
@@ -763,91 +688,6 @@ const ChainLabsHero = () => {
           <div className="h-0 md:h-12" />
         </div>
       </section>
-
-      {/* Captcha Dialog */}
-      <Dialog
-        open={showCaptchaDialog || !isCaptchaVerified}
-        onOpenChange={setShowCaptchaDialog}
-      >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Verify your identity</DialogTitle>
-            <DialogDescription>
-              Please complete the security verification to continue.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="flex flex-col gap-4">
-            {captchaError && (
-              <motion.div
-                initial={{
-                  opacity: 0,
-                  y: -4,
-                }}
-                animate={{
-                  opacity: 1,
-                  y: 0,
-                }}
-                exit={{ opacity: 0, y: -4 }}
-                className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-sm"
-              >
-                <AlertCircle className="size-4 flex-shrink-0" />
-                <span>{captchaError}</span>
-              </motion.div>
-            )}
-
-            <div className="flex justify-center py-4">
-              {CloudflareSiteKey ? (
-                !isCaptchaVerified && (
-                  <Turnstile
-                    ref={turnstileRef}
-                    siteKey={CloudflareSiteKey}
-                    onSuccess={handleTurnstileVerification}
-                    onError={() => {
-                      setCaptchaError("Captcha error. Please try again.");
-                      setIsCaptchaVerified(false);
-                    }}
-                    onExpire={() => {
-                      setIsCaptchaVerified(false);
-                      setCaptchaError(
-                        "Captcha expired. Please refresh and try again.",
-                      );
-                    }}
-                    options={{
-                      theme: "dark",
-                    }}
-                  />
-                )
-              ) : (
-                <div className="text-xs text-muted-foreground">
-                  Captcha not configured
-                </div>
-              )}
-            </div>
-
-            {isCaptchaVerifying && (
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-xs text-muted-foreground text-center"
-              >
-                Verifying...
-              </motion.p>
-            )}
-
-            {isCaptchaVerified && (
-              <motion.div
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex items-center gap-2 p-3 rounded-lg bg-green-500/10 border border-green-500/30 text-green-600 text-sm"
-              >
-                <Sparkles className="size-4 flex-shrink-0" />
-                <span>Verification complete! You can now proceed.</span>
-              </motion.div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
     </>
   );
 };

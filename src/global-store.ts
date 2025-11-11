@@ -31,11 +31,11 @@ const createDefaultGoalSuggestions = (): GoalSuggestion[] => [
     label: "Increase table bookings for my restaurant",
     helper: "Drive more reservations and repeat visits",
   },
-  {
-    key: "SaaSConversions",
-    label: "Boost conversions for our SaaS onboarding",
-    helper: "Streamline activation and improve trial-to-paid",
-  },
+  // {
+  //   key: "SaaSConversions",
+  //   label: "Boost conversions for our SaaS onboarding",
+  //   helper: "Streamline activation and improve trial-to-paid",
+  // },
   {
     key: "blockchainLoyalty",
     label: "Launch a blockchain loyalty experience",
@@ -47,17 +47,17 @@ const createDefaultClarificationSuggestions = (): Record<string, string[]> => ({
   restaurantBookings: [
     "Our diners drop off because the booking flow feels clunky on mobile.",
     "Weeknight slots stay empty; we lack targeted promotions.",
-    "Guests churn after one visit—no retention program in place.",
+    // "Guests churn after one visit—no retention program in place.",
   ],
-  SaaSConversions: [
-    "Too many steps in onboarding; we lose users during setup.",
-    "Trial users don’t convert because the value isn’t highlighted early enough.",
-    "Support tickets spike when customers try advanced features.",
-  ],
+  // SaaSConversions: [
+  //   "Too many steps in onboarding; we lose users during setup.",
+  //   "Trial users don’t convert because the value isn’t highlighted early enough.",
+  //   "Support tickets spike when customers try advanced features.",
+  // ],
   blockchainLoyalty: [
     "Members can’t see real-time rewards, so they disengage.",
     "We need a seamless wallet-less sign-up to drive adoption.",
-    "Partners want better analytics on cross-brand engagement.",
+    // "Partners want better analytics on cross-brand engagement.",
   ],
 });
 

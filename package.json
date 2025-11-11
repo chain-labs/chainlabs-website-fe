@@ -40,6 +40,7 @@
     "@radix-ui/react-tooltip": "^1.2.7",
     "@vapi-ai/server-sdk": "^0.10.0",
     "@vapi-ai/web": "^2.3.9",
+    "botid": "^1.5.10",
     "canvas-confetti": "^1.9.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

@@ -107,15 +107,8 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="icon" href="/assets/logo.svg" />
-        <link rel="preconnect" href="https://challenges.cloudflare.com"></link>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#0B0B0F" />
-
-        {/* Cloudflare Turnstile Script */}
-        <Script
-          src="https://challenges.cloudflare.com/turnstile/v0/api.js"
-          strategy="beforeInteractive"
-        />
 
         {/* Structured Data */}
         <script
