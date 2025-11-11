@@ -57,7 +57,7 @@ export const Footer = ({ showPersonalized, className }: FooterProps) => {
     { name: "GitHub", icon: Github, href: "https://github.com/chain-labs" },
     { name: "LinkedIn", icon: Linkedin, href: "https://www.linkedin.com/company/0xchainlabs" },
     { name: "Twitter", icon: Twitter, href: "https://x.com/encrypted8532" },
-    { name: "Email", icon: Mail, href: "mailto:hello@chainlabs.com" },
+    { name: "Email", icon: Mail, href: "mailto:mihirsinh@chainlabs.in" },
   ];
 
   return (
@@ -122,7 +122,7 @@ export const Footer = ({ showPersonalized, className }: FooterProps) => {
                 className="flex items-center space-x-2 text-muted-foreground"
               >
                 <MapPin className="w-4 h-4" />
-                <span className="text-sm">Surat, India</span>
+                <span className="text-sm">Bangalore, India</span>
               </motion.div>
             </div>
 
