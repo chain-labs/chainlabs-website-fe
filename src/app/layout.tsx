@@ -117,7 +117,11 @@ export default function RootLayout({
 	const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-2TXCJ3VJ1B";
 	const CLARITY_ID = process.env.NEXT_PUBLIC_CLARITY_ID || "t2fz0iawei";
 
-	console.log("analytics", { enableAnalytics, GTM_ID, GA_ID, CLARITY_ID }, enableAnalytics && CLARITY_ID && true);
+	console.log(
+		"analytics",
+		{ enableAnalytics, GTM_ID, GA_ID, CLARITY_ID },
+		enableAnalytics && CLARITY_ID && true
+	);
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<head>
@@ -201,14 +205,15 @@ export default function RootLayout({
 
 				{/* Microsoft Clarity (gated) */}
 				{enableAnalytics && CLARITY_ID && (
-					<Script id="clarity" strategy="afterInteractive">
-						{`
+					<>
+						<Script id="clarity" strategy="afterInteractive">
+							{`
 						(function(c,l,a,r,i,t,y){
 							c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
 							t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
 							y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-						})(window, document, 'clarity', 'script', '${CLARITY_ID}');
-						try {
+              })(window, document, 'clarity', 'script', '${CLARITY_ID}');
+              try {
 						  var raw = localStorage.getItem('chainlabs-session-store');
 						  if (raw) {
 						    var parsed = JSON.parse(raw);
@@ -217,10 +222,19 @@ export default function RootLayout({
 						      window.clarity && window.clarity('identify', sid);
 						      window.clarity && window.clarity('set', 'sessionId', sid);
 						    }
-						  }
-						} catch {}
-						`}
-					</Script>
+                }
+                } catch {}
+                `}
+						</Script>
+						<Script id="clarity" strategy="afterInteractive">
+							{`
+            (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "${CLARITY_ID}");`}
+						</Script>
+					</>
 				)}
 				{/* amplitude - google analytics */}
 				{/* <Script type="text/javascript">
