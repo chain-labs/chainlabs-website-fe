@@ -169,15 +169,6 @@ export default function RootLayout({
 						'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
 						})(window,document,'script','dataLayer','${GTM_ID}');`}
 						</Script>
-						<Script id="clarity-script" strategy="afterInteractive">
-							{`
-            (function(c,l,a,r,i,t,y){
-                c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-                t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-                y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-            })(window, document, "clarity", "script", "${CLARITY_ID}");
-          `}
-						</Script>
 						<Script
 							async
 							src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
@@ -199,40 +190,6 @@ export default function RootLayout({
 							  allow_ad_personalization_signals: false
 							});
 							`}
-						</Script>
-					</>
-				)}
-
-				{/* Microsoft Clarity (gated) */}
-				{enableAnalytics && CLARITY_ID && (
-					<>
-						<Script id="clarity" strategy="afterInteractive">
-							{`
-						(function(c,l,a,r,i,t,y){
-							c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-							t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-							y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-              })(window, document, 'clarity', 'script', '${CLARITY_ID}');
-              try {
-						  var raw = localStorage.getItem('chainlabs-session-store');
-						  if (raw) {
-						    var parsed = JSON.parse(raw);
-						    var sid = parsed && parsed.state && parsed.state.personalised && parsed.state.personalised.sid;
-						    if (sid) {
-						      window.clarity && window.clarity('identify', sid);
-						      window.clarity && window.clarity('set', 'sessionId', sid);
-						    }
-                }
-                } catch {}
-                `}
-						</Script>
-						<Script id="clarity" strategy="afterInteractive">
-							{`
-            (function(c,l,a,r,i,t,y){
-        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-    })(window, document, "clarity", "script", "${CLARITY_ID}");`}
 						</Script>
 					</>
 				)}

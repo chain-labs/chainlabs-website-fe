@@ -2,18 +2,14 @@
 
 import { useEffect } from "react";
 import { useGlobalStore } from "@/global-store";
+import Clarity from "@microsoft/clarity";
 
-declare global {
-  interface Window {
-    clarity?: (...args: any[]) => void & { q?: any[] };
-  }
-}
-
-// Helper to ensure Clarity is loaded and ready
+// Helper to ensure Clarity is initialized
 function isClarityReady(): boolean {
   return typeof window !== "undefined" && typeof window.clarity === "function";
 }
 
+// Safe wrapper for Clarity API calls
 function callClarity(fn: string, ...args: any[]) {
   try {
     if (isClarityReady()) {
@@ -28,46 +24,49 @@ function callClarity(fn: string, ...args: any[]) {
   }
 }
 
-// Helper to ensure Clarity is loaded before executing callback
-function waitForClarity(callback: () => void, maxAttempts = 30, interval = 100) {
-  let attempts = 0;
-  const checkInterval = setInterval(() => {
-    attempts++;
-    if (isClarityReady()) {
-      clearInterval(checkInterval);
-      console.log(`[Clarity] ✓ Ready after ${attempts} attempts`);
-      callback();
-    } else if (attempts >= maxAttempts) {
-      clearInterval(checkInterval);
-      console.error(
-        `[Clarity] ✗ Failed to load after ${maxAttempts} attempts (${maxAttempts * interval}ms)`
-      );
-    }
-  }, interval);
-}
-
 export default function ClarityAnalytics() {
   const store = useGlobalStore();
+  const CLARITY_ID = process.env.NEXT_PUBLIC_CLARITY_ID || "t2fz0iawei";
+  const enableAnalytics = process.env.NEXT_PUBLIC_ENABLE_ANALYTICS === "true";
 
-  // Initialize Clarity with session data once loaded
+  // Initialize Clarity
   useEffect(() => {
-    waitForClarity(() => {
-      console.log("[Clarity] 🚀 Initializing custom tracking");
-      
-      // Set initial session data
-      const sessionId = store.personalised?.sid || "unknown";
-      if (sessionId !== "unknown") {
-        callClarity("identify", sessionId);
-      }
-      callClarity("set", "session_id", sessionId);
-      callClarity("set", "has_goal", store.goal ? "true" : "false");
-      
-      console.log("[Clarity] ✓ Initialized with session:", sessionId);
-    });
-  }, [store.personalised?.sid, store.goal]);
+    if (!enableAnalytics || !CLARITY_ID) {
+      console.log("[Clarity] Analytics disabled or no project ID");
+      return;
+    }
+
+    try {
+      // Initialize Clarity with project ID
+      Clarity.init(CLARITY_ID);
+      console.log("[Clarity] 🚀 Initialized with project ID:", CLARITY_ID);
+
+      // Set initial session data once Clarity is ready
+      const checkAndSetSession = () => {
+        if (isClarityReady()) {
+          const sessionId = store.personalised?.sid;
+          if (sessionId) {
+            Clarity.identify(sessionId);
+            Clarity.setTag("session_id", sessionId);
+            console.log("[Clarity] ✓ Identified with session:", sessionId);
+          }
+          Clarity.setTag("has_goal", store.goal ? "true" : "false");
+        } else {
+          // Retry after a short delay
+          setTimeout(checkAndSetSession, 100);
+        }
+      };
+
+      checkAndSetSession();
+    } catch (error) {
+      console.error("[Clarity] ✗ Initialization error:", error);
+    }
+  }, [CLARITY_ID, enableAnalytics, store.personalised?.sid, store.goal]);
 
   // Click tracking with improved data capture
   useEffect(() => {
+    if (!enableAnalytics) return;
+
     const onClick = (e: MouseEvent) => {
       if (!isClarityReady()) return;
 
@@ -116,15 +115,15 @@ export default function ClarityAnalytics() {
         customData.element_text = text;
       }
 
-      // Send custom tags to Clarity (one at a time for better reliability)
+      // Send custom tags to Clarity using setTag API
       Object.entries(customData).forEach(([key, value]) => {
         if (value) {
-          callClarity("set", `click_${key}`, value);
+          Clarity.setTag(`click_${key}`, value);
         }
       });
 
-      // Send the event
-      callClarity("event", eventName);
+      // Send the event using event API
+      Clarity.event(eventName);
 
       console.log("[Clarity] 🖱️ Click:", eventName, customData);
     };
@@ -132,16 +131,11 @@ export default function ClarityAnalytics() {
     document.addEventListener("click", onClick, { capture: true });
     return () =>
       document.removeEventListener("click", onClick, { capture: true });
-  }, []);
+  }, [enableAnalytics]);
 
   // Track personalization status changes
   useEffect(() => {
-    if (!isClarityReady()) {
-      waitForClarity(() => {
-        // Will be handled by subscribe callback once ready
-      });
-      return;
-    }
+    if (!enableAnalytics || !isClarityReady()) return;
 
     let lastStatus: string | undefined;
 
@@ -153,40 +147,35 @@ export default function ClarityAnalytics() {
 
       lastStatus = status;
 
-      // Send status update to Clarity
-      callClarity("set", "personalization_status", status);
-      callClarity("set", "has_personalization", "true");
+      // Send status update to Clarity using setTag API
+      Clarity.setTag("personalization_status", status);
+      Clarity.setTag("has_personalization", "true");
 
       // Send specific events based on status
       if (status === "CLARIFIED") {
-        callClarity("event", "personalization_completed");
+        Clarity.event("personalization_completed");
         // Also send the personalized data
         if (state.personalised && state.goal) {
-          callClarity("set", "user_goal", state.goal);
+          Clarity.setTag("user_goal", state.goal);
         }
         if (state.headline) {
-          callClarity("set", "user_headline", state.headline);
+          Clarity.setTag("user_headline", state.headline);
         }
       } else if (status === "GOAL_SET") {
-        callClarity("event", "personalization_started");
+        Clarity.event("personalization_started");
       } else {
-        callClarity("event", "personalization_status_changed");
+        Clarity.event("personalization_status_changed");
       }
 
       console.log("[Clarity] 🎯 Personalization status:", status);
     });
 
     return () => unsub();
-  }, []);
+  }, [enableAnalytics]);
 
   // Track missions progress
   useEffect(() => {
-    if (!isClarityReady()) {
-      waitForClarity(() => {
-        // Will be tracked once Clarity is ready
-      });
-      return;
-    }
+    if (!enableAnalytics || !isClarityReady()) return;
 
     let lastCompletedCount = -1;
 
@@ -202,27 +191,19 @@ export default function ClarityAnalytics() {
       if (completedCount !== lastCompletedCount) {
         lastCompletedCount = completedCount;
 
-        // Send mission metrics
-        callClarity("set", "missions_total", String(totalCount));
-        callClarity("set", "missions_completed", String(completedCount));
-        callClarity(
-          "set",
-          "missions_pending",
-          String(totalCount - completedCount),
-        );
+        // Send mission metrics using setTag API
+        Clarity.setTag("missions_total", String(totalCount));
+        Clarity.setTag("missions_completed", String(completedCount));
+        Clarity.setTag("missions_pending", String(totalCount - completedCount));
 
         if (totalCount > 0) {
           const progressPercent = Math.round(
             (completedCount / totalCount) * 100,
           );
-          callClarity(
-            "set",
-            "missions_progress_percent",
-            String(progressPercent),
-          );
+          Clarity.setTag("missions_progress_percent", String(progressPercent));
         }
 
-        callClarity("event", "missions_progress_updated");
+        Clarity.event("missions_progress_updated");
         console.log(
           "[Clarity] 🎯 Missions:",
           `${completedCount}/${totalCount}`,
@@ -241,16 +222,11 @@ export default function ClarityAnalytics() {
     });
 
     return () => unsub();
-  }, [store.missions]);
+  }, [store.missions, enableAnalytics]);
 
   // Track time spent on different sections
   useEffect(() => {
-    if (!isClarityReady()) {
-      waitForClarity(() => {
-        // Will be tracked once Clarity is ready
-      });
-      return;
-    }
+    if (!enableAnalytics || !isClarityReady()) return;
 
     const reportedTimes: Record<string, number> = {};
     const REPORT_INTERVAL = 10; // Report every 10 seconds of activity
@@ -264,10 +240,10 @@ export default function ClarityAnalytics() {
       if (seconds - lastReported >= REPORT_INTERVAL) {
         reportedTimes[key] = seconds;
 
-        // Send time data to Clarity
-        callClarity("set", `${category}_current_id`, id);
-        callClarity("set", `${category}_time_seconds`, String(seconds));
-        callClarity("event", `${category}_time_milestone`);
+        // Send time data to Clarity using setTag API
+        Clarity.setTag(`${category}_current_id`, id);
+        Clarity.setTag(`${category}_time_seconds`, String(seconds));
+        Clarity.event(`${category}_time_milestone`);
 
         console.log(`[Clarity] ⏱️ Time: ${category} ${id} = ${seconds}s`);
       }
@@ -300,23 +276,18 @@ export default function ClarityAnalytics() {
       if (state.vapiTimeSpent > 0) {
         const vapiMinutes = Math.floor(state.vapiTimeSpent / 60);
         if (vapiMinutes > 0 && state.vapiTimeSpent % 60 === 0) {
-          callClarity("set", "vapi_time_minutes", String(vapiMinutes));
-          callClarity("event", "vapi_time_milestone");
+          Clarity.setTag("vapi_time_minutes", String(vapiMinutes));
+          Clarity.event("vapi_time_milestone");
         }
       }
     });
 
     return () => unsub();
-  }, []);
+  }, [enableAnalytics]);
 
   // Track page engagement time
   useEffect(() => {
-    if (!isClarityReady()) {
-      waitForClarity(() => {
-        // Will start tracking once Clarity is ready
-      });
-      return;
-    }
+    if (!enableAnalytics || !isClarityReady()) return;
 
     let totalSeconds = 0;
     let isActive = document.visibilityState === "visible";
@@ -324,7 +295,7 @@ export default function ClarityAnalytics() {
     const handleVisibilityChange = () => {
       isActive = document.visibilityState === "visible";
       if (isActive && isClarityReady()) {
-        callClarity("event", "page_reactivated");
+        Clarity.event("page_reactivated");
       }
     };
 
@@ -334,22 +305,22 @@ export default function ClarityAnalytics() {
 
         // Report engagement milestones
         if (totalSeconds === 30) {
-          callClarity("set", "engagement_30s", "true");
-          callClarity("event", "engagement_30_seconds");
+          Clarity.setTag("engagement_30s", "true");
+          Clarity.event("engagement_30_seconds");
           console.log("[Clarity] ⏱️ Engagement: 30 seconds");
         } else if (totalSeconds === 60) {
-          callClarity("set", "engagement_1m", "true");
-          callClarity("event", "engagement_1_minute");
+          Clarity.setTag("engagement_1m", "true");
+          Clarity.event("engagement_1_minute");
           console.log("[Clarity] ⏱️ Engagement: 1 minute");
         } else if (totalSeconds === 300) {
-          callClarity("set", "engagement_5m", "true");
-          callClarity("event", "engagement_5_minutes");
+          Clarity.setTag("engagement_5m", "true");
+          Clarity.event("engagement_5_minutes");
           console.log("[Clarity] ⏱️ Engagement: 5 minutes");
         } else if (totalSeconds % 300 === 0) {
           // Every 5 minutes after the first
           const minutes = totalSeconds / 60;
-          callClarity("set", "engagement_minutes", String(Math.floor(minutes)));
-          callClarity("event", "engagement_milestone");
+          Clarity.setTag("engagement_minutes", String(Math.floor(minutes)));
+          Clarity.event("engagement_milestone");
           console.log(
             `[Clarity] ⏱️ Engagement: ${Math.floor(minutes)} minutes`
           );
@@ -363,16 +334,11 @@ export default function ClarityAnalytics() {
       clearInterval(interval);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, []);
+  }, [enableAnalytics]);
 
   // Track scroll depth on important elements
   useEffect(() => {
-    if (!isClarityReady()) {
-      waitForClarity(() => {
-        // Will start tracking once Clarity is ready
-      });
-      return;
-    }
+    if (!enableAnalytics || !isClarityReady()) return;
 
     const trackedElements = new Map<
       Element,
@@ -396,8 +362,8 @@ export default function ClarityAnalytics() {
             data.hasViewed = true;
             data.viewStart = Date.now();
 
-            callClarity("set", `viewed_${data.name}`, "true");
-            callClarity("event", `${data.name}_viewed`);
+            Clarity.setTag(`viewed_${data.name}`, "true");
+            Clarity.event(`${data.name}_viewed`);
             console.log(`[Clarity] 👁️ Element viewed: ${data.name}`);
           } else if (!entry.isIntersecting && data.viewStart > 0) {
             const viewTime = Math.floor((Date.now() - data.viewStart) / 1000);
@@ -406,12 +372,8 @@ export default function ClarityAnalytics() {
 
             if (viewTime > 3) {
               // Only track if viewed for more than 3 seconds
-              callClarity(
-                "set",
-                `${data.name}_view_time`,
-                String(data.totalTime),
-              );
-              callClarity("event", `${data.name}_view_ended`);
+              Clarity.setTag(`${data.name}_view_time`, String(data.totalTime));
+              Clarity.event(`${data.name}_view_ended`);
               console.log(
                 `[Clarity] 👁️ Element view ended: ${data.name} (${data.totalTime}s)`
               );
@@ -471,7 +433,7 @@ export default function ClarityAnalytics() {
       clearInterval(rescanInterval);
       observer.disconnect();
     };
-  }, []);
+  }, [enableAnalytics]);
 
   return null;
 }
