@@ -442,10 +442,26 @@ const ChainLabsHero = () => {
                       }}
                       className="flex items-center justify-center gap-2 mb-4"
                     >
-                      <Sparkles className="w-4 h-4 text-primary" />
+                      <div className="relative flex items-center justify-center">
+                        {/* Outer pulsating ring (20% opacity of primary) */}
+                        <motion.span
+                          aria-hidden="true"
+                          className="absolute rounded-full bg-primary/20 w-3 h-3"
+                          initial={{ scale: 1, opacity: 0.8 }}
+                          animate={{ scale: [1, 1.8, 1], opacity: [0.8, 0.15, 0.8] }}
+                          transition={{ duration: 1.6, repeat: Infinity, ease: "easeOut" }}
+                        />
+
+                        {/* Center solid dot (primary color) */}
+                        <span
+                          className="relative inline-block w-2 h-2 rounded-full bg-primary shadow-[0_0_20px_rgba(34,197,94,0.35)]"
+                          aria-hidden="true"
+                        />
+                      </div>
                       <span className="text-sm font-medium text-muted-foreground">
-                        AI & Blockchain Innovation Partner
+                        Accepting new projects
                       </span>
+
                     </motion.div>
 
                     <motion.h1
